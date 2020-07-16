@@ -1,26 +1,42 @@
 module Grove where
 
-open import Data.Nat hiding (_≟_; _⊔_)
-open import Data.Bool hiding (_<_; _≟_)
-open import Relation.Binary.PropositionalEquality hiding (Extensionality)
-open import Relation.Binary
-open import Relation.Nullary
-open import Function.Equivalence hiding (_∘_)
-open import Function using (_∘′_)
-open import Level using (Level)
 open import Axiom.Extensionality.Propositional
+open import Data.Bool hiding (_<_; _≟_)
+open import Data.Nat hiding (_≟_; _⊔_)
 open import Data.Product
+open import Function.Equivalence hiding (_∘_)
+open import Function hiding (_⇔_)
 open import Function.Equality using (_⟨$⟩_)
+open import Level using (Level)
+open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Nullary
 
 postulate
   extensionality : {ℓ₁ ℓ₂ : Level} → Extensionality ℓ₁ ℓ₂
 
+----------------
+-- Ctor (i.e. constructors)
+----------------
+
 postulate
   Ctor : Set
   ctorRoot : Ctor
-  _≟ℂ_ : (c1 c2 : Ctor) → Dec (c1 ≡ c2)
+  _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
+
+----------------
+-- Arity
+----------------
+postulate
   arity : Ctor → ℕ
   arityRoot : arity ctorRoot ≡ 1
+
+
+postulate
+  Ident : Set
+
+----------------
+-- Vertex
+----------------
 
 record Vertex : Set where
   constructor V
@@ -28,6 +44,15 @@ record Vertex : Set where
     ctor : Ctor
     iden : ℕ
 
+_≟Vertex_ : (v₁ v₂ : Vertex) → Dec (v₁ ≡ v₂)
+V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ Data.Nat.≟ i₂
+... | yes refl | yes refl = yes refl
+... | _        | no p     = no (λ { refl → p refl })
+... | no p     | _        = no (λ { refl → p refl })
+
+----------------
+-- Edge
+----------------
 record Edge : Set where
   constructor E
   field
@@ -35,12 +60,28 @@ record Edge : Set where
     child : Vertex
     index : ℕ
     iden : ℕ
-    .valid : iden < arity (Vertex.ctor parent)
+    .isValid : iden < arity (Vertex.ctor parent)
+
+_≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
+E parent₁ child₁ index₁ iden₁ _ ≟Edge E parent₂ child₂ index₂ iden₂ _
+  with parent₁ ≟Vertex parent₂
+     | child₁ ≟Vertex child₂
+     | index₁ Data.Nat.≟ index₂
+     | iden₁ Data.Nat.≟ iden₂
+... | yes refl | yes refl | yes refl | yes refl = yes refl
+... | no p     | _        | _        | _        = no (λ { refl → p refl })
+... | _        | no p     | _        | _        = no (λ { refl → p refl })
+... | _        | _        | no p     | _        = no (λ { refl → p refl })
+... | _        | _        | _        | no p     = no (λ { refl → p refl })
+
+----------------
+-- EdgeState
+----------------
 
 data EdgeState : Set where
-  ⊥ : EdgeState
-  + : EdgeState
-  - : EdgeState
+  ⊥ : EdgeState -- smallest
+  + : EdgeState -- middle
+  - : EdgeState -- largest
 
 _⊔_ : EdgeState → EdgeState → EdgeState
 - ⊔ _ = -
@@ -49,129 +90,144 @@ _ ⊔ - = -
 _ ⊔ + = +
 _ ⊔ _ = ⊥
 
-⊔-assoc : {s1 s2 s3 : EdgeState} → (s1 ⊔ (s2 ⊔ s3)) ≡ ((s1 ⊔ s2) ⊔ s3)
-⊔-assoc {⊥} {⊥} {⊥} = refl
-⊔-assoc {⊥} {⊥} {+} = refl
-⊔-assoc {⊥} {⊥} { - } = refl
-⊔-assoc {⊥} {+} {⊥} = refl
-⊔-assoc {⊥} {+} {+} = refl
-⊔-assoc {⊥} {+} { - } = refl
-⊔-assoc {⊥} { - } {⊥} = refl
-⊔-assoc {⊥} { - } {+} = refl
-⊔-assoc {⊥} { - } { - } = refl
-⊔-assoc {+} {⊥} {⊥} = refl
-⊔-assoc {+} {⊥} {+} = refl
-⊔-assoc {+} {⊥} { - } = refl
-⊔-assoc {+} {+} {⊥} = refl
-⊔-assoc {+} {+} {+} = refl
-⊔-assoc {+} {+} { - } = refl
-⊔-assoc {+} { - } {⊥} = refl
-⊔-assoc {+} { - } {+} = refl
-⊔-assoc {+} { - } { - } = refl
-⊔-assoc { - } {⊥} {⊥} = refl
-⊔-assoc { - } {⊥} {+} = refl
-⊔-assoc { - } {⊥} { - } = refl
-⊔-assoc { - } {+} {⊥} = refl
-⊔-assoc { - } {+} {+} = refl
-⊔-assoc { - } {+} { - } = refl
-⊔-assoc { - } { - } {⊥} = refl
-⊔-assoc { - } { - } {+} = refl
-⊔-assoc { - } { - } { - } = refl
+⊔-assoc : (s₁ s₂ s₃ : EdgeState) → (s₁ ⊔ (s₂ ⊔ s₃)) ≡ ((s₁ ⊔ s₂) ⊔ s₃)
+⊔-assoc ⊥ ⊥ ⊥ = refl
+⊔-assoc ⊥ ⊥ + = refl
+⊔-assoc ⊥ ⊥ - = refl
+⊔-assoc ⊥ + ⊥ = refl
+⊔-assoc ⊥ + + = refl
+⊔-assoc ⊥ + - = refl
+⊔-assoc ⊥ - ⊥ = refl
+⊔-assoc ⊥ - + = refl
+⊔-assoc ⊥ - - = refl
+⊔-assoc + ⊥ ⊥ = refl
+⊔-assoc + ⊥ + = refl
+⊔-assoc + ⊥ - = refl
+⊔-assoc + + ⊥ = refl
+⊔-assoc + + + = refl
+⊔-assoc + + - = refl
+⊔-assoc + - ⊥ = refl
+⊔-assoc + - + = refl
+⊔-assoc + - - = refl
+⊔-assoc - ⊥ ⊥ = refl
+⊔-assoc - ⊥ + = refl
+⊔-assoc - ⊥ - = refl
+⊔-assoc - + ⊥ = refl
+⊔-assoc - + + = refl
+⊔-assoc - + - = refl
+⊔-assoc - - ⊥ = refl
+⊔-assoc - - + = refl
+⊔-assoc - - - = refl
 
-⊔-comm : {s1 s2 : EdgeState} → s1 ⊔ s2 ≡ s2 ⊔ s1
-⊔-comm {⊥} {⊥} = refl
-⊔-comm {⊥} {+} = refl
-⊔-comm {⊥} { - } = refl
-⊔-comm {+} {⊥} = refl
-⊔-comm {+} {+} = refl
-⊔-comm {+} { - } = refl
-⊔-comm { - } {⊥} = refl
-⊔-comm { - } {+} = refl
-⊔-comm { - } { - } = refl
+⊔-comm : (s₁ s₂ : EdgeState) → s₁ ⊔ s₂ ≡ s₂ ⊔ s₁
+⊔-comm ⊥ ⊥ = refl
+⊔-comm ⊥ + = refl
+⊔-comm ⊥ - = refl
+⊔-comm + ⊥ = refl
+⊔-comm + + = refl
+⊔-comm + - = refl
+⊔-comm - ⊥ = refl
+⊔-comm - + = refl
+⊔-comm - - = refl
+
+⊔-idem : (s : EdgeState) → s ⊔ s ≡ s
+⊔-idem ⊥ = refl
+⊔-idem + = refl
+⊔-idem - = refl
+
+----------------
+-- Graph
+----------------
 
 Graph : Set
 Graph = Edge → EdgeState
 
-data Action : Set where
-  A : Edge → EdgeState → Action
-
-_≟Vertex_ : (v1 v2 : Vertex) → Dec (v1 ≡ v2)
-V ctor1 iden1 ≟Vertex V ctor2 iden2 with ctor1 ≟ℂ ctor2 | iden1 Data.Nat.≟ iden2
-... | yes refl | yes refl = yes refl
-... | _ | no p = no (λ { refl → p refl })
-... | no p | _ = no (λ { refl → p refl })
-
-_≟Edge_ : (e1 e2 : Edge) → Dec (e1 ≡ e2)
-E parent1 child1 index1 iden1 _ ≟Edge E parent2 child2 index2 iden2 _
-  with parent1 ≟Vertex parent2 | child1 ≟Vertex child2 | index1 Data.Nat.≟ index2 | iden1 Data.Nat.≟ iden2
-... | yes refl | yes refl | yes refl | yes refl = yes refl
-... | no p | _ | _ | _ = no (λ { refl → p refl })
-... | _ | no p | _ | _ = no (λ { refl → p refl })
-... | _ | _ | no p | _ = no (λ { refl → p refl })
-... | _ | _ | _ | no p = no (λ { refl → p refl })
-
-{-
-Edge-eta : (e : Edge) →  E (Edge.parent e) (Edge.child e) (Edge.index e) (Edge.iden e) (Edge.valid e) ≡ e
-Edge-eta e = refl
--}
-
-≟Edge-eq : (e : Edge) → does (e ≟Edge e) ≡ true
-≟Edge-eq (E parent child index iden valid) with E parent child index iden valid ≟Edge E parent child index iden valid
-... | yes p = refl
-... | no p with p refl
-... | ()
-
-≟Edge-neq : {e1 e2 : Edge} → ¬ e1 ≡ e2  → does (e1 ≟Edge e2) ≡ false
-≟Edge-neq {E parent1 child1 index1 iden1 valid1} {E parent2 child2 index2 iden2 valid2} neq with E parent1 child1 index1 iden1 valid1 ≟Edge E parent2 child2 index2 iden2 valid2
-... | no p = refl
-... | yes refl with neq refl
-... | ()
-
 _[_↦_] :  Graph → Edge → EdgeState → Graph
 _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
+
+[↦]-comm : (s₁ s₂ : EdgeState) (e₁ e₂ : Edge) (g : Graph)
+  → (g [ e₁ ↦ s₁ ]) [ e₂ ↦ s₂ ]
+  ≡ (g [ e₂ ↦ s₂ ]) [ e₁ ↦ s₁ ]
+[↦]-comm s₁ s₂ e₁ e₂ g = extensionality go where
+  go : (e : Edge) → ((g [ e₁ ↦ s₁ ]) [ e₂ ↦ s₂ ]) e ≡ ((g [ e₂ ↦ s₂ ]) [ e₁ ↦ s₁ ]) e
+  go e with e ≟Edge e₁ | e ≟Edge e₂
+  ... | yes refl | yes refl rewrite ⊔-assoc s₁ s₂ (g e) | ⊔-assoc s₂ s₁ (g e) | ⊔-comm s₁ s₂ = refl
+  ... | no _ | yes refl = refl
+  ... | yes refl | no _ = refl
+  ... | no _ | no _ = refl
+
+[↦]-join : (s₁ s₂ : EdgeState) (e : Edge) (g : Graph)
+  → (g [ e ↦ s₁ ]) [ e ↦ s₂ ]
+  ≡ g [ e ↦ s₁ ⊔ s₂ ]
+[↦]-join s₁ s₂ e g = extensionality go where
+  go : (e' : Edge) → ((g [ e ↦ s₁ ]) [ e ↦ s₂ ]) e' ≡ (g [ e ↦ s₁ ⊔ s₂ ]) e'
+  go e' with e' ≟Edge e
+  ... | yes refl rewrite ⊔-assoc s₂ s₁ (g e) | ⊔-comm s₁ s₂ = refl
+  ... | no _ = refl
+
+----------------
+-- Action
+----------------
+
+data Action : Set where
+  A : Edge → EdgeState → Action
 
 ⟦_⟧ : Action → Graph → Graph
 ⟦ (A e s) ⟧ g = g [ e ↦ s ]
 
+⟦⟧-comm' : (a₁ a₂ : Action) (g : Graph)
+  → ⟦ a₁ ⟧ (⟦ a₂ ⟧ g)
+  ≡ ⟦ a₂ ⟧ (⟦ a₁ ⟧ g)
+⟦⟧-comm' (A e₁ s₁) (A e₂ s₂) g = [↦]-comm s₂ s₁ e₂ e₁ g
+
+⟦⟧-comm : (a₁ a₂ : Action)
+  → ⟦ a₁ ⟧ ∘′ ⟦ a₂ ⟧
+  ≡ ⟦ a₂ ⟧ ∘′ ⟦ a₁ ⟧
+⟦⟧-comm a₁ a₂ = extensionality (⟦⟧-comm' a₁ a₂)
+
+⟦⟧-idem' : (a : Action) (g : Graph)
+  → ⟦ a ⟧ (⟦ a ⟧ g)
+  ≡ ⟦ a ⟧ g
+⟦⟧-idem' (A e s) g rewrite [↦]-join s s e g with s
+... | ⊥ = refl
+... | + = refl
+... | - = refl
+
+⟦⟧-idem : (a : Action)
+  → ⟦ a ⟧ ∘′ ⟦ a ⟧
+  ≡ ⟦ a ⟧
+⟦⟧-idem a = extensionality (⟦⟧-idem' a)
+
+----------------
+-- ActionRel (i.e., action relation)
+----------------
+
 data ActionRel : Graph → Action → Graph → Set where
-  AR : (a : Action) → (g : Graph)  → ActionRel g a (⟦ a ⟧ g)
+  AR : (a : Action) → (g : Graph) → ActionRel g a (⟦ a ⟧ g)
 
--- TODO: idempotent: ⟦ a ⟧ ∘ ⟦ a ⟧ = ⟦ a ⟧
-
-thm : {g g' : Graph} {a : Action} → ActionRel g a g' ⇔ g' ≡ ⟦ a ⟧ g
-thm {g} {g'} {a} = equivalence to from where
+ActionRel-eqv : {g g' : Graph} {a : Action}
+  → ActionRel g a g' ⇔ g' ≡ ⟦ a ⟧ g
+ActionRel-eqv {g} {g'} {a} = equivalence to from where
   to : ActionRel g a g' → g' ≡ ⟦ a ⟧ g
   to (AR .a .g) = refl
   from : g' ≡ ⟦ a ⟧ g → ActionRel g a g'
   from refl = AR a g
 
-ext-comm : {s1 s2 : EdgeState} {e1 e2 : Edge} {g : Graph} → ((g [ e1 ↦ s1 ]) [ e2 ↦ s2 ]) ≡ ((g [ e2 ↦ s2 ]) [ e1 ↦ s1 ])
-ext-comm {s1} {s2} {e1} {e2} {g} = extensionality go where
-  go : (e : Edge) → ((g [ e1 ↦ s1 ]) [ e2 ↦ s2 ]) e ≡ ((g [ e2 ↦ s2 ]) [ e1 ↦ s1 ]) e
-  go e with e ≟Edge e1 | e ≟Edge e2
-  ... | yes refl | yes refl rewrite ⊔-assoc {s1} {s2} {g e} | ⊔-assoc {s2} {s1} {g e} | ⊔-comm {s1} {s2} = refl
-  ... | no _ | yes refl = refl
-  ... | yes refl | no _ = refl
-  ... | no _ | no _ = refl
-
-comm' : (a1 a2 : Action) (g : Graph) → ⟦ a1 ⟧ (⟦ a2 ⟧ g) ≡ ⟦ a2 ⟧ (⟦ a1 ⟧ g)
-comm' (A e1 s1) (A e2 s2) g = ext-comm {s2} {s1} {e2} {e1}
-
-comm : (a1 a2 : Action) → ⟦ a1 ⟧ ∘′ ⟦ a2 ⟧ ≡ ⟦ a2 ⟧ ∘′ ⟦ a1 ⟧
-comm a1 a2 = extensionality (comm' a1 a2)
-
-comm2 : {a1 a2 : Action} {g1 g2 g3 g2' g3' : Graph} → ActionRel g1 a1 g2 → ActionRel g2 a2 g3 → ActionRel g1 a2 g2' → ActionRel g2' a1 g3' → g3 ≡ g3'
-comm2 {a1} {a2} {g1} {g2} {g3} {g2'} {g3'} ar1 ar2 ar2' ar1' = eqgg where
-  eqg2 : g2 ≡ ⟦ a1 ⟧ g1
-  eqg2 = Equivalence.to thm ⟨$⟩ ar1
-  eqg3 : g3 ≡ ⟦ a2 ⟧ (⟦ a1 ⟧ g1)
-  eqg3 with eqg2
-  ... | refl = Equivalence.to thm ⟨$⟩ ar2
-  eqg2' : g2' ≡ ⟦ a2 ⟧ g1
-  eqg2' = Equivalence.to thm ⟨$⟩ ar2'
-  eqg3' : g3' ≡ ⟦ a1 ⟧ (⟦ a2 ⟧ g1)
-  eqg3' with eqg2'
-  ... | refl = Equivalence.to thm ⟨$⟩ ar1'
-  eqgg : g3 ≡ g3'
-  eqgg with eqg3 | eqg3'
-  ... | refl | refl = comm' a2 a1 g1
+ActionRel-comm : {a₁ a₂ : Action} {g₁ g₂₁ g₃₁ g₂₂ g₃₂ : Graph}
+  → ActionRel g₁ a₁ g₂₁ → ActionRel g₂₁ a₂ g₃₁
+  → ActionRel g₁ a₂ g₂₂ → ActionRel g₂₂ a₁ g₃₂
+  → g₃₁ ≡ g₃₂
+ActionRel-comm {a₁} {a₂} {g₁} {g₂₁} {g₃₁} {g₂₂} {g₃₂} ar₁ ar₂ ar₂₂ ar₁' = eqgg where
+  eqg₂ : g₂₁ ≡ ⟦ a₁ ⟧ g₁
+  eqg₂ = Equivalence.to ActionRel-eqv ⟨$⟩ ar₁
+  eqg₃ : g₃₁ ≡ ⟦ a₂ ⟧ (⟦ a₁ ⟧ g₁)
+  eqg₃ with eqg₂
+  ... | refl = Equivalence.to ActionRel-eqv ⟨$⟩ ar₂
+  eqg₂₂ : g₂₂ ≡ ⟦ a₂ ⟧ g₁
+  eqg₂₂ = Equivalence.to ActionRel-eqv ⟨$⟩ ar₂₂
+  eqg₃₂ : g₃₂ ≡ ⟦ a₁ ⟧ (⟦ a₂ ⟧ g₁)
+  eqg₃₂ with eqg₂₂
+  ... | refl = Equivalence.to ActionRel-eqv ⟨$⟩ ar₁'
+  eqgg : g₃₁ ≡ g₃₂
+  eqgg with eqg₃ | eqg₃₂
+  ... | refl | refl = ⟦⟧-comm' a₂ a₁ g₁
