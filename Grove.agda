@@ -49,7 +49,7 @@ _ ⊔ - = -
 _ ⊔ + = +
 _ ⊔ _ = ⊥
 
-⊔-assoc : {t1 t2 t3 : EdgeState} → (t1 ⊔ (t2 ⊔ t3)) ≡ ((t1 ⊔ t2) ⊔ t3)
+⊔-assoc : {s1 s2 s3 : EdgeState} → (s1 ⊔ (s2 ⊔ s3)) ≡ ((s1 ⊔ s2) ⊔ s3)
 ⊔-assoc {⊥} {⊥} {⊥} = refl
 ⊔-assoc {⊥} {⊥} {+} = refl
 ⊔-assoc {⊥} {⊥} { - } = refl
@@ -78,7 +78,7 @@ _ ⊔ _ = ⊥
 ⊔-assoc { - } { - } {+} = refl
 ⊔-assoc { - } { - } { - } = refl
 
-⊔-comm : {t1 t2 : EdgeState} → t1 ⊔ t2 ≡ t2 ⊔ t1
+⊔-comm : {s1 s2 : EdgeState} → s1 ⊔ s2 ≡ s2 ⊔ s1
 ⊔-comm {⊥} {⊥} = refl
 ⊔-comm {⊥} {+} = refl
 ⊔-comm {⊥} { - } = refl
@@ -93,8 +93,7 @@ Graph : Set
 Graph = Edge → EdgeState
 
 data Action : Set where
-  Action+ : Edge → Action
-  Action- : Edge → Action
+  A : Edge → EdgeState → Action
 
 _≟Vertex_ : (v1 v2 : Vertex) → Dec (v1 ≡ v2)
 V ctor1 iden1 ≟Vertex V ctor2 iden2 with ctor1 ≟ℂ ctor2 | iden1 Data.Nat.≟ iden2
@@ -132,8 +131,7 @@ _[_↦_] :  Graph → Edge → EdgeState → Graph
 _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
 
 ⟦_⟧ : Action → Graph → Graph
-⟦ (Action+ e) ⟧ g = g [ e ↦ EdgeState.+ ]
-⟦ (Action- e) ⟧ g = g [ e ↦ EdgeState.- ]
+⟦ (A e s) ⟧ g = g [ e ↦ s ]
 
 data ActionRel : Graph → Action → Graph → Set where
   AR : (a : Action) → (g : Graph)  → ActionRel g a (⟦ a ⟧ g)
@@ -147,20 +145,17 @@ thm {g} {g'} {a} = equivalence to from where
   from : g' ≡ ⟦ a ⟧ g → ActionRel g a g'
   from refl = AR a g
 
-ext-comm : {t1 t2 : EdgeState} {e1 e2 : Edge} {g : Graph} → ((g [ e1 ↦ t1 ]) [ e2 ↦ t2 ]) ≡ ((g [ e2 ↦ t2 ]) [ e1 ↦ t1 ])
-ext-comm {t1} {t2} {e1} {e2} {g} = extensionality go where
-  go : (e : Edge) → ((g [ e1 ↦ t1 ]) [ e2 ↦ t2 ]) e ≡ ((g [ e2 ↦ t2 ]) [ e1 ↦ t1 ]) e
+ext-comm : {s1 s2 : EdgeState} {e1 e2 : Edge} {g : Graph} → ((g [ e1 ↦ s1 ]) [ e2 ↦ s2 ]) ≡ ((g [ e2 ↦ s2 ]) [ e1 ↦ s1 ])
+ext-comm {s1} {s2} {e1} {e2} {g} = extensionality go where
+  go : (e : Edge) → ((g [ e1 ↦ s1 ]) [ e2 ↦ s2 ]) e ≡ ((g [ e2 ↦ s2 ]) [ e1 ↦ s1 ]) e
   go e with e ≟Edge e1 | e ≟Edge e2
-  ... | yes refl | yes refl rewrite ⊔-assoc {t1} {t2} {g e} | ⊔-assoc {t2} {t1} {g e} | ⊔-comm {t1} {t2} = refl
+  ... | yes refl | yes refl rewrite ⊔-assoc {s1} {s2} {g e} | ⊔-assoc {s2} {s1} {g e} | ⊔-comm {s1} {s2} = refl
   ... | no _ | yes refl = refl
   ... | yes refl | no _ = refl
   ... | no _ | no _ = refl
 
 comm' : (a1 a2 : Action) (g : Graph) → ⟦ a1 ⟧ (⟦ a2 ⟧ g) ≡ ⟦ a2 ⟧ (⟦ a1 ⟧ g)
-comm' (Action+ e₁) (Action+ e₂) g = ext-comm {+} {+} {e₂} {e₁}
-comm' (Action+ e₁) (Action- e₂) g = ext-comm { - } {+} {e₂} {e₁}
-comm' (Action- e₁) (Action+ e₂) g = ext-comm {+} { - } {e₂} {e₁}
-comm' (Action- e₁) (Action- e₂) g = ext-comm { - } { - } {e₂} {e₁}
+comm' (A e1 s1) (A e2 s2) g = ext-comm {s2} {s1} {e2} {e1}
 
 comm : (a1 a2 : Action) → ⟦ a1 ⟧ ∘′ ⟦ a2 ⟧ ≡ ⟦ a2 ⟧ ∘′ ⟦ a1 ⟧
 comm a1 a2 = extensionality (comm' a1 a2)
