@@ -2,8 +2,6 @@ module Grove where
 
 open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
-open import Data.Nat hiding (_≟_; _⊔_)
-open import Data.Product
 open import Function.Equivalence hiding (_∘_)
 open import Function hiding (_⇔_)
 open import Function.Equality using (_⟨$⟩_)
@@ -15,24 +13,40 @@ postulate
   extensionality : {ℓ₁ ℓ₂ : Level} → Extensionality ℓ₁ ℓ₂
 
 ----------------
--- Ctor (i.e. constructors)
+-- Constructors
 ----------------
 
 postulate
   Ctor : Set
-  ctorRoot : Ctor
   _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
 
 ----------------
--- Arity
+-- Positions
 ----------------
-postulate
-  arity : Ctor → ℕ
-  arityRoot : arity ctorRoot ≡ 1
 
+postulate
+  Pos : Set
+  _≟ℙ_ : (p₁ p₂ : Pos) → Dec (p₁ ≡ p₂)
+  _∈ℙ_ : Pos → Ctor → Set
+
+----------------
+-- Identifiers
+----------------
 
 postulate
   Ident : Set
+  _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
+
+----------------
+-- The Root Vertex
+----------------
+
+-- Note actually used in the proofs, but here it is anyway
+postulate
+  ctorRoot : Ctor
+  posRoot : Pos
+  posRoot∈ctorRoot : posRoot ∈ℙ ctorRoot
+  identRoot : Ident
 
 ----------------
 -- Vertex
@@ -42,10 +56,10 @@ record Vertex : Set where
   constructor V
   field
     ctor : Ctor
-    iden : ℕ
+    ident : Ident
 
 _≟Vertex_ : (v₁ v₂ : Vertex) → Dec (v₁ ≡ v₂)
-V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ Data.Nat.≟ i₂
+V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 ... | yes refl | yes refl = yes refl
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
@@ -53,21 +67,22 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ Data.Nat.≟ i₂
 ----------------
 -- Edge
 ----------------
+
 record Edge : Set where
   constructor E
   field
     parent : Vertex
     child : Vertex
-    index : ℕ
-    iden : ℕ
-    .isValid : iden < arity (Vertex.ctor parent)
+    position : Pos
+    ident : Ident
+    .isValid : position ∈ℙ Vertex.ctor parent
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
-E parent₁ child₁ index₁ iden₁ _ ≟Edge E parent₂ child₂ index₂ iden₂ _
+E parent₁ child₁ position₁ ident₁ _ ≟Edge E parent₂ child₂ position₂ ident₂ _
   with parent₁ ≟Vertex parent₂
      | child₁ ≟Vertex child₂
-     | index₁ Data.Nat.≟ index₂
-     | iden₁ Data.Nat.≟ iden₂
+     | position₁ ≟ℙ position₂
+     | ident₁ ≟𝕀 ident₂
 ... | yes refl | yes refl | yes refl | yes refl = yes refl
 ... | no p     | _        | _        | _        = no (λ { refl → p refl })
 ... | _        | no p     | _        | _        = no (λ { refl → p refl })
@@ -199,7 +214,7 @@ data Action : Set where
 ⟦⟧-idem a = extensionality (⟦⟧-idem' a)
 
 ----------------
--- ActionRel (i.e., action relation)
+-- Action Relation Between Graphs
 ----------------
 
 data ActionRel : Graph → Action → Graph → Set where
