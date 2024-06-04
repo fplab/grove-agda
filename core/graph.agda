@@ -282,7 +282,6 @@ data Exp : Set where
  `_+_ : (e1 : Exp) → (e2 : Exp) → Exp
  `_*_ : (e1 : Exp) → (e2 : Exp) → Exp
  -- curlyveedownarrow
- ⋎ : 
  -- TODO multiparent, unicycle, conflicts, empty holes
 
 ----------------
