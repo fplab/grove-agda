@@ -1,3 +1,7 @@
+-- open import prelude
+
+
+
 module core.graph where
 
 open import Axiom.Extensionality.Propositional
@@ -11,6 +15,11 @@ open import Relation.Nullary
 
 postulate
   extensionality : {ℓ₁ ℓ₂ : Level} → Extensionality ℓ₁ ℓ₂
+
+
+
+
+
 
 ----------------
 -- Constructors
@@ -94,7 +103,7 @@ E parent₁ child₁ position₁ ident₁ _ ≟Edge E parent₂ child₂ positio
 ----------------
 
 data EdgeState : Set where
-  ⊥ : EdgeState -- smallest
+  bot : EdgeState -- smallest -- TODO Use another symbol or bot
   + : EdgeState -- middle
   - : EdgeState -- largest
 
@@ -103,50 +112,50 @@ _⊔_ : EdgeState → EdgeState → EdgeState
 _ ⊔ - = -
 + ⊔ _ = +
 _ ⊔ + = +
-_ ⊔ _ = ⊥
+_ ⊔ _ = bot
 
 ⊔-assoc : (s₁ s₂ s₃ : EdgeState) → (s₁ ⊔ (s₂ ⊔ s₃)) ≡ ((s₁ ⊔ s₂) ⊔ s₃)
-⊔-assoc ⊥ ⊥ ⊥ = refl
-⊔-assoc ⊥ ⊥ + = refl
-⊔-assoc ⊥ ⊥ - = refl
-⊔-assoc ⊥ + ⊥ = refl
-⊔-assoc ⊥ + + = refl
-⊔-assoc ⊥ + - = refl
-⊔-assoc ⊥ - ⊥ = refl
-⊔-assoc ⊥ - + = refl
-⊔-assoc ⊥ - - = refl
-⊔-assoc + ⊥ ⊥ = refl
-⊔-assoc + ⊥ + = refl
-⊔-assoc + ⊥ - = refl
-⊔-assoc + + ⊥ = refl
+⊔-assoc bot bot bot = refl
+⊔-assoc bot bot + = refl
+⊔-assoc bot bot - = refl
+⊔-assoc bot + bot = refl
+⊔-assoc bot + + = refl
+⊔-assoc bot + - = refl
+⊔-assoc bot - bot = refl
+⊔-assoc bot - + = refl
+⊔-assoc bot - - = refl
+⊔-assoc + bot bot = refl
+⊔-assoc + bot + = refl
+⊔-assoc + bot - = refl
+⊔-assoc + + bot = refl
 ⊔-assoc + + + = refl
 ⊔-assoc + + - = refl
-⊔-assoc + - ⊥ = refl
+⊔-assoc + - bot = refl
 ⊔-assoc + - + = refl
 ⊔-assoc + - - = refl
-⊔-assoc - ⊥ ⊥ = refl
-⊔-assoc - ⊥ + = refl
-⊔-assoc - ⊥ - = refl
-⊔-assoc - + ⊥ = refl
+⊔-assoc - bot bot = refl
+⊔-assoc - bot + = refl
+⊔-assoc - bot - = refl
+⊔-assoc - + bot = refl
 ⊔-assoc - + + = refl
 ⊔-assoc - + - = refl
-⊔-assoc - - ⊥ = refl
+⊔-assoc - - bot = refl
 ⊔-assoc - - + = refl
 ⊔-assoc - - - = refl
 
 ⊔-comm : (s₁ s₂ : EdgeState) → s₁ ⊔ s₂ ≡ s₂ ⊔ s₁
-⊔-comm ⊥ ⊥ = refl
-⊔-comm ⊥ + = refl
-⊔-comm ⊥ - = refl
-⊔-comm + ⊥ = refl
+⊔-comm bot bot = refl
+⊔-comm bot + = refl
+⊔-comm bot - = refl
+⊔-comm + bot = refl
 ⊔-comm + + = refl
 ⊔-comm + - = refl
-⊔-comm - ⊥ = refl
+⊔-comm - bot = refl
 ⊔-comm - + = refl
 ⊔-comm - - = refl
 
 ⊔-idem : (s : EdgeState) → s ⊔ s ≡ s
-⊔-idem ⊥ = refl
+⊔-idem bot = refl
 ⊔-idem + = refl
 ⊔-idem - = refl
 
@@ -205,7 +214,7 @@ data Action : Set where
   → ⟦ a ⟧ (⟦ a ⟧ g)
   ≡ ⟦ a ⟧ g
 ⟦⟧-idem' (A e s) g rewrite [↦]-join s s e g with s
-... | ⊥ = refl
+... | bot = refl
 ... | + = refl
 ... | - = refl
 
@@ -248,3 +257,4 @@ ActionRel-comm {a₁} {a₂} {g₁} {g₂₁} {g₃₁} {g₂₂} {g₃₂} ar�
   eqgg with eqg₃ | eqg₃₂
   ... | refl | refl = ⟦⟧-comm' a₂ a₁ g₁
 
+ 

@@ -1,18 +1,14 @@
 module core.grove where
 
+-- open import prelude
+open import core.var
+open import core.graph
+open import Data.Nat
+
+
 ----------------
 -- Syntax of Terms
 ----------------
-
-open import Data.Nat
-
-Var : Set
-Var = ℕ
-
--- free variables
-FreeVar : Set
-FreeVar = Var
-
 -- TODO Annotate exps, typs, pat_vars with graphs, refs with edges, and empty holes with local sources
 -- TODO figure out conflicts and references
 
@@ -20,10 +16,6 @@ data Typ : Set where
   num : Typ
   unknown : Typ --TODO: Use question mark or some other character ?
   _-→_ : Typ → Typ → Typ
-  -- TODO: Multiparent, unicycle, conflicts, empty holes
-
-data PatVar : Set where
-  `_ : (x : Var) → PatVar
   -- TODO: Multiparent, unicycle, conflicts, empty holes
 
 data Exp : Set where

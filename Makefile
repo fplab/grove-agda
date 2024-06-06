@@ -8,4 +8,5 @@ all : all.agdai
 
 .PHONY : clean
 clean :
+	rm -rf _build
 	rm -f *.agdai
