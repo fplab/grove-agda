@@ -1,7 +1,3 @@
--- open import prelude
-
-
-
 module core.graph where
 
 open import Axiom.Extensionality.Propositional
@@ -15,11 +11,6 @@ open import Relation.Nullary
 
 postulate
   extensionality : {ℓ₁ ℓ₂ : Level} → Extensionality ℓ₁ ℓ₂
-
-
-
-
-
 
 ----------------
 -- Constructors
@@ -73,6 +64,20 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
 
+
+
+----------------
+-- Sources
+----------------
+
+record Source : Set where
+  constructor S
+  field 
+    v : Vertex
+    p : Pos
+
+
+
 ----------------
 -- Edge
 ----------------
@@ -80,7 +85,7 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 record Edge : Set where
   constructor E
   field
-    parent : Vertex
+    parent : Vertex -- TODO: Use sources for parents
     child : Vertex
     position : Pos
     ident : Ident
@@ -103,7 +108,7 @@ E parent₁ child₁ position₁ ident₁ _ ≟Edge E parent₂ child₂ positio
 ----------------
 
 data EdgeState : Set where
-  bot : EdgeState -- smallest -- TODO Use another symbol or bot
+  bot : EdgeState -- smallest 
   + : EdgeState -- middle
   - : EdgeState -- largest
 
@@ -189,6 +194,15 @@ _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
   ... | yes refl rewrite ⊔-assoc s₂ s₁ (g e) | ⊔-comm s₁ s₂ = refl
   ... | no _ = refl
 
+_∪G_ : Graph → Graph → Graph
+(g₁ ∪G g₂) e with g₁ e | g₂ e 
+... | bot | s₂  = s₂
+... | s₁  | bot = s₁
+... | s₁  | s₂  = s₁ ⊔ s₂
+
+unionG : Graph → Graph → Graph
+unionG = _∪G_
+
 ----------------
 -- Action
 ----------------
@@ -257,4 +271,4 @@ ActionRel-comm {a₁} {a₂} {g₁} {g₂₁} {g₃₁} {g₂₂} {g₃₂} ar�
   eqgg with eqg₃ | eqg₃₂
   ... | refl | refl = ⟦⟧-comm' a₂ a₁ g₁
 
- 
+
