@@ -10,11 +10,11 @@ open import core.logic
 _∈-sources_ : Source → Graph → Set 
 s ∈-sources G = Σ[ (E s' _ _) ∈ Edge ] (s ≡ s')
 
-_∈-inedges_ : Edge → Graph → Set 
-e ∈-inedges G = (G e) ≡ +
+_∈-edges_ : Edge → Graph → Set 
+e ∈-edges G = (G e) ≡ +
 
 _∈-outedges_,_ : Edge → Graph → Source → Set 
-(E s v u) ∈-outedges G , s' = (s ≡ s' × (E s' v u) ∈-inedges G)
+(E s v u) ∈-outedges G , s' = (s ≡ s' × (E s' v u) ∈-edges G)
 
 _∈-inedges_,_ : Edge → Graph → Vertex → Set 
 (E s v u) ∈-inedges G , v' = (v ≡ v')
@@ -31,4 +31,5 @@ data _∈-ancestors_,_ : Vertex → Graph → Vertex → Set where
   AncestorParent : ∀{G v₁ v₂} → v₁ ∈-parents G , v₂ → v₁ ∈-ancestors G , v₂ 
   AncestorGrand : ∀{G v₁ v₂ v₃} → v₁ ∈-parents G , v₂ → v₂ ∈-ancestors G , v₃ → v₁ ∈-ancestors G , v₃ 
   
-
+_is-min_ : Vertex → (Vertex → Set) → Set 
+v is-min (_∈S) = (w : Vertex) → (w ∈S) → (Vertex.ident v) ≤𝕀 (Vertex.ident w)

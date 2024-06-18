@@ -36,6 +36,7 @@ postulate
 postulate
   Ident : Set
   _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
+  _≤𝕀_ : (i₁ i₂ : Ident) → Set
 
 ----------------
 -- The Root Vertex
