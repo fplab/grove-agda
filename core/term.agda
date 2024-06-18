@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module core.term where
 
 -- open import prelude
@@ -15,10 +17,6 @@ open import Relation.Binary.PropositionalEquality
 data Term : Set where
   e : Exp → Term
   τ : Typ → Term
- 
-data θ : Set where
-  empty  : θ
-  insert : Term → θ → θ
 
 
 recomp : (t : Term) → Graph
@@ -26,15 +24,10 @@ recomp (e x)  = erecomp x
 recomp (τ x)  =  trecomp x
 
 
-decomp : (G : Graph) → Term
-decomp G = {!   !}
-
 -- TODO: Define recomp and decomp to work with edge sets
 -- TODO: Need a helper from edge set → graph
 
 -- ! Define decomp using a graph and a set of edges (inedges in G (plus)) → term (ignore -, bot)
-
-
 
 _≟t_ : (t₁ t₂ : Term) → Dec (t₁ ≡ t₂)
 _≟t_ t₁ t₂ = {!   !}

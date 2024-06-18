@@ -75,8 +75,13 @@ record Source : Set where
   field 
     v : Vertex
     p : Pos
+    .isValid : p ∈ℙ Vertex.ctor v
 
-
+_≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
+S v₁ p₁ _ ≟Source S v₂ p₂ _ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
+... | yes refl | yes refl = yes refl
+... | _        | no p     = no (λ { refl → p refl })
+... | no p     | _        = no (λ { refl → p refl })
 
 ----------------
 -- Edge
@@ -85,23 +90,19 @@ record Source : Set where
 record Edge : Set where
   constructor E
   field
-    parent : Vertex -- TODO: Use sources for parents
+    source : Source
     child : Vertex
-    position : Pos
     ident : Ident
-    .isValid : position ∈ℙ Vertex.ctor parent
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
-E parent₁ child₁ position₁ ident₁ _ ≟Edge E parent₂ child₂ position₂ ident₂ _
-  with parent₁ ≟Vertex parent₂
+E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂ 
+  with source₁ ≟Source source₂
      | child₁ ≟Vertex child₂
-     | position₁ ≟ℙ position₂
      | ident₁ ≟𝕀 ident₂
-... | yes refl | yes refl | yes refl | yes refl = yes refl
-... | no p     | _        | _        | _        = no (λ { refl → p refl })
-... | _        | no p     | _        | _        = no (λ { refl → p refl })
-... | _        | _        | no p     | _        = no (λ { refl → p refl })
-... | _        | _        | _        | no p     = no (λ { refl → p refl })
+... | yes refl | yes refl | yes refl = yes refl
+... | no p     | _        | _        = no (λ { refl → p refl })
+... | _        | no p     | _        = no (λ { refl → p refl })
+... | _        | _        | no p     = no (λ { refl → p refl })
 
 ----------------
 -- EdgeState
@@ -195,10 +196,7 @@ _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
   ... | no _ = refl
 
 _∪G_ : Graph → Graph → Graph
-(g₁ ∪G g₂) e with g₁ e | g₂ e 
-... | bot | s₂  = s₂
-... | s₁  | bot = s₁
-... | s₁  | s₂  = s₁ ⊔ s₂
+(g₁ ∪G g₂) e = (g₁ e) ⊔ (g₂ e)
 
 unionG : Graph → Graph → Graph
 unionG = _∪G_
