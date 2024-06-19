@@ -84,9 +84,13 @@ trim A S fin a | zero | _ = ⊥
 trim A S fin a | suc n | enum = (S a) × ¬(a ≡ (enum (Inl <>)))
 
 trim-finite : (A : Set) → (S : subset A) → (fin : Finite A S) → (Finite A (trim A S fin))
-Finite.bound (trim-finite A S fin) = Finite.bound fin
-Finite.enum (trim-finite A S fin) n = Finite.enum fin n
-Finite.enum-cover (trim-finite A S (FIN (suc bound) enum enum-cover)) a (elem , neq) = enum-cover a elem 
+Finite.bound (trim-finite A S (FIN zero enum enum-cover)) = zero
+Finite.bound (trim-finite A S (FIN (suc bound) enum enum-cover)) = bound
+Finite.enum (trim-finite A S (FIN zero enum enum-cover)) ()
+Finite.enum (trim-finite A S (FIN (suc bound) enum enum-cover)) n = enum (Inr n)
+Finite.enum-cover (trim-finite A S (FIN (suc bound) enum enum-cover)) a (elem , neq) with enum-cover a elem 
+... | Inl <> , refl = abort (neq refl)
+... | Inr x , eq = x , eq
 
 trim-decidable : (A : Set) → (S : subset A) → (fin : Finite A S) → (Decidable A S) → (DecidableEquality A) → (Decidable A (trim A S fin))
 trim-decidable A S fin dec deceq a with Finite.bound fin | Finite.enum fin
@@ -97,13 +101,25 @@ trim-decidable A S fin dec deceq a with Finite.bound fin | Finite.enum fin
 ... | Inl eq = Inr λ (_ , neq) → neq eq
 ... | Inr neq = Inl (yes , neq) 
 
-list-of-finite : (A : Set) → (S : subset A) → (Finite A S) → (Decidable A S) → (DecidableEquality A) → (List A)
-list-of-finite A S fin dec deceq with Finite.bound fin | Finite.enum fin
-list-of-finite A S fin dec deceq | zero | _ = []
-list-of-finite A S fin dec deceq | suc n | enum with (enum (Inl <>))
-list-of-finite A S fin dec deceq | suc n | enum | a with dec a 
-list-of-finite A S fin dec deceq | suc n | enum | a | Inl yes = (enum (Inl <>)) ∷ list-of-finite A (trim A S fin) (trim-finite A S fin) (trim-decidable A S fin dec deceq) deceq 
-list-of-finite A S fin dec deceq | suc n | enum | a | Inr no = {!   !}
+finite-of-size : (A : Set) → (subset A) → (n : ℕ) → Set₁
+finite-of-size A S n = Σ[ fin ∈ (Finite A S) ] (Finite.bound fin ≡ n)
+
+trim-trims : (A : Set) → (S : subset A) → (fin : Finite A S) → (n : ℕ) → (Finite.bound fin ≡ suc n) → (Finite.bound (trim-finite A S fin) ≡ n)
+trim-trims A S (FIN (suc bound) enum enum-cover) .bound refl = refl
+
+-- trim-of-size : (A : Set) → (S : subset A) → (n : ℕ) → ((fin , _) : finite-of-size A S (suc n)) → (finite-of-size A (trim A S fin) n)
+-- trim-of-size A S n (fin , eq) = {!   !}
+-- with trim A S fin | trim-finite A S fin 
+-- ... | S' | fin' = fin' , trim-trims A S' {! fin'  !} {!   !} {!   !}
+
+
+list-of-finite : (A : Set) → (S : subset A) → (fin : Finite A S) → (bound : ℕ) → (Finite.bound fin ≡ bound) → (Decidable A S) → (DecidableEquality A) → (List A)
+list-of-finite A S fin bound eq dec deceq with Finite.bound fin | Finite.enum fin
+list-of-finite A S fin bound eq dec deceq | zero | _ = []
+list-of-finite A S fin bound eq dec deceq | suc n | enum with (enum (Inl <>))
+list-of-finite A S fin bound eq dec deceq | suc n | enum | a with dec a 
+list-of-finite A S fin bound eq dec deceq | suc n | enum | a | Inr no = {!   !}
+list-of-finite A S fin (suc bound) eq dec deceq | suc n | enum | a | Inl yes = (enum (Inl <>)) ∷ list-of-finite A (trim A S fin) (trim-finite A S fin) bound (trim-trims A S fin bound {! eq  !}) (trim-decidable A S fin dec deceq) deceq 
 
 
 -- Finsize : (A : Set) → (subset A) → Set 
