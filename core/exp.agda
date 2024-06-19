@@ -7,11 +7,12 @@ open import core.hole
 open import core.graph
 open import core.var
 open import core.typ
+open import core.logic
 open import Data.Nat
 open import Data.List
 open import Function
 open import Relation.Nullary
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding ([_])
 
 ----------------
 -- Syntax of Expressions
@@ -31,16 +32,16 @@ data Exp : Set where
 
 
 erecomp : (e : Exp) → Graph
-erecomp (`☐ u) = λ _ → bot 
+erecomp (`☐ u) = []
 erecomp ((` G) x) = G
 erecomp ((`λ G ∶ x ∙ τ) e) = (G ∪G trecomp(τ)) ∪G erecomp(e)
 erecomp ((` G ∙ e₁) e₂) = (G ∪G erecomp(e₁)) ∪G erecomp(e₂)
 erecomp ((`ℕ G) n) = G
 erecomp ((` G + e₁) e₂) = (G ∪G erecomp(e₁)) ∪G erecomp(e₂)
 erecomp ((` G * e₁) e₂) = (G ∪G erecomp(e₁)) ∪G erecomp(e₂)
-erecomp (`⋎ₑ ε) = λ _ → +
-erecomp (`⤾ₑ ε) = λ _ → +
-erecomp `⟨ [] ⟩ = λ _ →  bot
+erecomp (`⋎ₑ ε) = [ (ε , +) ] 
+erecomp (`⤾ₑ ε) = [ (ε , +) ] 
+erecomp `⟨ [] ⟩ = []
 erecomp `⟨ x ∷ xs ⟩ = unionG (erecomp x) (erecomp `⟨ xs ⟩)
 
 

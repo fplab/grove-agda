@@ -3,6 +3,7 @@ module core.pat where
 open import core.hole
 open import core.graph
 open import core.var
+open import core.logic
 open import Data.List
 
 
@@ -15,8 +16,8 @@ data Pat : Set where
 
 precomp : (p : Pat) → Graph
 precomp ((` G) x) = G
-precomp (☐ u) = λ _ → bot
-precomp (⋎ₑ ε) = λ _ → +
-precomp (⤾ₑ ε) = λ _ → +
-precomp ⟨ [] ⟩ = λ _ →  bot
+precomp (☐ u) = []
+precomp (⋎ₑ ε) = [ (ε , +) ]
+precomp (⤾ₑ ε) = [ (ε , +) ]
+precomp ⟨ [] ⟩ = []
 precomp ⟨ x ∷ xs ⟩ = unionG (precomp x) (precomp ⟨ xs ⟩)
