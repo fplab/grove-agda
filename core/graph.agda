@@ -122,10 +122,10 @@ record Source : Set where
   field 
     v : Vertex
     p : Pos
-    .isValid : p ∈ℙ Vertex.ctor v
+    -- .isValid : p ∈ℙ Vertex.ctor v
 
 _≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
-S v₁ p₁ _ ≟Source S v₂ p₂ _ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
+S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
 ... | yes refl | yes refl = yes refl
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })

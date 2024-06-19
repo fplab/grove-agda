@@ -45,7 +45,7 @@ ingraph v ((E s v' u , Ge) ∷ G) | false = ingraph v G
 parents : Vertex → Graph → List(Vertex) 
 parents v [] = [] 
 parents v ((E s v' u , +) ∷ G) with Dec.does (v ≟Vertex v')
-parents v ((E (S w _ _) v' u , +) ∷ G) | true = w ∷ (parents v G) 
+parents v ((E (S w _) v' u , +) ∷ G) | true = w ∷ (parents v G) 
 parents v ((E s v' u , +) ∷ G) | false = parents v G
 parents v ((e , -) ∷ G) = parents v G
 
