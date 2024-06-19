@@ -2,6 +2,7 @@ module core.graph where
 
 open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
+open import Data.Nat hiding (_⊔_)
 open import Function.Equivalence hiding (_∘_)
 open import Function hiding (_⇔_)
 open import Function.Equality using (_⟨$⟩_)
@@ -9,23 +10,66 @@ open import Level using (Level)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
+open import core.var
+
 postulate
   extensionality : {ℓ₁ ℓ₂ : Level} → Extensionality ℓ₁ ℓ₂
+
+
+data Sort : Set where 
+  SortExp : Sort 
+  SortPat : Sort 
+  SortType : Sort
 
 ----------------
 -- Constructors
 ----------------
 
+data Ctor : Set where 
+  Root : Ctor 
+  Exp-var : Var → Ctor 
+  Exp-lam : Ctor 
+  Exp-app : Ctor 
+  Exp-plus : Ctor 
+  Exp-times : Ctor 
+  Exp-num : ℕ → Ctor
+  Pat-var : Var → Ctor 
+  Typ-arrow : Ctor 
+  Typ-num : Ctor 
+
+sort : Ctor → Sort
+sort Root = SortExp
+sort (Exp-var x) = SortExp
+sort Exp-lam = SortExp
+sort Exp-app = SortExp
+sort Exp-plus = SortExp
+sort Exp-times = SortExp
+sort (Exp-num x) = SortExp
+sort (Pat-var x) = SortPat
+sort Typ-arrow = SortType
+sort Typ-num = SortType
+
 postulate
-  Ctor : Set
+  -- who volunteers to do this?
   _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
 
 ----------------
 -- Positions
 ----------------
 
+data Pos : Set where 
+  Root : Pos
+  Param : Pos
+  Type : Pos
+  Body : Pos
+  Fun : Pos
+  Arg : Pos
+  Left : Pos
+  Right : Pos
+  Domain : Pos
+  Return : Pos
+
 postulate
-  Pos : Set
   _≟ℙ_ : (p₁ p₂ : Pos) → Dec (p₁ ≡ p₂)
   _∈ℙ_ : Pos → Ctor → Set
 
@@ -172,7 +216,7 @@ _ ⊔ _ = bot
 
 Graph : Set
 Graph = Edge → EdgeState
-
+ 
 _[_↦_] :  Graph → Edge → EdgeState → Graph
 _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
 
@@ -271,3 +315,4 @@ ActionRel-comm {a₁} {a₂} {g₁} {g₂₁} {g₃₁} {g₂₂} {g₃₂} ar�
   ... | refl | refl = ⟦⟧-comm' a₂ a₁ g₁
 
 
+ 

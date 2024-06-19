@@ -4,9 +4,10 @@ module core.term where
 
 -- open import prelude
 open import core.var
+open import core.exp
+open import core.pat
 open import core.typ
 open import core.graph
-open import core.exp
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 
@@ -15,13 +16,15 @@ open import Relation.Binary.PropositionalEquality
 ----------------
 
 data Term : Set where
-  e : Exp → Term
-  τ : Typ → Term
+  TermExp : Exp → Term
+  TermPat : Pat → Term
+  TermTyp : Typ → Term
 
 
 recomp : (t : Term) → Graph
-recomp (e x)  = erecomp x
-recomp (τ x)  =  trecomp x
+recomp (TermExp x) = erecomp x
+recomp (TermPat x) = precomp x
+recomp (TermTyp x) = trecomp x
 
 
 -- TODO: Define recomp and decomp to work with edge sets
