@@ -3,7 +3,7 @@ module core.grove where
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Data.List
 open import Data.Bool
-open import Data.Nat
+open import Data.Nat hiding (_+_)
 open import core.graph
 open import core.graph-functions
 open import core.var
@@ -30,72 +30,16 @@ record Grove : Set₁ where
 
 -- bound invariant : if F(bound,...) = (term, bound'), then bound <= indices in term < bound'
 
+default_exp : Exp 
+default_exp = `⟨ [] ⟩ 
+
+default_pat : Pat 
+default_pat = ⟨ [] ⟩` 
+
 mutual 
-  edecomp' : ℕ → Graph → Edge → Pos → (Exp × ℕ)
-  edecomp' bound G (E s v u) p with outedges (S v p) G 
-  edecomp' bound G (E s v u) p | [] = `☐ (H bound ((S v p))) , suc bound
-  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
-    where
-      map-folder : ℕ → Graph → List(Edge) → (List(Exp) × ℕ) 
-      map-folder bound G [] = ([] , bound)
-      map-folder bound G (ε ∷ εs) with edecomp bound G ε 
-      ... | e , bound' with map-folder bound' G εs 
-      ... | es , bound'' = (e ∷ es) , bound''
-  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = `⟨ es ⟩ , bound'
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = `⟨ [] ⟩ , zero -- impossible
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = `⋎ₑ (E s' v' u') , bound
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
-  ... | true = `⤾ₑ (E s' v' u') , bound
-  ... | false = edecomp bound G (E s' v' u')
-
-  edecomp : ℕ → Graph → Edge → (Exp × ℕ)
-  edecomp bound G (E s (V (Exp-var x) u) u') = 
-    let Gv = ingraph (V (Exp-var x) u) G in 
-    (Gv ` x) , bound
-  edecomp bound G (E s (V Exp-lam u) u') =
-    let ε = (E s (V Exp-lam u) u') in
-    let Gv = ingraph (V Exp-lam u) G in 
-    let q , bound' = pdecomp' bound G ε Param in 
-    let τ , bound'' = tdecomp' bound' G ε Type in 
-    let e , bound''' = edecomp' bound'' G ε Body in 
-    Gv `λ q ∶ τ ∙ e , bound'''
-  edecomp bound G (E s (V Exp-app u) u') = {!   !}
-  edecomp bound G (E s (V Exp-plus u) u') = {!   !}
-  edecomp bound G (E s (V Exp-times u) u') = {!   !}
-  edecomp bound G (E s (V (Exp-num x) u) u') = {!   !}
-  -- impossible
-  edecomp bound G (E s (V (Pat-var x) u) u') = {!   !}
-  edecomp bound G (E s (V Typ-arrow u) u') = {!   !}
-  edecomp bound G (E s (V Typ-num u) u') = {!   !}
-  edecomp bound G (E s (V Root u) u') = {!   !}
-
-  -- edecomp G (E s (V (Exp-var x) u) u') =
-  --   let Gv = ingraph (V (Exp-var x) u) G in 
-  --   ((` Gv) x)
-  -- edecomp G (E s (V Exp-lam u) u') =
-  --   let Gv = ingraph (V Exp-lam u) G in 
-  --   {!   !}
-  --   -- let q = edecomp' (E s (V Exp-lam u) u') Param
-  -- edecomp G (E s (V Exp-app u) u') = {!   !}
-  -- edecomp G (E s (V Exp-plus u) u') = {!   !}
-  -- edecomp G (E s (V Exp-times u) u') = {!   !}
-  -- edecomp G (E s (V (Exp-num x) u) u') = {!   !}
-  -- -- these are unreachable because of when edecomp is called
-  -- edecomp G (E s (V (Pat-var x) u) u') = {!   !}
-  -- edecomp G (E s (V Typ-arrow u) u') = {!   !}
-  -- edecomp G (E s (V Typ-num u) u') = {!   !}
-  -- edecomp G (E s (V Root u) u') = {!   !}
-
-  -- pdecomp : Graph → Edge → Pat 
-  -- pdecomp G (E s (V (Pat-var x) u) u') =
-  --   let Gv = ingraph (V (Pat-var x) u) G in 
-  --   ((` Gv) x)
-  -- pdecomp G (E s (V k u) u') = {!   !}
-
   pdecomp' : ℕ → Graph → Edge → Pos → (Pat × ℕ)
   pdecomp' bound G (E s v u) p with outedges (S v p) G 
-  pdecomp' bound G (E s v u) p | [] = ☐` (H bound ((S v p))) , suc bound
+  pdecomp' bound G (E s v u) p | [] = ☐` (H ((S v p))) , suc bound
   pdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
     where
       map-folder : ℕ → Graph → List(Edge) → (List(Pat) × ℕ) 
@@ -105,18 +49,31 @@ mutual
       ... | es , bound'' = (e ∷ es) , bound''
   pdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = ⟨ es ⟩` , bound'
   pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
-  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = ⟨ [] ⟩` , zero -- impossible
+  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = default_pat , zero -- impossible
   pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ` (E s' v' u') , bound
   pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
   ... | true = ⤾ₑ` (E s' v' u') , bound
   ... | false = pdecomp bound G (E s' v' u')
 
   pdecomp : ℕ → Graph → Edge → (Pat × ℕ)
-  pdecomp = {!   !}
+  pdecomp bound G (E s (V (Pat-var x) u) u') =
+    let Gv = ingraph (V (Pat-var x) u) G in 
+    (Gv `) x , bound
+  -- impossible
+  pdecomp bound G (E s (V Root u) u') = default_pat , zero
+  pdecomp bound G (E s (V (Exp-var x) u) u') = default_pat , zero
+  pdecomp bound G (E s (V Exp-lam u) u') = default_pat , zero
+  pdecomp bound G (E s (V Exp-app u) u') = default_pat , zero
+  pdecomp bound G (E s (V Exp-plus u) u') = default_pat , zero
+  pdecomp bound G (E s (V Exp-times u) u') = default_pat , zero
+  pdecomp bound G (E s (V (Exp-num x) u) u') = default_pat , zero
+  pdecomp bound G (E s (V Typ-arrow u) u') = default_pat , zero
+  pdecomp bound G (E s (V Typ-num u) u') = default_pat , zero
 
+mutual  
   tdecomp' : ℕ → Graph → Edge →  Pos → (Typ × ℕ)
   tdecomp' bound G (E s v u) p with outedges (S v p) G 
-  tdecomp' bound G (E s v u) p | [] = ☐ (H bound ((S v p))) , suc bound
+  tdecomp' bound G (E s v u) p | [] = ☐ (H ((S v p))) , suc bound
   tdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
     where
       map-folder : ℕ → Graph → List(Edge) → (List(Typ) × ℕ) 
@@ -133,7 +90,69 @@ mutual
   ... | false = tdecomp bound G (E s' v' u')
 
   tdecomp : ℕ → Graph → Edge → (Typ × ℕ)
+  tdecomp bound G (E s (V Typ-arrow u) u') = {!   !}
+  tdecomp bound G (E s (V Typ-num u) u') =
+    let Gv = ingraph (V Typ-num u) G in 
+    num Gv , bound
   tdecomp = {!   !}
+
+mutual 
+  {-# TERMINATING #-}
+  edecomp' : ℕ → Graph → Edge → Pos → (Exp × ℕ)
+  edecomp' bound G (E s v u) p with outedges (S v p) G 
+  edecomp' bound G (E s v u) p | [] = `☐ (H ((S v p))) , suc bound
+  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
+    where
+      map-folder : ℕ → Graph → List(Edge) → (List(Exp) × ℕ) 
+      map-folder bound G [] = ([] , bound)
+      map-folder bound G (ε ∷ εs) with edecomp bound G ε 
+      ... | e , bound' with map-folder bound' G εs 
+      ... | es , bound'' = (e ∷ es) , bound''
+  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = `⟨ es ⟩ , bound'
+  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
+  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = default_exp , zero -- impossible
+  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = `⋎ₑ (E s' v' u') , bound
+  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
+  ... | true = `⤾ₑ (E s' v' u') , bound
+  ... | false = edecomp bound G (E s' v' u')
+
+  edecomp : ℕ → Graph → Edge → (Exp × ℕ)
+  edecomp bound G (E s (V (Exp-var x) u) u') = 
+    let Gv = ingraph (V (Exp-var x) u) G in 
+    (Gv ` x) , bound
+  edecomp bound G (E s (V Exp-lam u) u') =
+    let ε = (E s (V Exp-lam u) u') in
+    let Gv = ingraph (V Exp-lam u) G in 
+    let q , bound' = pdecomp' bound G ε Param in 
+    let τ , bound'' = tdecomp' bound' G ε Type in 
+    let e , bound''' = edecomp' bound'' G ε Body in 
+    Gv `λ q ∶ τ ∙ e , bound'''
+  edecomp bound G (E s (V Exp-app u) u') =
+    let ε = (E s (V Exp-app u) u') in
+    let Gv = ingraph (V Exp-app u) G in 
+    let e1 , bound' = edecomp' bound G ε Fun in 
+    let e2 , bound'' = edecomp' bound' G ε Arg in 
+    Gv ` e1 ∙ e2 , bound''
+  edecomp bound G (E s (V Exp-plus u) u') =
+    let ε = (E s (V Exp-plus u) u') in
+    let Gv = ingraph (V Exp-plus u) G in 
+    let e1 , bound' = edecomp' bound G ε Left in 
+    let e2 , bound'' = edecomp' bound' G ε Right in 
+    _`_+_ Gv e1 e2 , bound''
+  edecomp bound G (E s (V Exp-times u) u') =
+    let ε = (E s (V Exp-times u) u') in
+    let Gv = ingraph (V Exp-times u) G in 
+    let e1 , bound' = edecomp' bound G ε Left in 
+    let e2 , bound'' = edecomp' bound' G ε Right in 
+    _`_*_ Gv e1 e2 , bound''
+  edecomp bound G (E s (V (Exp-num n) u) u') =
+    let Gv = ingraph (V (Exp-num n) u) G in 
+    Gv `ℕ n , bound
+  -- impossible
+  edecomp bound G (E s (V (Pat-var x) u) u') = default_exp , zero
+  edecomp bound G (E s (V Typ-arrow u) u') = default_exp , zero
+  edecomp bound G (E s (V Typ-num u) u') = default_exp , zero
+  edecomp bound G (E s (V Root u) u') = default_exp , zero
 
 edge-decomp : ℕ → Graph → Edge → (Term × ℕ)
 edge-decomp bound G ε with ε  
@@ -157,7 +176,7 @@ decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ []
 ... | false = γ NP MP U , bound'
 ... | true with edge-decomp bound' GG (E s v u) 
 ... | (t , bound'') = γ NP MP (t ∷ U) , bound'' 
-
+ 
 decomp : Graph → Grove
 decomp G with decomp-helper zero G G 
 ... | (grove , _) = grove
