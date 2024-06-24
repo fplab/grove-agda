@@ -28,8 +28,6 @@ record Grove : Set₁ where
     MP : θ
     U : θ
 
--- bound invariant : if F(bound,...) = (term, bound'), then bound <= indices in term < bound'
-
 default_exp : Exp 
 default_exp = `⟨ [] ⟩ 
 
@@ -44,12 +42,6 @@ mutual
   pdecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   pdecomp' G (E s v u ws) p wsa | [] = ☐` (H ((S v p wsa)))
   pdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (pdecomp G) (ε1 ∷ ε2 ∷ εs)
-    -- where
-    --   map-folder : Graph → List(Edge) → List(Pat)
-    --   map-folder bound G [] = ([])
-    --   map-folder bound G (ε ∷ εs) with pdecomp G ε 
-    --   ... | e with map-folder bound' G εs 
-    --   ... | es = (e ∷ es)
   pdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = ⟨ es ⟩`
   pdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
   pdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_pat -- impossible
@@ -79,12 +71,6 @@ mutual
   tdecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   tdecomp' G (E s v u ws) p wsa | [] = ☐ (H ((S v p wsa)))
   tdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (tdecomp G) (ε1 ∷ ε2 ∷ εs)
-    -- where
-    --   map-folder : ℕ → Graph → List(Edge) → (List(Typ) × ℕ) 
-    --   map-folder bound G [] = ([])
-    --   map-folder bound G (ε ∷ εs) with tdecomp G ε 
-    --   ... | e with map-folder bound' G εs 
-    --   ... | es = (e ∷ es)
   tdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = ⟨ es ⟩
   tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
   tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = ⟨ [] ⟩ -- impossible
@@ -119,12 +105,6 @@ mutual
   edecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   edecomp' G (E s v u ws) p wsa | [] = `☐ (H ((S v p wsa)))
   edecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (edecomp G) (ε1 ∷ ε2 ∷ εs)
-    -- where
-    --   map-folder : ℕ → Graph → List(Edge) → (List(Exp) × ℕ) 
-    --   map-folder bound G [] = ([])
-    --   map-folder bound G (ε ∷ εs) with edecomp G ε 
-    --   ... | e with map-folder bound' G εs 
-    --   ... | es = (e ∷ es)
   edecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = `⟨ es ⟩
   edecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
   edecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_exp -- impossible
