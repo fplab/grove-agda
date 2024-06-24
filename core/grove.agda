@@ -36,6 +36,9 @@ default_exp = `⟨ [] ⟩
 default_pat : Pat 
 default_pat = ⟨ [] ⟩` 
 
+default_typ : Typ 
+default_typ = ⟨ [] ⟩
+
 mutual 
   pdecomp' : ℕ → Graph → Edge → Pos → (Pat × ℕ)
   pdecomp' bound G (E s v u) p with outedges (S v p) G 
@@ -71,6 +74,7 @@ mutual
   pdecomp bound G (E s (V Typ-num u) u') = default_pat , zero
 
 mutual  
+  {-# TERMINATING #-}
   tdecomp' : ℕ → Graph → Edge →  Pos → (Typ × ℕ)
   tdecomp' bound G (E s v u) p with outedges (S v p) G 
   tdecomp' bound G (E s v u) p | [] = ☐ (H ((S v p))) , suc bound
@@ -90,11 +94,24 @@ mutual
   ... | false = tdecomp bound G (E s' v' u')
 
   tdecomp : ℕ → Graph → Edge → (Typ × ℕ)
-  tdecomp bound G (E s (V Typ-arrow u) u') = {!   !}
+  tdecomp bound G (E s (V Typ-arrow u) u') = 
+    let ε =  (E s (V Typ-arrow u) u') in
+    let Gv = ingraph (V Typ-arrow u) G in
+    let τ1 , bound' = tdecomp' bound G ε Domain in 
+    let τ2 , bound'' = tdecomp' bound' G ε Return in 
+    _-→_ Gv τ1 τ2 ,  bound''
   tdecomp bound G (E s (V Typ-num u) u') =
-    let Gv = ingraph (V Typ-num u) G in 
+    let Gv = ingraph (V Typ-num u) G in
     num Gv , bound
-  tdecomp = {!   !}
+  -- impossible 
+  tdecomp bound G (E s (V Root u) u') = default_typ , zero
+  tdecomp bound G (E s (V (Exp-var x) u) u') = default_typ , zero
+  tdecomp bound G (E s (V Exp-lam u) u') = default_typ , zero
+  tdecomp bound G (E s (V Exp-app u) u') = default_typ , zero
+  tdecomp bound G (E s (V Exp-plus u) u') = default_typ , zero
+  tdecomp bound G (E s (V Exp-times u) u') = default_typ , zero
+  tdecomp bound G (E s (V (Exp-num x) u) u') = default_typ , zero
+  tdecomp bound G (E s (V (Pat-var x) u) u') = default_typ , zero
 
 mutual 
   {-# TERMINATING #-}
@@ -177,7 +194,7 @@ decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ []
 ... | true with edge-decomp bound' GG (E s v u) 
 ... | (t , bound'') = γ NP MP (t ∷ U) , bound'' 
  
-decomp : Graph → Grove
+decomp : Graph → Grove 
 decomp G with decomp-helper zero G G 
 ... | (grove , _) = grove
 
