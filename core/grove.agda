@@ -40,158 +40,158 @@ default_typ : Typ
 default_typ = ⟨ [] ⟩
 
 mutual 
-  pdecomp' : ℕ → Graph → Edge → Pos → (Pat × ℕ)
-  pdecomp' bound G (E s v u) p with outedges (S v p) G 
-  pdecomp' bound G (E s v u) p | [] = ☐` (H ((S v p))) , suc bound
-  pdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
+  pdecomp' : ℕ → Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → (Pat × ℕ)
+  pdecomp' bound G (E s v u ws) p wsa with outedges (S v p wsa) G 
+  pdecomp' bound G (E s v u ws) p wsa | [] = ☐` (H ((S v p wsa))) , suc bound
+  pdecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
     where
       map-folder : ℕ → Graph → List(Edge) → (List(Pat) × ℕ) 
       map-folder bound G [] = ([] , bound)
       map-folder bound G (ε ∷ εs) with pdecomp bound G ε 
       ... | e , bound' with map-folder bound' G εs 
       ... | es , bound'' = (e ∷ es) , bound''
-  pdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = ⟨ es ⟩` , bound'
-  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
-  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = default_pat , zero -- impossible
-  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ` (E s' v' u') , bound
-  pdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
-  ... | true = ⤾ₑ` (E s' v' u') , bound
-  ... | false = pdecomp bound G (E s' v' u')
+  pdecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es , bound') = ⟨ es ⟩` , bound'
+  pdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
+  pdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_pat , zero -- impossible
+  pdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ` (E s' v' u' ws') , bound
+  pdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
+  ... | true = ⤾ₑ` (E s' v' u' ws') , bound
+  ... | false = pdecomp bound G (E s' v' u' ws')
 
   pdecomp : ℕ → Graph → Edge → (Pat × ℕ)
-  pdecomp bound G (E s (V (Pat-var x) u) u') =
+  pdecomp bound G (E s (V (Pat-var x) u) u' ws) =
     let Gv = ingraph (V (Pat-var x) u) G in 
     (Gv `) x , bound
   -- impossible
-  pdecomp bound G (E s (V Root u) u') = default_pat , zero
-  pdecomp bound G (E s (V (Exp-var x) u) u') = default_pat , zero
-  pdecomp bound G (E s (V Exp-lam u) u') = default_pat , zero
-  pdecomp bound G (E s (V Exp-app u) u') = default_pat , zero
-  pdecomp bound G (E s (V Exp-plus u) u') = default_pat , zero
-  pdecomp bound G (E s (V Exp-times u) u') = default_pat , zero
-  pdecomp bound G (E s (V (Exp-num x) u) u') = default_pat , zero
-  pdecomp bound G (E s (V Typ-arrow u) u') = default_pat , zero
-  pdecomp bound G (E s (V Typ-num u) u') = default_pat , zero
+  pdecomp bound G (E s (V Root u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V (Exp-var x) u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Exp-lam u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Exp-app u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Exp-plus u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Exp-times u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V (Exp-num x) u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Typ-arrow u) u' ws) = default_pat , zero
+  pdecomp bound G (E s (V Typ-num u) u' ws) = default_pat , zero
 
 mutual  
   {-# TERMINATING #-}
-  tdecomp' : ℕ → Graph → Edge →  Pos → (Typ × ℕ)
-  tdecomp' bound G (E s v u) p with outedges (S v p) G 
-  tdecomp' bound G (E s v u) p | [] = ☐ (H ((S v p))) , suc bound
-  tdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
+  tdecomp' : ℕ → Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → (Typ × ℕ)
+  tdecomp' bound G (E s v u ws) p wsa with outedges (S v p wsa) G 
+  tdecomp' bound G (E s v u ws) p wsa | [] = ☐ (H ((S v p wsa))) , suc bound
+  tdecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
     where
       map-folder : ℕ → Graph → List(Edge) → (List(Typ) × ℕ) 
       map-folder bound G [] = ([] , bound)
       map-folder bound G (ε ∷ εs) with tdecomp bound G ε 
       ... | e , bound' with map-folder bound' G εs 
       ... | es , bound'' = (e ∷ es) , bound''
-  tdecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = ⟨ es ⟩ , bound'
-  tdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
-  tdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = ⟨ [] ⟩ , zero -- impossible
-  tdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ (E s' v' u') , bound
-  tdecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
-  ... | true = ⤾ₑ (E s' v' u') , bound
-  ... | false = tdecomp bound G (E s' v' u')
+  tdecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es , bound') = ⟨ es ⟩ , bound'
+  tdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
+  tdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = ⟨ [] ⟩ , zero -- impossible
+  tdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ (E s' v' u' ws') , bound
+  tdecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
+  ... | true = ⤾ₑ (E s' v' u' ws') , bound
+  ... | false = tdecomp bound G (E s' v' u' ws')
 
   tdecomp : ℕ → Graph → Edge → (Typ × ℕ)
-  tdecomp bound G (E s (V Typ-arrow u) u') = 
-    let ε =  (E s (V Typ-arrow u) u') in
+  tdecomp bound G (E s (V Typ-arrow u) u' ws) = 
+    let ε =  (E s (V Typ-arrow u) u' ws) in
     let Gv = ingraph (V Typ-arrow u) G in
-    let τ1 , bound' = tdecomp' bound G ε Domain in 
-    let τ2 , bound'' = tdecomp' bound' G ε Return in 
+    let τ1 , bound' = tdecomp' bound G ε Domain (SortType , ArityArrowDomain) in 
+    let τ2 , bound'' = tdecomp' bound' G ε Return (SortType , ArityArrowReturn) in 
     _-→_ Gv τ1 τ2 ,  bound''
-  tdecomp bound G (E s (V Typ-num u) u') =
+  tdecomp bound G (E s (V Typ-num u) u' ws) =
     let Gv = ingraph (V Typ-num u) G in
     num Gv , bound
   -- impossible 
-  tdecomp bound G (E s (V Root u) u') = default_typ , zero
-  tdecomp bound G (E s (V (Exp-var x) u) u') = default_typ , zero
-  tdecomp bound G (E s (V Exp-lam u) u') = default_typ , zero
-  tdecomp bound G (E s (V Exp-app u) u') = default_typ , zero
-  tdecomp bound G (E s (V Exp-plus u) u') = default_typ , zero
-  tdecomp bound G (E s (V Exp-times u) u') = default_typ , zero
-  tdecomp bound G (E s (V (Exp-num x) u) u') = default_typ , zero
-  tdecomp bound G (E s (V (Pat-var x) u) u') = default_typ , zero
+  tdecomp bound G (E s (V Root u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V (Exp-var x) u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V Exp-lam u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V Exp-app u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V Exp-plus u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V Exp-times u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V (Exp-num x) u) u' ws) = default_typ , zero
+  tdecomp bound G (E s (V (Pat-var x) u) u' ws) = default_typ , zero
 
 mutual 
   {-# TERMINATING #-}
-  edecomp' : ℕ → Graph → Edge → Pos → (Exp × ℕ)
-  edecomp' bound G (E s v u) p with outedges (S v p) G 
-  edecomp' bound G (E s v u) p | [] = `☐ (H ((S v p))) , suc bound
-  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
+  edecomp' : ℕ → Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → (Exp × ℕ)
+  edecomp' bound G (E s v u ws) p wsa with outedges (S v p wsa) G 
+  edecomp' bound G (E s v u ws) p wsa | [] = `☐ (H ((S v p wsa))) , suc bound
+  edecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map-folder bound G (ε1 ∷ ε2 ∷ εs)
     where
       map-folder : ℕ → Graph → List(Edge) → (List(Exp) × ℕ) 
       map-folder bound G [] = ([] , bound)
       map-folder bound G (ε ∷ εs) with edecomp bound G ε 
       ... | e , bound' with map-folder bound' G εs 
       ... | es , bound'' = (e ∷ es) , bound''
-  edecomp' bound G (E s v u) p | ε1 ∷ ε2 ∷ εs | (es , bound') = `⟨ es ⟩ , bound'
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] with inedges v' G
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | [] = default_exp , zero -- impossible
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ _ ∷ _ = `⋎ₑ (E s' v' u') , bound
-  edecomp' bound G (E s v u) p | (E s' v' u') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
-  ... | true = `⤾ₑ (E s' v' u') , bound
-  ... | false = edecomp bound G (E s' v' u')
+  edecomp' bound G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es , bound') = `⟨ es ⟩ , bound'
+  edecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
+  edecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_exp , zero -- impossible
+  edecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = `⋎ₑ (E s' v' u' ws') , bound
+  edecomp' bound G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
+  ... | true = `⤾ₑ (E s' v' u' ws') , bound
+  ... | false = edecomp bound G (E s' v' u' ws')
 
   edecomp : ℕ → Graph → Edge → (Exp × ℕ)
-  edecomp bound G (E s (V (Exp-var x) u) u') = 
+  edecomp bound G (E s (V (Exp-var x) u) u' ws) = 
     let Gv = ingraph (V (Exp-var x) u) G in 
     (Gv ` x) , bound
-  edecomp bound G (E s (V Exp-lam u) u') =
-    let ε = (E s (V Exp-lam u) u') in
+  edecomp bound G (E s (V Exp-lam u) u' ws) =
+    let ε = (E s (V Exp-lam u) u' ws) in
     let Gv = ingraph (V Exp-lam u) G in 
-    let q , bound' = pdecomp' bound G ε Param in 
-    let τ , bound'' = tdecomp' bound' G ε Type in 
-    let e , bound''' = edecomp' bound'' G ε Body in 
+    let q , bound' = pdecomp' bound G ε Param (SortPat , ArityLamParam) in 
+    let τ , bound'' = tdecomp' bound' G ε Type (SortType , ArityLamType) in 
+    let e , bound''' = edecomp' bound'' G ε Body (SortExp , ArityLamBody) in 
     Gv `λ q ∶ τ ∙ e , bound'''
-  edecomp bound G (E s (V Exp-app u) u') =
-    let ε = (E s (V Exp-app u) u') in
+  edecomp bound G (E s (V Exp-app u) u' ws) =
+    let ε = (E s (V Exp-app u) u' ws) in
     let Gv = ingraph (V Exp-app u) G in 
-    let e1 , bound' = edecomp' bound G ε Fun in 
-    let e2 , bound'' = edecomp' bound' G ε Arg in 
+    let e1 , bound' = edecomp' bound G ε Fun (SortExp , ArityAppFun) in 
+    let e2 , bound'' = edecomp' bound' G ε Arg (SortExp , ArityAppArg) in 
     Gv ` e1 ∙ e2 , bound''
-  edecomp bound G (E s (V Exp-plus u) u') =
-    let ε = (E s (V Exp-plus u) u') in
+  edecomp bound G (E s (V Exp-plus u) u' ws) =
+    let ε = (E s (V Exp-plus u) u' ws) in
     let Gv = ingraph (V Exp-plus u) G in 
-    let e1 , bound' = edecomp' bound G ε Left in 
-    let e2 , bound'' = edecomp' bound' G ε Right in 
+    let e1 , bound' = edecomp' bound G ε Left (SortExp , ArityPlusLeft) in 
+    let e2 , bound'' = edecomp' bound' G ε Right (SortExp , ArityPlusRight) in 
     _`_+_ Gv e1 e2 , bound''
-  edecomp bound G (E s (V Exp-times u) u') =
-    let ε = (E s (V Exp-times u) u') in
+  edecomp bound G (E s (V Exp-times u) u' ws) =
+    let ε = (E s (V Exp-times u) u' ws) in
     let Gv = ingraph (V Exp-times u) G in 
-    let e1 , bound' = edecomp' bound G ε Left in 
-    let e2 , bound'' = edecomp' bound' G ε Right in 
+    let e1 , bound' = edecomp' bound G ε Left (SortExp , ArityTimesLeft) in 
+    let e2 , bound'' = edecomp' bound' G ε Right (SortExp , ArityTimesRight) in 
     _`_*_ Gv e1 e2 , bound''
-  edecomp bound G (E s (V (Exp-num n) u) u') =
+  edecomp bound G (E s (V (Exp-num n) u) u' ws) =
     let Gv = ingraph (V (Exp-num n) u) G in 
     Gv `ℕ n , bound
   -- impossible
-  edecomp bound G (E s (V (Pat-var x) u) u') = default_exp , zero
-  edecomp bound G (E s (V Typ-arrow u) u') = default_exp , zero
-  edecomp bound G (E s (V Typ-num u) u') = default_exp , zero
-  edecomp bound G (E s (V Root u) u') = default_exp , zero
+  edecomp bound G (E s (V (Pat-var x) u) u' ws) = default_exp , zero
+  edecomp bound G (E s (V Typ-arrow u) u' ws) = default_exp , zero
+  edecomp bound G (E s (V Typ-num u) u' ws) = default_exp , zero
+  edecomp bound G (E s (V Root u) u' ws) = default_exp , zero
 
 edge-decomp : ℕ → Graph → Edge → (Term × ℕ)
 edge-decomp bound G ε with ε  
-edge-decomp bound G ε | (E s (V k u) u') with (sort k)
-edge-decomp bound G ε | (E s (V k u) u') | SortExp with edecomp bound G ε
-edge-decomp bound G ε | (E s (V k u) u') | SortExp | (e , bound') = (TermExp e , bound')
-edge-decomp bound G ε | (E s (V k u) u') | SortPat with pdecomp bound G ε
-edge-decomp bound G ε | (E s (V k u) u') | SortPat | (q , bound') = (TermPat q , bound')
-edge-decomp bound G ε | (E s (V k u) u') | SortTyp with tdecomp bound G ε
-edge-decomp bound G ε | (E s (V k u) u') | SortTyp | (τ , bound') = (TermTyp τ , bound')
+edge-decomp bound G ε | (E s (V k u) u' ws) with (sort k)
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortExp with edecomp bound G ε
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortExp | (e , bound') = (TermExp e , bound')
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortPat with pdecomp bound G ε
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortPat | (q , bound') = (TermPat q , bound')
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortTyp with tdecomp bound G ε
+edge-decomp bound G ε | (E s (V k u) u' ws) | SortTyp | (τ , bound') = (TermTyp τ , bound')
 
 -- the first graph is the outer, static argument. the second is inducted on.
 decomp-helper : ℕ → Graph → Graph → (Grove × ℕ)
 decomp-helper bound GG [] = γ [] [] [] , bound
-decomp-helper bound GG ((E s v u , Ge) ∷ G) with decomp-helper bound GG G | inedges v GG
-decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | [] with edge-decomp bound' GG (E s v u)
-decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | [] | (t , bound'') = γ (t ∷ NP) MP U , bound''
-decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ _ ∷ _ with edge-decomp bound' GG (E s v u)
-decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ _ ∷ _ | (t , bound'') = γ NP (t ∷ MP) U , bound''
-decomp-helper bound GG ((E s v u , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ [] with is-own-min-ancestor v GG
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) with decomp-helper bound GG G | inedges v GG
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U , bound') | [] with edge-decomp bound' GG (E s v u ws)
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U , bound') | [] | (t , bound'') = γ (t ∷ NP) MP U , bound''
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ _ ∷ _ with edge-decomp bound' GG (E s v u ws)
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ _ ∷ _ | (t , bound'') = γ NP (t ∷ MP) U , bound''
+decomp-helper bound GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U , bound') | _ ∷ [] with is-own-min-ancestor v GG
 ... | false = γ NP MP U , bound'
-... | true with edge-decomp bound' GG (E s v u) 
+... | true with edge-decomp bound' GG (E s v u ws) 
 ... | (t , bound'') = γ NP MP (t ∷ U) , bound'' 
  
 decomp : Graph → Grove 

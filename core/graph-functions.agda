@@ -19,34 +19,34 @@ edges ((e , -) ∷ G) = edges G
 
 sources : Graph → List(Source) 
 sources [] = [] 
-sources ((E s v u , +) ∷ G) = s ∷ (sources G) 
+sources ((E s v u _ , +) ∷ G) = s ∷ (sources G) 
 sources ((e , -) ∷ G) = sources G 
 
 outedges : Source → Graph → List(Edge) 
 outedges s [] = [] 
-outedges s ((E s' v u , +) ∷ G) with Dec.does (s ≟Source s')
-outedges s ((E s' v u , +) ∷ G) | true = (E s' v u) ∷ (outedges s G) 
-outedges s ((E s' v u , +) ∷ G) | false = outedges s G
+outedges s ((E s' v u ws , +) ∷ G) with Dec.does (s ≟Source s')
+outedges s ((E s' v u ws , +) ∷ G) | true = (E s' v u ws) ∷ (outedges s G) 
+outedges s ((E s' v u ws , +) ∷ G) | false = outedges s G
 outedges s ((e , -) ∷ G) = outedges s G
 
 inedges : Vertex → Graph → List(Edge) 
 inedges v [] = [] 
-inedges v ((E s v' u , +) ∷ G) with Dec.does (v ≟Vertex v')
-inedges v ((E s v' u , +) ∷ G) | true = (E s v' u) ∷ (inedges v G) 
-inedges v ((E s v' u , +) ∷ G) | false = inedges v G
+inedges v ((E s v' u ws , +) ∷ G) with Dec.does (v ≟Vertex v')
+inedges v ((E s v' u ws , +) ∷ G) | true = (E s v' u ws) ∷ (inedges v G) 
+inedges v ((E s v' u ws , +) ∷ G) | false = inedges v G
 inedges v ((e , -) ∷ G) = inedges v G
 
 ingraph : Vertex → Graph → Graph 
 ingraph v [] = [] 
-ingraph v ((E s v' u , Ge) ∷ G) with Dec.does (v ≟Vertex v')
-ingraph v ((E s v' u , Ge) ∷ G) | true = ((E s v' u) , Ge) ∷ (ingraph v G) 
-ingraph v ((E s v' u , Ge) ∷ G) | false = ingraph v G
+ingraph v ((E s v' u ws , Ge) ∷ G) with Dec.does (v ≟Vertex v')
+ingraph v ((E s v' u ws , Ge) ∷ G) | true = ((E s v' u ws) , Ge) ∷ (ingraph v G) 
+ingraph v ((E s v' u ws , Ge) ∷ G) | false = ingraph v G
 
 parents : Vertex → Graph → List(Vertex) 
 parents v [] = [] 
-parents v ((E s v' u , +) ∷ G) with Dec.does (v ≟Vertex v')
-parents v ((E (S w _) v' u , +) ∷ G) | true = w ∷ (parents v G) 
-parents v ((E s v' u , +) ∷ G) | false = parents v G
+parents v ((E s v' u ws , +) ∷ G) with Dec.does (v ≟Vertex v')
+parents v ((E (S w _ _) v' u ws , +) ∷ G) | true = w ∷ (parents v G) 
+parents v ((E s v' u ws , +) ∷ G) | false = parents v G
 parents v ((e , -) ∷ G) = parents v G
 
 -- uses fuel
@@ -80,3 +80,4 @@ is-own-min-ancestor v G with min (ancestors v G)
   
 -- _is-min_ : Vertex → (Vertex → Set) → Set 
 -- v is-min (_∈S) = (w : Vertex) → (w ∈S) → (Vertex.ident v) ≤𝕀 (Vertex.ident w)
+ 

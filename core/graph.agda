@@ -73,7 +73,21 @@ data Pos : Set where
 
 postulate
   _≟ℙ_ : (p₁ p₂ : Pos) → Dec (p₁ ≡ p₂)
-  _∈ℙ_ : Pos → Ctor → Set
+
+
+data _∈arity_ : (Pos × Sort) → Ctor → Set where
+  ArityRoot : (Root , SortExp) ∈arity Root
+  ArityLamParam : (Param , SortPat) ∈arity Exp-lam
+  ArityLamType : (Type , SortType) ∈arity Exp-lam
+  ArityLamBody : (Body , SortExp) ∈arity Exp-lam
+  ArityAppFun : (Fun , SortExp) ∈arity Exp-app
+  ArityAppArg : (Arg , SortExp) ∈arity Exp-app
+  ArityPlusLeft : (Left , SortExp) ∈arity Exp-plus
+  ArityPlusRight : (Right , SortExp) ∈arity Exp-plus
+  ArityTimesLeft : (Left , SortExp) ∈arity Exp-times
+  ArityTimesRight : (Right , SortExp) ∈arity Exp-times
+  ArityArrowDomain : (Domain , SortType) ∈arity Typ-arrow
+  ArityArrowReturn : (Return , SortType) ∈arity Typ-arrow
 
 ----------------
 -- Identifiers
@@ -89,11 +103,11 @@ postulate
 ----------------
 
 -- Note actually used in the proofs, but here it is anyway
-postulate
-  ctorRoot : Ctor
-  posRoot : Pos
-  posRoot∈ctorRoot : posRoot ∈ℙ ctorRoot
-  identRoot : Ident
+-- postulate
+--   ctorRoot : Ctor
+--   posRoot : Pos
+--   posRoot∈ctorRoot : posRoot ∈ℙ ctorRoot
+--   identRoot : Ident
 
 ----------------
 -- Vertex
@@ -117,15 +131,18 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 -- Sources
 ----------------
 
+well-sorted-source : Vertex → Pos → Set 
+well-sorted-source v p = Σ[ S ∈ Sort ] ((p , S) ∈arity Vertex.ctor v)
+
 record Source : Set where
   constructor S
   field 
     v : Vertex
     p : Pos
-    -- .isValid : p ∈ℙ Vertex.ctor v
+    .well-sorted : well-sorted-source v p 
 
 _≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
-S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
+S v₁ p₁ _ ≟Source S v₂ p₂ _ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
 ... | yes refl | yes refl = yes refl
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
@@ -134,15 +151,20 @@ S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
 -- Edge
 ----------------
 
+
+well-sorted-edge : Source → Vertex → Set 
+well-sorted-edge (S parent pos _) (V ctor _) = (well-sorted-source parent pos) × ((pos , sort ctor) ∈arity (Vertex.ctor parent))
+
 record Edge : Set where
   constructor E
   field
     source : Source
     child : Vertex
     ident : Ident
+    .wellSorted : well-sorted-edge source child
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
-E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂ 
+E source₁ child₁ ident₁ _ ≟Edge E source₂ child₂ ident₂ _
   with source₁ ≟Source source₂
      | child₁ ≟Vertex child₂
      | ident₁ ≟𝕀 ident₂
@@ -191,6 +213,8 @@ _⊔_ : EdgeState → EdgeState → EdgeState
 
 Graph : Set
 Graph = List(Edge × EdgeState)
+
+-- well-sorted-source : 
  
 -- _[_↦_] :  Graph → Edge → EdgeState → Graph
 -- _[_↦_] f k v = λ { x → if does (x ≟Edge k) then v ⊔ f x else f x }
