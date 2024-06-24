@@ -21,10 +21,10 @@ data Term : Set where
   TermTyp : Typ → Term
 
 
-recomp : (t : Term) → Graph
-recomp (TermExp x) = erecomp x
-recomp (TermPat x) = precomp x
-recomp (TermTyp x) = trecomp x
+term-recomp : (t : Term) → Graph
+term-recomp (TermExp x) = erecomp x
+term-recomp (TermPat x) = precomp x
+term-recomp (TermTyp x) = trecomp x
 
 
 -- TODO: Define recomp and decomp to work with edge sets

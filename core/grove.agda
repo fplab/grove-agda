@@ -198,7 +198,9 @@ decomp : Graph → Grove
 decomp G with decomp-helper zero G G 
 ... | (grove , _) = grove
 
+θ-recomp : θ → Graph 
+θ-recomp [] = []
+θ-recomp (x ∷ l) = unionG (term-recomp x) (θ-recomp l)
 
--- Grove.NP (decomp G) t = Σ[ (E s v u) ∈ Edge ] (edecomp G (E s v u) ≡ t × is_empty {Edge} (λ e → (e ∈-inedges G , v)))  
--- Grove.MP (decomp G) t = Σ[ (E s v u) ∈ Edge ] (edecomp G (E s v u) ≡ t × is_multiple {Edge} (λ e → (e ∈-inedges G , v)))   
--- Grove.U (decomp G) t = Σ[ (E s v u) ∈ Edge ] (edecomp G (E s v u) ≡ t × is_singleton {Edge} (λ e → (e ∈-inedges G , v)) × v is-min (λ w → (w ∈-ancestors G , v)))
+recomp : Grove → Graph  
+recomp (γ NP MP U) = unionG (θ-recomp NP) (unionG (θ-recomp MP) (θ-recomp U))
