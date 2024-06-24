@@ -165,8 +165,8 @@ edge-decomp G ε | (E s (V k u) u' ws) | SortTyp | (τ) = (TermTyp τ)
 decomp-helper : Graph → Graph → Grove
 decomp-helper GG [] = γ [] [] []
 decomp-helper GG ((E s v u ws , Ge) ∷ G) with decomp-helper GG G | inedges v GG
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] with edge-decomp GG (E s v u ws)
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] | (t) = γ (t ∷ NP) MP U
+decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] = γ ((edge-decomp GG (E s v u ws)) ∷ NP) MP U
+-- decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] | (t) = γ (t ∷ NP) MP U
 decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ _ ∷ _ with edge-decomp GG (E s v u ws)
 decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ _ ∷ _ | (t) = γ NP (t ∷ MP) U
 decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ [] with is-own-min-ancestor v GG

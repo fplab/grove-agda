@@ -11,6 +11,9 @@ open import Relation.Nullary
 
 open import core.graph
 open import core.logic
+open import core.exp
+open import core.pat
+open import core.typ
 
 edges : Graph → List(Edge) 
 edges [] = [] 
@@ -80,4 +83,22 @@ is-own-min-ancestor v G with min (ancestors v G)
   
 -- _is-min_ : Vertex → (Vertex → Set) → Set 
 -- v is-min (_∈S) = (w : Vertex) → (w ∈S) → (Vertex.ident v) ≤𝕀 (Vertex.ident w)
+
+-- vertex-of-term : Term → Vertex 
+
+
+-- exp-ingraph : Exp → Graph → Graph 
+-- exp-ingraph (`☐ u) G = []
+-- exp-ingraph `⟨ [] ⟩ G = []
+-- exp-ingraph `⟨ e ∷ l ⟩ G = unionG (exp-ingraph e G) (exp-ingraph `⟨ l ⟩ G)
+-- exp-ingraph _ G = {!   !}
+
+
+pat-ingraph : Pat → Graph → Graph 
+pat-ingraph = {!   !}
+
+typ-ingraph : Typ → Graph → Graph 
+typ-ingraph = {!   !}
+
+-- term-ingraph : Term → Graph → Graph 
  

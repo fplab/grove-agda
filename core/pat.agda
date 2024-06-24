@@ -12,7 +12,7 @@ data Pat : Set where
   ☐`    : (u : Hole)  → Pat
   ⋎ₑ`   : (ε : Edge)  → Pat
   ⤾ₑ`   : (ε : Edge)  → Pat
-  ⟨_⟩`  : List Pat    → Pat
+  ⟨_⟩`  : List Pat → Pat
 
 precomp : (p : Pat) → Graph
 precomp ((G `) x) = G
@@ -21,3 +21,7 @@ precomp (⋎ₑ` ε) = [ (ε , +) ]
 precomp (⤾ₑ` ε) = [ (ε , +) ]
 precomp ⟨ [] ⟩` = []
 precomp ⟨ x ∷ xs ⟩` = unionG (precomp x) (precomp ⟨ xs ⟩`)
+
+data Pat-well-sorted : Pat → Set where 
+  PatWSHole : {u : Hole} → Pat-well-sorted (☐` u)
+  PatWSMultichild : {pats : List Pat} → (list-forall Pat-well-sorted pats) → Pat-well-sorted ⟨ pats ⟩`

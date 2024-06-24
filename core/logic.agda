@@ -1,6 +1,7 @@
 module core.logic where
 
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
+open import Data.List
 
 -- empty type
 data ⊥ : Set where
@@ -40,3 +41,7 @@ data _+_ (A B : Set) : Set where
 
 infixr 1 _×_
 infixr 1 _+_
+
+list-forall : {A : Set} → (A → Set) → (List A) → Set 
+list-forall P [] = ⊤
+list-forall P (a ∷ l) = (P a) × (list-forall P l)
