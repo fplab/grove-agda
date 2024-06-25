@@ -18,15 +18,15 @@ open import core.logic
 -- Groves
 ----------------
 
-θ : Set
-θ = List(Term)
+Θ : Set
+Θ = List(Term)
 
 record Grove : Set₁ where
   constructor γ
   field
-    NP : θ
-    MP : θ
-    U : θ
+    NP : Θ
+    MP : Θ
+    U : Θ
 
 default_exp : Exp 
 default_exp = `⟨ [] ⟩ 
@@ -41,8 +41,7 @@ mutual
   pdecomp' : Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → Pat
   pdecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   pdecomp' G (E s v u ws) p wsa | [] = ☐` (H ((S v p wsa)))
-  pdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (pdecomp G) (ε1 ∷ ε2 ∷ εs)
-  pdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = ⟨ es ⟩`
+  pdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs  = ⟨ map (pdecomp G) (ε1 ∷ ε2 ∷ εs) ⟩`
   pdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
   pdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_pat -- impossible
   pdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ` (E s' v' u' ws')
@@ -70,10 +69,9 @@ mutual
   tdecomp' : Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → Typ
   tdecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   tdecomp' G (E s v u ws) p wsa | [] = ☐ (H ((S v p wsa)))
-  tdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (tdecomp G) (ε1 ∷ ε2 ∷ εs)
-  tdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = ⟨ es ⟩
+  tdecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs = ⟨ map (tdecomp G) (ε1 ∷ ε2 ∷ εs) ⟩
   tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
-  tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = ⟨ [] ⟩ -- impossible
+  tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_typ -- impossible
   tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = ⋎ₑ (E s' v' u' ws')
   tdecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ [] with is-own-min-ancestor v' G
   ... | true = ⤾ₑ (E s' v' u' ws')
@@ -104,8 +102,7 @@ mutual
   edecomp' : Graph → (ε : Edge) → (p : Pos) → (well-sorted-source (Edge.child ε) p) → Exp 
   edecomp' G (E s v u ws) p wsa with outedges (S v p wsa) G 
   edecomp' G (E s v u ws) p wsa | [] = `☐ (H ((S v p wsa)))
-  edecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs with map (edecomp G) (ε1 ∷ ε2 ∷ εs)
-  edecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs | (es) = `⟨ es ⟩
+  edecomp' G (E s v u ws) p wsa | ε1 ∷ ε2 ∷ εs = `⟨ map (edecomp G) (ε1 ∷ ε2 ∷ εs) ⟩
   edecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] with inedges v' G
   edecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | [] = default_exp -- impossible
   edecomp' G (E s v u ws) p wsa | (E s' v' u' ws') ∷ [] | _ ∷ _ ∷ _ = `⋎ₑ (E s' v' u' ws')
@@ -154,32 +151,26 @@ mutual
 edge-decomp : Graph → Edge → Term 
 edge-decomp G ε with ε  
 edge-decomp G ε | (E s (V k u) u' ws) with (sort k)
-edge-decomp G ε | (E s (V k u) u' ws) | SortExp with edecomp G ε
-edge-decomp G ε | (E s (V k u) u' ws) | SortExp | (e) = (TermExp e)
-edge-decomp G ε | (E s (V k u) u' ws) | SortPat with pdecomp G ε
-edge-decomp G ε | (E s (V k u) u' ws) | SortPat | (q) = (TermPat q)
-edge-decomp G ε | (E s (V k u) u' ws) | SortTyp with tdecomp G ε
-edge-decomp G ε | (E s (V k u) u' ws) | SortTyp | (τ) = (TermTyp τ)
+edge-decomp G ε | (E s (V k u) u' ws) | SortExp = (TermExp (edecomp G ε))
+edge-decomp G ε | (E s (V k u) u' ws) | SortPat = (TermPat (pdecomp G ε))
+edge-decomp G ε | (E s (V k u) u' ws) | SortTyp = (TermTyp (tdecomp G ε))
 
 -- the first graph is the outer, static argument. the second is inducted on.
 decomp-helper : Graph → Graph → Grove
 decomp-helper GG [] = γ [] [] []
 decomp-helper GG ((E s v u ws , Ge) ∷ G) with decomp-helper GG G | inedges v GG
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] = γ ((edge-decomp GG (E s v u ws)) ∷ NP) MP U
--- decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | [] | (t) = γ (t ∷ NP) MP U
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ _ ∷ _ with edge-decomp GG (E s v u ws)
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ _ ∷ _ | (t) = γ NP (t ∷ MP) U
-decomp-helper GG ((E s v u ws , Ge) ∷ G) | (γ NP MP U) | _ ∷ [] with is-own-min-ancestor v GG
+decomp-helper GG ((E s v u ws , Ge) ∷ G) | γ NP MP U | [] = γ ((edge-decomp GG (E s v u ws)) ∷ NP) MP U
+decomp-helper GG ((E s v u ws , Ge) ∷ G) | γ NP MP U | _ ∷ _ ∷ _ = γ NP (edge-decomp GG (E s v u ws) ∷ MP) U
+decomp-helper GG ((E s v u ws , Ge) ∷ G) | γ NP MP U | _ ∷ [] with is-own-min-ancestor v GG
 ... | false = γ NP MP U
-... | true with edge-decomp GG (E s v u ws) 
-... | (t) = γ NP MP (t ∷ U) 
+... | true = γ NP MP (edge-decomp GG (E s v u ws) ∷ U) 
  
 decomp : Graph → Grove 
 decomp G = decomp-helper G G 
 
-θ-recomp : θ → Graph 
-θ-recomp [] = []
-θ-recomp (x ∷ l) = unionG (term-recomp x) (θ-recomp l)
+Θ-recomp : Θ → Graph 
+Θ-recomp [] = []
+Θ-recomp (x ∷ l) = unionG (term-recomp x) (Θ-recomp l)
 
 recomp : Grove → Graph  
-recomp (γ NP MP U) = unionG (θ-recomp NP) (unionG (θ-recomp MP) (θ-recomp U))
+recomp (γ NP MP U) = unionG (Θ-recomp NP) (unionG (Θ-recomp MP) (Θ-recomp U))

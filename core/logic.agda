@@ -45,3 +45,7 @@ infixr 1 _+_
 list-forall : {A : Set} → (A → Set) → (List A) → Set 
 list-forall P [] = ⊤
 list-forall P (a ∷ l) = (P a) × (list-forall P l)
+
+data list-exists : {A : Set} → (A → Set) → (List A) → Set where 
+  ListExistsHave : {A : Set} → {P : A → Set} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
+  ListExistsSkip : {A : Set} → {P : A → Set} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
