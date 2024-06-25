@@ -15,6 +15,8 @@ open import Function
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding ([_])
 
+-- proposal - each exp constructor except empty or conflict holes stores a vertex, v_t. filled when generated. otherwise v_t hard to compute.
+
 ----------------
 -- Syntax of Expressions
 ----------------

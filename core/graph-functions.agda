@@ -94,11 +94,11 @@ is-own-min-ancestor v G with min (ancestors v G)
 -- exp-ingraph _ G = {!   !}
 
 
-pat-ingraph : Pat → Graph → Graph 
-pat-ingraph = {!   !}
+-- pat-ingraph : Pat → Graph → Graph 
+-- pat-ingraph = {!   !}
 
-typ-ingraph : Typ → Graph → Graph 
-typ-ingraph = {!   !}
+-- typ-ingraph : Typ → Graph → Graph 
+-- typ-ingraph = {!   !}
 
 -- term-ingraph : Term → Graph → Graph 
  
