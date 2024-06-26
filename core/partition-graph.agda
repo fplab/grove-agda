@@ -34,9 +34,9 @@ classify-parents G v | [] = PC-NP
 classify-parents G v | x ∷ [] = PC-UP x
 classify-parents G v | _ ∷ _ ∷ _ = PC-MP
 
-data has-only-ancestor : Graph → Vertex → (Vertex → Set) → Set where
-  HOA-base : {G : Graph} → {v w : Vertex} → {P : Vertex → Set} → (classify-parents G v ≡ PC-UP w) → (P w) → (has-only-ancestor G v P)
-  HOA-step : {G : Graph} → {v w : Vertex} → {P : Vertex → Set} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G w P) → (has-only-ancestor G v P)
+data has-only-ancestor : Graph → Vertex → Vertex → Set where
+  HOA-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G v w)
+  HOA-step : {G : Graph} → {v w x : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G w x) → (has-only-ancestor G v x)
 
 -- this predicate holds on G v w u if it is possible to follow a chain of only-parents 
 -- from v to w, and u is the minimal vertex id encountered on that chain (excluding v, including w)
@@ -53,22 +53,22 @@ MP-top G v = classify-parents G v ≡ PC-MP
 U-top : Graph → Vertex → Set 
 U-top G v = only-ancestor-min-id G v v (id-of-vertex v)
 
-NP-inner : Graph → Vertex → Set 
-NP-inner G v = has-only-ancestor G v (NP-top G)
+NP-inner : Graph → Vertex → Vertex → Set 
+NP-inner G v w = has-only-ancestor G v w × (NP-top G w)
 
-MP-inner : Graph → Vertex → Set 
-MP-inner G v = has-only-ancestor G v (MP-top G)
+MP-inner : Graph → Vertex → Vertex → Set 
+MP-inner G v w = has-only-ancestor G v w × (MP-top G w)
 
-U-inner : Graph → Vertex → Set 
-U-inner G v = has-only-ancestor G v (U-top G)
+U-inner : Graph → Vertex → Vertex → Set 
+U-inner G v w = has-only-ancestor G v w × (U-top G w)
 
 data class : Graph → Vertex → Set where 
   NPTop : ∀{G v} → (NP-top G v) → class G v
   MPTop : ∀{G v} → (MP-top G v) → class G v
   UTop : ∀{G v} → (U-top G v) → class G v
-  NPInner : ∀{G v} → (NP-inner G v) → class G v
-  MPInner : ∀{G v} → (MP-inner G v) → class G v
-  UInner : ∀{G v} → (U-inner G v) → class G v
+  NPInner : ∀{G v} → (w : Vertex) → (NP-inner G v w) → class G v
+  MPInner : ∀{G v} → (w : Vertex) → (MP-inner G v w) → class G v
+  UInner : ∀{G v} → (w : Vertex) → (U-inner G v w) → class G v
 
 only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
 only-descendants G v ws = list-forall (λ (w , u) → only-ancestor-min-id G w v u) ws
@@ -91,9 +91,9 @@ classify G ws v ods | PC-MP = MPTop {!   !}
 classify G ws v ods | PC-UP x with locate-U G ws v ods
 classify G ws v ods | PC-UP x | Inr utop = UTop utop
 classify G ws v ods | PC-UP x | Inl <> with classify G ((v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)) x (OAMI-base {!  !} , forall-map-implies ods (λ {(w , u)} → λ oami → OAMI-step oami {!   !}))
-classify G ws v ods | PC-UP x | Inl <> | NPTop nptop = NPInner (HOA-base {!  !} nptop)
-classify G ws v ods | PC-UP x | Inl <> | MPTop mptop = MPInner (HOA-base {!   !} mptop)
-classify G ws v ods | PC-UP x | Inl <> | UTop utop = UInner  (HOA-base {!   !} utop)
-classify G ws v ods | PC-UP x | Inl <> | NPInner npinner = NPInner (HOA-step {!   !} npinner)
-classify G ws v ods | PC-UP x | Inl <> | MPInner mpinner = MPInner (HOA-step {!   !} mpinner)
-classify G ws v ods | PC-UP x | Inl <> | UInner uinner = UInner (HOA-step {!   !} uinner)
+classify G ws v ods | PC-UP x | Inl <> | NPTop nptop = NPInner x (HOA-base {!   !} , nptop)
+classify G ws v ods | PC-UP x | Inl <> | MPTop mptop = MPInner x (HOA-base {!   !} , mptop)
+classify G ws v ods | PC-UP x | Inl <> | UTop utop = UInner x (HOA-base {!   !}, utop)
+classify G ws v ods | PC-UP x | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step {!   !} hoa) , nptop)
+classify G ws v ods | PC-UP x | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step {!   !} hoa) , mptop)
+classify G ws v ods | PC-UP x | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step {!   !} hoa) , utop)
