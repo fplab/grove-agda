@@ -1,12 +1,11 @@
 module core.graph-functions where
 
 open import Relation.Binary.PropositionalEquality
-open import Relation.Nullary
+open import Relation.Nullary hiding(¬_)
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List
-open import Data.Maybe hiding(map)
-open import Data.Nat
-open import Relation.Nullary
+open import Data.Maybe hiding(map) 
+open import Data.Nat hiding (_+_)
 
 
 open import core.graph
