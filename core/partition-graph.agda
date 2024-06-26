@@ -97,3 +97,19 @@ classify G ws v ods | PC-UP x | Inl <> | UTop utop = UInner x (HOA-base {!   !},
 classify G ws v ods | PC-UP x | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step {!   !} hoa) , nptop)
 classify G ws v ods | PC-UP x | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step {!   !} hoa) , mptop)
 classify G ws v ods | PC-UP x | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step {!   !} hoa) , utop)
+
+-- maybe this carries proofs later. e.g. NPE also holds a proof that ε is down from v, and that v is in NP-top
+data edge-class : Graph → Edge → Set where 
+  NPE : ∀{G ε} → Vertex → edge-class G ε
+  MPE : ∀{G ε} → Vertex → edge-class G ε
+  UE : ∀{G ε} → Vertex → edge-class G ε
+  
+-- assume ε is assigned +. In fact the whole decomp recomp thing should just consider a graph to be a set of edges, and not account for dead ones.
+edge-classify : (G : Graph) → (ε : Edge) → edge-class G ε 
+edge-classify G (E (S v _ _) _ _ _) with classify G [] v <>
+... | NPTop x = NPE v 
+... | MPTop x = MPE v
+... | UTop x = UE v
+... | NPInner w x = NPE w
+... | MPInner w x = MPE w
+... | UInner w x = UE w
