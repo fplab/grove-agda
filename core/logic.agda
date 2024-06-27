@@ -65,6 +65,10 @@ list-forall-map : ∀ {a b c} {A : Set a} → {B : Set b} → {P : B → Set c} 
 list-forall-map {l = []} fa = <>
 list-forall-map {l = x ∷ l} (p , fa) = p , list-forall-map fa
 
+list-forall-× : {A : Set} → {P1 P2 : A → Set} → {l : List A} → (list-forall P1 l) → (list-forall P2 l) → list-forall (λ a → (P1 a) × (P2 a)) l
+list-forall-× {l = []} <> <> = <>
+list-forall-× {l = x ∷ l} (p1 , f1) (p2 , f2) = (p1 , p2) , list-forall-× f1 f2
+
 data list-exists : {A : Set} → (A → Set) → (List A) → Set where 
   ListExistsHave : {A : Set} → {P : A → Set} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
   ListExistsSkip : {A : Set} → {P : A → Set} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
@@ -97,5 +101,5 @@ ListEquivAppCons [] l2 a = ListEquivCons a (ListEquivRefl l2)
 ListEquivAppCons (x ∷ l1) l2 a = ListEquivTrans (ListEquivCons x (ListEquivAppCons l1 l2 a)) (ListEquivSwap x a (ListEquivRefl _)) 
 
 ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
-ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a        
+ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a         
 ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))
