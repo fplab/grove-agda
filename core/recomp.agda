@@ -13,10 +13,17 @@ vertex-of-term (⋎ v) = v
 vertex-of-term (⤾ v) = v
 
 {-# TERMINATING #-}
-recomp-t : Term → List(Edge)
-recomp-t (T u k ts) = concat (finite-comprehension pos-finite λ p → concat (map (λ (u' , t) → (E (S (V k u) p <>) (vertex-of-term t) u' <>) ∷ (recomp-t t)) (apply-finite-map pos-finite ts p)))
-recomp-t (⋎ x) = []
-recomp-t (⤾ x) = []
+mutual 
+  recomp-sub : Ctor → Ident → Pos → (Ident × Term) → List Edge
+  recomp-sub k u p (u' , t) = (E (S (V k u) p <>) (vertex-of-term t) u' <>) ∷ (recomp-t t)
+
+  recomp-pos : Ident → Ctor → (Finite-Fun Pos (List (Ident × Term)) pos-finite) → Pos → (List Edge)
+  recomp-pos u k ts p = concat (map (recomp-sub k u p) (apply-finite-map pos-finite ts p))
+
+  recomp-t : Term → List(Edge)
+  recomp-t (T u k ts) = concat (finite-comprehension pos-finite λ p → recomp-pos u k ts p)
+  recomp-t (⋎ x) = []
+  recomp-t (⤾ x) = []
 
 recomp-ts : List(Term) → List(Edge)
 recomp-ts [] = []

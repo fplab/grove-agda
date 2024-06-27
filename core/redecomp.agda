@@ -46,6 +46,18 @@ map-update ((v? , εs) ∷ l) v ε with Dec.does (v ≟Vertex v?)
 ... | true = ListEquivRefl _ 
 ... | false = ListEquivTrans (ListEquivApp (ListEquivRefl _) (map-update l v ε)) (ListEquivAppCons _ _ _)
 
+vertex-of-decomp : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v G v) ≡ v 
+vertex-of-decomp G (V k u) = refl
+
+vertex-of-decomp' : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v' G v) ≡ v 
+vertex-of-decomp' G (V k u) with classify G [] (V k u) <> 
+... | NPTop x = refl
+... | MPTop x = refl
+... | UTop x = refl
+... | NPInner w x = refl
+... | MPInner w x = refl
+... | UInner w x = refl
+
 redepart-rec : (G : Graph) → (εs : List Edge) → list-equiv (unpartition-graph (partition-graph-rec G εs)) εs
 redepart-rec G [] = ListEquivRefl []
 redepart-rec G (ε ∷ εs) with edge-classify G ε | inspect (partition-graph-rec G εs) | redepart-rec G εs
@@ -56,10 +68,28 @@ redepart-rec G (ε ∷ εs) with edge-classify G ε | inspect (partition-graph-r
 redepart : (G : Graph) → list-equiv (unpartition-graph (partition-graph G)) G
 redepart G = redepart-rec G G
 
-lemm : (G : Graph) → ((V k u) : Vertex) → (recomp-t (decomp-v G (V k u))) ≡ concat (finite-comprehension pos-finite (λ p → concat (map (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p))))
-lemm G (V k u) = refl
+redecomp-sub : 
+    (G : Graph) → 
+    ((V k u) : Vertex) → 
+    (p : Pos) →
+    ((u' , v') : Ident × Vertex) → 
+    recomp-sub k u p (decomp-sub G (u' , v')) ≡ (E (S (V k u) p <>) v' u' <>) ∷ (recomp-t (decomp-v' G v'))
+redecomp-sub G (V k u) p (u' , v') rewrite vertex-of-decomp' G v' = refl
 
--- concat (finite-comprehension pos-finite (λ p → concat (map (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p))))
+-- This lemma prodives the means to reasoning about the set recomp (decomp v)
+-- Namely, if you want to prove that some property holds of every element of recomp (decomp v),
+-- it suffices to show that for every position p, and every child of v at p, 
+-- that property holds of every element of recomp-sub ... (decomp-sub ... child).
+forall-redecomp : 
+    (G : Graph) → 
+    ((V k u) : Vertex) → 
+    (F : Edge → Set) → 
+    ((p : Pos) → list-forall (λ child → list-forall F (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>))) → 
+    (list-forall F (recomp-t (decomp-v G (V k u)))) 
+forall-redecomp G (V k u) F p1 = forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map (helper p))
+  where 
+    helper : (p : Pos) → list-forall (λ sub → list-forall F (recomp-sub k u p sub)) (apply-finite-map pos-finite (finite-map pos-finite (decomp-pos G k u)) p)
+    helper p rewrite apply-finite-map-correct pos-finite (decomp-pos G k u) p = list-forall-map (p1 p) 
 
 -- concat 
       -- (finite-comprehension pos-finite 
@@ -91,19 +121,7 @@ lemm G (V k u) = refl
 
       -- map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p _))
 
-vertex-of-decomp : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v G v) ≡ v 
-vertex-of-decomp G (V k u) = refl
-
-vertex-of-decomp' : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v' G v) ≡ v 
-vertex-of-decomp' G (V k u) with classify G [] (V k u) <> 
-... | NPTop x = refl
-... | MPTop x = refl
-... | UTop x = refl
-... | NPInner w x = refl
-... | MPInner w x = refl
-... | UInner w x = refl
-
-child-classification : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ (u' , v') → edge-classify G (E (S v p <>) v' u' <>) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-t (decomp-v' G v'))) (children G (S (V k u) p <>))
+-- child-classification : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ (u' , v') → edge-classify G (E (S v p <>) v' u' <>) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-t (decomp-v' G v'))) (children G (S (V k u) p <>))
 
 lemma-core : (G : Graph) → ((V k u) : Vertex) → Σ[ pf ∈ _ ] (classify G [] (V k u) <> ≡ NPTop pf) → (p : Pos) → list-forall (λ (u' , v') → edge-classify G (E (S (V k u) p <>) (vertex-of-term (decomp-v' G v')) u' <>) ≡ NPE (V k u) × list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-t (decomp-v' G v'))) (children G (S (V k u) p <>))
 lemma-core G (V k u) eq p with children G (S (V k u) p <>) 

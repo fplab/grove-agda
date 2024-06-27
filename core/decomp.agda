@@ -10,8 +10,14 @@ open import core.partition-graph
 mutual 
 
   {-# TERMINATING #-}
+  decomp-sub : Graph → (Ident × Vertex) → (Ident × Term)
+  decomp-sub G (u' , v') = (u' , decomp-v' G v')
+
+  decomp-pos : Graph → Ctor → Ident → Pos → List (Ident × Term)
+  decomp-pos G k u p = map (decomp-sub G) (children G (S (V k u) p <>))
+
   decomp-v : Graph → Vertex → Term
-  decomp-v G (V k u) = T u k (finite-map pos-finite λ p → map (λ (u' , v') → (u' , decomp-v' G v')) (children G (S (V k u) p <>))) 
+  decomp-v G (V k u) = T u k (finite-map pos-finite (decomp-pos G k u)) 
 
   decomp-v' : Graph → Vertex → Term 
   decomp-v' G v with classify G [] v <> 
