@@ -50,6 +50,12 @@ finite-comprehension : {B C : Set} → (Finite B) → (B → C) → List(C)
 finite-comprehension (FinEmpty x) F = []
 finite-comprehension (FinCons fin f g _ _) F = F (f (Inl <>)) ∷ (finite-comprehension fin (λ a → F (f (Inr a))))
 
+-- forall-concat-cons : list-forall P (concat (l ∷ ls))
+
+forall-concat-comprehension : {B C : Set} → (fin : Finite B) → (F : B → List C) → (P : C → Set) → ((b : B) → list-forall P (F b)) → (list-forall P (concat (finite-comprehension fin F)))
+forall-concat-comprehension (FinEmpty x) F P fas = <>
+forall-concat-comprehension (FinCons fin f g x x₁) F P fas = list-forall-append (fas (f (Inl <>))) (forall-concat-comprehension fin (λ z → F (f (Inr z))) P (λ b → fas (f (Inr b))))
+
 -- -- will need to produce proofs
 -- finite-map : {B C : Set} → (Finite B) → (B → C) → List(B × C)
 -- finite-map (FinEmpty x) F = []

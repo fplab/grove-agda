@@ -17,7 +17,7 @@ open import Agda.Primitive using (Level)
 ¬ A = A → ⊥
 
 -- unit
-data ⊤ : Set where
+data ⊤ {a} : Set a where
   <> : ⊤
 
 -- pairs
@@ -49,9 +49,21 @@ data Singleton {a} {A : Set a} (x : A) : Set a where
 inspect : ∀ {a} {A : Set a} (x : A) → Singleton x
 inspect x = x with≡ refl
 
-list-forall : {A : Set} → (A → Set) → (List A) → Set 
+list-forall : ∀ {a b} {A : Set a} → (A → Set b) → (List A) → (Set (lmax a b))
 list-forall P [] = ⊤
 list-forall P (a ∷ l) = (P a) × (list-forall P l)
+
+list-forall-append : {A : Set} → {P : A → Set} → {l1 l2 : List A} → (list-forall P l1) → (list-forall P l2) → (list-forall P (l1 ++ l2))
+list-forall-append {l1 = []} <> f2 = f2
+list-forall-append {l1 = _ ∷ _} (p , f1) f2 = p , list-forall-append f1 f2
+
+list-forall-concat : {A : Set} → {P : A → Set} → {ls : List (List A)} → (list-forall (λ l → list-forall P l) ls) → list-forall P (concat ls)
+list-forall-concat {ls = []} f = <>
+list-forall-concat {ls = l ∷ ls} (p , f) = list-forall-append p (list-forall-concat f)
+
+list-forall-map : ∀ {a b c} {A : Set a} → {B : Set b} → {P : B → Set c} → {l : List A} → {f : A → B} → (list-forall (λ a → P (f a)) l) → list-forall P (map f l)
+list-forall-map {l = []} fa = <>
+list-forall-map {l = x ∷ l} (p , fa) = p , list-forall-map fa
 
 data list-exists : {A : Set} → (A → Set) → (List A) → Set where 
   ListExistsHave : {A : Set} → {P : A → Set} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
@@ -85,5 +97,5 @@ ListEquivAppCons [] l2 a = ListEquivCons a (ListEquivRefl l2)
 ListEquivAppCons (x ∷ l1) l2 a = ListEquivTrans (ListEquivCons x (ListEquivAppCons l1 l2 a)) (ListEquivSwap x a (ListEquivRefl _)) 
 
 ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
-ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a     
+ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a        
 ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))

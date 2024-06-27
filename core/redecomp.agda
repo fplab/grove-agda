@@ -56,15 +56,103 @@ redepart-rec G (ε ∷ εs) with edge-classify G ε | inspect (partition-graph-r
 redepart : (G : Graph) → list-equiv (unpartition-graph (partition-graph G)) G
 redepart G = redepart-rec G G
 
-pieces-inversion : (G : Graph) → Set 
-pieces-inversion G with (partition-graph G)
-... | PG NP MP U with (NP ++ MP ++ U)
-... | [] = ⊤ 
-... | (v , εs) ∷ ps = list-equiv (recomp-t (decomp-v G v)) εs
+lemm : (G : Graph) → ((V k u) : Vertex) → (recomp-t (decomp-v G (V k u))) ≡ concat (finite-comprehension pos-finite (λ p → concat (map (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p))))
+lemm G (V k u) = refl
 
--- I think this lemma is the crux
-pieces-lemma : (G : Graph) → (pieces-inversion G)
-pieces-lemma = {!   !}
- 
+-- concat (finite-comprehension pos-finite (λ p → concat (map (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p))))
+
+-- concat 
+      -- (finite-comprehension pos-finite 
+      --   (λ p →
+      --     concat
+      --     (map
+          
+      --       (λ (u' , t) →
+      --           E (S (V k u) p _)
+      --           (vertex-of-term t) u' _
+      --           ∷ recomp-t t)
+
+      --       (apply-finite-map pos-finite
+      --         (finite-map pos-finite
+      --           (λ p₁ →
+      --             map
+      --             (λ (u' , v) →
+      --               u' , decomp-v' G v)
+
+      --             (children G (S (V k u) p₁ _))
+      --           )
+      --         )
+
+      --         p
+      --       )
+      --     )
+      --   )
+      -- )
+
+      -- map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p _))
+
+vertex-of-decomp : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v G v) ≡ v 
+vertex-of-decomp G (V k u) = refl
+
+vertex-of-decomp' : (G : Graph) → (v : Vertex) → vertex-of-term (decomp-v' G v) ≡ v 
+vertex-of-decomp' G (V k u) with classify G [] (V k u) <> 
+... | NPTop x = refl
+... | MPTop x = refl
+... | UTop x = refl
+... | NPInner w x = refl
+... | MPInner w x = refl
+... | UInner w x = refl
+
+child-classification : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ (u' , v') → edge-classify G (E (S v p <>) v' u' <>) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-t (decomp-v' G v'))) (children G (S (V k u) p <>))
+
+lemma-core : (G : Graph) → ((V k u) : Vertex) → Σ[ pf ∈ _ ] (classify G [] (V k u) <> ≡ NPTop pf) → (p : Pos) → list-forall (λ (u' , v') → edge-classify G (E (S (V k u) p <>) (vertex-of-term (decomp-v' G v')) u' <>) ≡ NPE (V k u) × list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-t (decomp-v' G v'))) (children G (S (V k u) p <>))
+lemma-core G (V k u) eq p with children G (S (V k u) p <>) 
+... | [] = <>
+... | (u' , w) ∷ ws rewrite (vertex-of-decomp' G w) = ({!   !} , {!   !}) , {!   !} 
+
+lemma : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G v))
+lemma G (V k u) eq = forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map (helper p))
+  where
+    helper : (p : Pos) → list-forall (λ (u' , t) → list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t)) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p)
+    helper p rewrite apply-finite-map-correct pos-finite ((λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ <>)))) p = list-forall-map (lemma-core G (V k u) eq p)
+
+  -- forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (helper p)
+  -- where
+  --   helper3 : (p : Pos) → list-forall (λ (u' , t) → list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t)) (map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p _)))
+  --   helper3 p = list-forall-map (lemma-core G (V k u) eq p)
+
+  --   helper2 : (p : Pos) → list-forall (λ (u' , t) → list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t)) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p)
+  --   helper2 p rewrite apply-finite-map-correct pos-finite ((λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p = helper3 p
+    
+  --   helper : (p : Pos) → list-forall (list-forall (λ ε → edge-classify G ε ≡ NPE (V k u))) (map (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t) (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p))
+  --   -- helper p with list-forall-map {P = (list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)))} {l = (apply-finite-map pos-finite (finite-map pos-finite (λ p₁ → map (λ (u' , v) → u' , decomp-v' G v) (children G (S (V k u) p₁ _)))) p)} {f = (λ (u' , t) → E (S (V k u) p _) (vertex-of-term t) u' _ ∷ recomp-t t)} {!   !}
+  --   -- ... | thing = thing
+  --   helper p = list-forall-map (helper2 p)
+
+-- NP-part : Graph → (List Edge) → Vertex → List Edge 
+-- NP-part G [] v = []
+-- NP-part G (ε ∷ εs) v with edge-classify G ε 
+-- ... | MPE _ = NP-part G εs v
+-- ... | UE _ = NP-part G εs v
+-- ... | NPE v? with Dec.does (v ≟Vertex v?)
+-- ... | true = ε ∷ (NP-part G εs v)
+-- ... | false = NP-part G εs v
+
+-- lemma : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-equiv (recomp-t (decomp-v G v)) (NP-part G G v)
+-- lemma G v = {!   !}
+
+-- pieces-inversion : (G : Graph) → Set 
+-- pieces-inversion G with (partition-graph G)
+-- ... | PG NP MP U with (NP ++ MP ++ U)
+-- ... | [] = ⊤ 
+-- ... | (v , εs) ∷ ps = list-equiv (recomp-t (decomp-v G v)) εs
+
+-- -- I think this lemma is the crux
+-- pieces-lemma : (G : Graph) → (pieces-inversion G)
+-- pieces-lemma G with (partition-graph G)
+-- ... | PG NP MP U with (NP ++ MP ++ U)
+-- ... | [] = <> 
+-- ... | (v , εs) ∷ ps = {!   !}
+  
 redecomp : (G : Graph) → (recomp-grove (decomp-G G) ≡ G)
 redecomp G = {!   !}  
