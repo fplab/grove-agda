@@ -128,13 +128,23 @@ forall-redecomp G (V k u) F p1 = forall-concat-comprehension pos-finite _ _ λ p
 -- ... | [] = <>
 -- ... | (u' , w) ∷ ws rewrite (vertex-of-decomp' G w) = ({!   !} , {!   !}) , {!   !} 
 
-lemma2 : (G : Graph) → (v w : Vertex) → Σ[ pf ∈ _ ] (classify G [] w <> ≡ NPInner v pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
-lemma2 G v w eq = forall-redecomp G w _ (helper G v w eq)
+lemma2 : (G : Graph) → (v w : Vertex) → (pf : _) → (classify G [] w <> ≡ NPInner v pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
+lemma2 G v w pf eq = forall-redecomp G w _ (helper G v w pf eq)
   where 
-    helper : (G : Graph) → (v (V k u) : Vertex) → Σ[ pf ∈ _ ] (classify G [] (V k u) <> ≡ NPInner v pf) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
-    helper G v (V k u) eq p = list-forall-× {!   !} {!   !}
-      -- where 
-      --   helper1 : list-forall (λ z → edge-classify G (E (S (V k u) p _) (vertex-of-term (π2 (decomp-sub G z))) (π1 (decomp-sub G z)) _) ≡ NPE v) (children G (S (V k u) p _))
+    helper : (G : Graph) → (v (V k u) : Vertex) → (pf : _) → (classify G [] (V k u) <> ≡ NPInner v pf) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
+    helper G v (V k u) pf eq p = forall-implies (λ x → ⊤) _ _ {!   !} helper1
+      where 
+        helper1 : {a : Ident × Vertex} → ⊤ → edge-classify G (E (S (V k u) p _) (vertex-of-term (π2 (decomp-sub G a))) (π1 (decomp-sub G a)) _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (π2 (decomp-sub G a)))
+        helper1 {u' , v'} <> rewrite vertex-of-decomp' G v' = simpler
+          where 
+            simpler : edge-classify G (E (S (V k u) p _) v' u' _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
+            simpler = {!   !}
+            -- I want to pattern match on classify w, but I can't do that 
+            -- from down here within these helper functions
+            -- but I need to do a rewrite first under a lambda, 
+            -- and I can only do that down here! help
+            -- with classify G [] (V k u) <>
+            -- ... | thing = {!  !}
 
 lemma : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G v))
 lemma G v eq = forall-redecomp G v _ (helper G v eq)
