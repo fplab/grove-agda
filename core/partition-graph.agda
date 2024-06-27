@@ -125,3 +125,50 @@ edge-classify G (E (S v _ _) _ _ _) with classify G [] v <>
 ... | NPInner w x = NPE w
 ... | MPInner w x = MPE w
 ... | UInner w x = UE w
+
+-- not fine enough!
+-- record Partitioned-Graph : Set where
+--   constructor PG
+--   field
+--     NP : List Edge
+--     MP : List Edge
+--     U : List Edge
+
+-- partition-graph-rec : Graph → (List Edge) → Partitioned-Graph 
+-- partition-graph-rec G [] = PG [] [] []
+-- partition-graph-rec G (ε ∷ εs) with edge-classify G ε | partition-graph-rec G εs 
+-- ... | NPE x | PG NP MP U = PG (ε ∷ NP) MP U
+-- ... | MPE x | PG NP MP U = PG NP (ε ∷ MP) U
+-- ... | UE x | PG NP MP U = PG NP MP (ε ∷ U)
+ 
+-- partition-graph : Graph → Partitioned-Graph 
+-- partition-graph G = partition-graph-rec G G
+
+-- unpartition-graph : Partitioned-Graph → Graph 
+-- unpartition-graph (PG NP MP U) = NP ++ MP ++ U
+
+list-assoc-update : List (Vertex × Graph) → Vertex → Edge → List (Vertex × Graph)
+list-assoc-update [] v ε = (v , ε ∷ []) ∷ []
+list-assoc-update ((v? , εs) ∷ l) v ε with Dec.does (v ≟Vertex v?)
+... | true = (v , ε ∷ εs) ∷ l
+... | false = (v? , εs) ∷ list-assoc-update l v ε
+
+record  Partitioned-Graph : Set where
+  constructor PG
+  field
+    NP : List (Vertex × Graph)
+    MP : List (Vertex × Graph)
+    U : List (Vertex × Graph)
+
+partition-graph-rec : Graph → (List Edge) → Partitioned-Graph 
+partition-graph-rec G [] = PG [] [] []
+partition-graph-rec G (ε ∷ εs) with edge-classify G ε | partition-graph-rec G εs 
+... | NPE x | PG NP MP U = PG (list-assoc-update NP x ε) MP U
+... | MPE x | PG NP MP U = PG NP (list-assoc-update MP x ε)U
+... | UE x | PG NP MP U = PG NP MP (list-assoc-update U x ε)
+ 
+partition-graph : Graph → Partitioned-Graph 
+partition-graph G = partition-graph-rec G G
+
+unpartition-graph : Partitioned-Graph → Graph 
+unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U))

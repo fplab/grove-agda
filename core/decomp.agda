@@ -22,6 +22,9 @@ mutual
   ... | MPInner w x = decomp-v G v
   ... | UInner w x = decomp-v G v
 
+decomp-ε : Graph → Edge → Term 
+decomp-ε G (E (S v _ _) _ _ _) = decomp-v G v
+
 -- note: in the actual implementation, this would map over vertices in G directly
 decomp-εs : Graph → List(Edge) → Grove 
 decomp-εs G [] = γ [] [] []
@@ -35,3 +38,7 @@ decomp-εs G (E (S v _ _) _ _ _ ∷ εs) with classify G [] v <> | decomp-εs G 
 
 decomp-G : Graph → Grove 
 decomp-G G = decomp-εs G G
+
+-- WRONG!!!
+-- decomp-PG : Graph → Partitioned-Graph → Grove 
+-- decomp-PG G (PG NP MP U) = γ (map (decomp-ε G) NP) (map (decomp-ε G) MP) (map (decomp-ε G) U)
