@@ -1,6 +1,8 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module core.partition-graph where
 
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding(inspect)
 open import Relation.Nullary hiding(¬_)
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List
@@ -8,8 +10,8 @@ open import Data.Maybe hiding(map)
 open import Data.Nat hiding (_+_)
 
 open import core.logic
+open import core.finite
 open import core.graph
-open import core.graph-functions
 
 id-of-vertex : Vertex → Ident 
 id-of-vertex (V ctor ident) = ident
@@ -19,9 +21,19 @@ id-min u1 u2 with u1 ≤𝕀 u2
 ... | true = u1
 ... | false = u2
 
-forall-map-implies : {A B : Set} → {P1 : A → Set} → {P2 : B → Set} → {l : List A} → {f : A → B} → list-forall P1 l → ({a : A} → (P1 a) → (P2 (f a))) → list-forall P2 (map f l)
-forall-map-implies {A} {B} {P1} {P2} {[]} {f} fa i = <>
-forall-map-implies {A} {B} {P1} {P2} {x ∷ l} {f} (p , fa) i = i p , forall-map-implies {A} {B} {P1} {P2} {l} {f} fa i
+-- might need to emit proofs one day
+parents : Graph → Vertex → List(Vertex) 
+parents [] v = [] 
+parents ((E s v? _ _) ∷ G) v with Dec.does (v ≟Vertex v?)
+parents ((E (S w _ _) _ _ _) ∷ G) v | true = w ∷ (parents G v) 
+parents (_ ∷ G) v | false = parents G v
+
+-- might need to emit proofs one day
+children : Graph → Source → List(Ident × Vertex) 
+children [] s = [] 
+children ((E s? _ _ _) ∷ G) s with Dec.does (s ≟Source s?)
+children ((E _ v u _) ∷ G) s | true = (u , v) ∷ (children G s) 
+children (_ ∷ G) s | false = children G s
 
 data parent-class : Graph → Vertex → Set where 
   PC-NP : ∀{G v} → parent-class G v
@@ -29,7 +41,7 @@ data parent-class : Graph → Vertex → Set where
   PC-MP : ∀{G v} → parent-class G v
 
 classify-parents : (G : Graph) → (v : Vertex) → parent-class G v 
-classify-parents G v with parents v G 
+classify-parents G v with parents G v 
 classify-parents G v | [] = PC-NP
 classify-parents G v | x ∷ [] = PC-UP x
 classify-parents G v | _ ∷ _ ∷ _ = PC-MP
@@ -85,18 +97,18 @@ locate-U G ((v? , u) ∷ ws) v (od , ods) with (v ≟Vertex v?) | (u ≟𝕀 (id
 -- Since G is finite, this chain will eventually meet itself again.
 -- This forms a loop. When the chain reaches the minimal-id element of the loop, it will terminate.
 classify : (G : Graph) → (ws : List(Vertex × Ident)) → (v : Vertex) → (only-descendants G v ws) → (class G v)
-classify G ws v ods with (classify-parents G v) -- in eq
-classify G ws v ods | PC-NP = NPTop {!   !}
-classify G ws v ods | PC-MP = MPTop {!   !}
-classify G ws v ods | PC-UP x with locate-U G ws v ods
-classify G ws v ods | PC-UP x | Inr utop = UTop utop
-classify G ws v ods | PC-UP x | Inl <> with classify G ((v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)) x (OAMI-base {!  !} , forall-map-implies ods (λ {(w , u)} → λ oami → OAMI-step oami {!   !}))
-classify G ws v ods | PC-UP x | Inl <> | NPTop nptop = NPInner x (HOA-base {!   !} , nptop)
-classify G ws v ods | PC-UP x | Inl <> | MPTop mptop = MPInner x (HOA-base {!   !} , mptop)
-classify G ws v ods | PC-UP x | Inl <> | UTop utop = UInner x (HOA-base {!   !}, utop)
-classify G ws v ods | PC-UP x | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step {!   !} hoa) , nptop)
-classify G ws v ods | PC-UP x | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step {!   !} hoa) , mptop)
-classify G ws v ods | PC-UP x | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step {!   !} hoa) , utop)
+classify G ws v ods with inspect (classify-parents G v)
+classify G ws v ods | (PC-NP with≡ eq) = NPTop eq
+classify G ws v ods | (PC-MP with≡ eq) = MPTop eq
+classify G ws v ods | (PC-UP x with≡ eq) with locate-U G ws v ods
+classify G ws v ods | (PC-UP x with≡ eq) | Inr utop = UTop utop
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> with classify G ((v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)) x (OAMI-base eq , forall-map-implies ods (λ {(w , u)} → λ oami → OAMI-step oami eq))
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPTop nptop = NPInner x (HOA-base eq , nptop)
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPTop mptop = MPInner x (HOA-base eq , mptop)
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UTop utop = UInner x (HOA-base eq , utop)
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step eq hoa) , nptop)
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step eq hoa) , mptop)
+classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step eq hoa) , utop)
 
 -- maybe this carries proofs later. e.g. NPE also holds a proof that ε is down from v, and that v is in NP-top
 data edge-class : Graph → Edge → Set where 

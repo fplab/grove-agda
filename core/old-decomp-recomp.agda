@@ -3,32 +3,14 @@ module core.decomp-recomp where
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Data.List
 open import Data.Bool
--- open import Data.Nat hiding (_+_)
--- open import core.var
--- open import core.hole
--- open import core.exp
--- open import core.pat
--- open import core.typ
--- open import core.term
+
 open import core.logic
+open import core.finite
 open import core.graph
-open import core.graph-functions
 open import core.grove
 
 concat-grove : Grove → Θ 
 concat-grove (γ NP MP U) = NP ++ MP ++ U
-
-++assoc : {A : Set} → (l1 l2 l3 : List A) → (l1 ++ l2) ++ l3 ≡ l1 ++ (l2 ++ l3)
-++assoc [] l2 l3 = refl
-++assoc (x ∷ l1) l2 l3 rewrite ++assoc l1 l2 l3 = refl
-
-forall-implies : {A : Set} → (P1 P2 : A → Set) → (l : List A) → list-forall P1 l → ({a : A} → (P1 a) → (P2 a)) → list-forall P2 l
-forall-implies P1 P2 [] f i = <>
-forall-implies P1 P2 (x ∷ l) (p , f) i = i p , forall-implies P1 P2 l f i
-
-append-exist : {A : Set} → (P : A → Set) → (l1 l2 : List A) → (a : A) → list-exists P l2 → list-exists P (l1 ++ l2)
-append-exist P [] l2 a ex = ex
-append-exist P (x ∷ l1) l2 a ex = ListExistsSkip x (append-exist P l1 l2 a ex)
 
 interskip-exist : {A : Set} → (P : A → Set) → (l1 l2 : List A) → (a : A) → list-exists P (l1 ++ l2) → list-exists P (l1 ++ (a ∷ l2))
 interskip-exist P [] l2 a ex = ListExistsSkip a ex

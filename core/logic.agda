@@ -2,12 +2,13 @@ module core.logic where
 
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
 open import Data.List
+open import Relation.Binary.PropositionalEquality hiding ([_]; inspect)
 
 -- empty type
 data ⊥ : Set where
 
 -- from false, derive whatever
-abort : ∀ {C : Set} → ⊥ → C
+abort : ∀ {ℓ : Level} → {C : Set ℓ} → ⊥ → C
 abort ()
 
 -- negation 
@@ -41,6 +42,12 @@ data _+_ (A B : Set) : Set where
 
 infixr 1 _×_
 infixr 1 _+_
+
+data Singleton {a} {A : Set a} (x : A) : Set a where
+  _with≡_ : (y : A) → x ≡ y → Singleton x
+
+inspect : ∀ {a} {A : Set a} (x : A) → Singleton x
+inspect x = x with≡ refl
 
 list-forall : {A : Set} → (A → Set) → (List A) → Set 
 list-forall P [] = ⊤
