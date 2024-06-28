@@ -20,13 +20,13 @@ mutual
   decomp-v G (V k u) = T u k (finite-map pos-finite (decomp-pos G k u)) 
 
   decomp-v' : Graph → Vertex → Term 
-  decomp-v' G v with classify G [] v <> 
-  ... | NPTop x = decomp-v G v -- impossible
-  ... | MPTop x = ⋎ v
-  ... | UTop x = ⤾ v
-  ... | NPInner w x = decomp-v G v
-  ... | MPInner w x = decomp-v G v
-  ... | UInner w x = decomp-v G v
+  decomp-v' G v with classify G v [] 
+  ... | NPTop = decomp-v G v -- impossible
+  ... | MPTop = ⋎ v
+  ... | UTop = ⤾ v
+  ... | NPInner w = decomp-v G v
+  ... | MPInner w = decomp-v G v
+  ... | UInner w = decomp-v G v
 
 decomp-ε : Graph → Edge → Term 
 decomp-ε G (E (S v _ _) _ _ _) = decomp-v G v
@@ -34,13 +34,13 @@ decomp-ε G (E (S v _ _) _ _ _) = decomp-v G v
 -- note: in the actual implementation, this would map over vertices in G directly
 decomp-εs : Graph → List(Edge) → Grove 
 decomp-εs G [] = γ [] [] []
-decomp-εs G (E (S v _ _) _ _ _ ∷ εs) with classify G [] v <> | decomp-εs G εs
-... | NPTop x | γ NP MP U = γ (decomp-v G v ∷ NP) MP U
-... | MPTop x | γ NP MP U = γ NP (decomp-v G v ∷ MP) U
-... | UTop x | γ NP MP U = γ NP MP (decomp-v G v ∷ U)
-... | NPInner w x | γ NP MP U = γ NP MP U
-... | MPInner w x | γ NP MP U = γ NP MP U
-... | UInner w x | γ NP MP U = γ NP MP U
+decomp-εs G (E (S v _ _) _ _ _ ∷ εs) with classify G v [] | decomp-εs G εs
+... | NPTop | γ NP MP U = γ (decomp-v G v ∷ NP) MP U
+... | MPTop | γ NP MP U = γ NP (decomp-v G v ∷ MP) U
+... | UTop | γ NP MP U = γ NP MP (decomp-v G v ∷ U)
+... | NPInner w | γ NP MP U = γ NP MP U
+... | MPInner w | γ NP MP U = γ NP MP U
+... | UInner w | γ NP MP U = γ NP MP U
 
 decomp-G : Graph → Grove 
 decomp-G G = decomp-εs G G
