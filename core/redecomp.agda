@@ -76,6 +76,24 @@ redecomp-sub :
     recomp-sub k u p (decomp-sub G (u' , v')) ≡ (E (S (V k u) p <>) v' u' <>) ∷ (recomp-t (decomp-v' G v'))
 redecomp-sub G (V k u) p (u' , v') rewrite vertex-of-decomp' G v' = refl
 
+forall-redecomp' : 
+    (G : Graph) → 
+    ((V k u) : Vertex) → 
+    (F : Edge → Set) → 
+    ⊤ →
+    -- ((p : Pos) → list-forall (λ child → list-forall F (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>))) → 
+    (list-forall F (recomp-t (decomp-v' G (V k u)))) 
+forall-redecomp' G (V k u) F <> with classify G [] (V k u) <>
+... | NPTop x = {!   !}
+... | MPTop x = {!   !}
+... | UTop x = {!   !}
+... | NPInner w x = forall-concat-comprehension pos-finite _ _ λ p → {!   !} --list-forall-concat (list-forall-map {!   !})
+... | MPInner w x = {!   !}
+... | UInner w x = {!   !} --forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map ?)
+  -- where 
+    -- helper : (p : Pos) → list-forall (λ sub → list-forall F (recomp-sub k u p sub)) (apply-finite-map pos-finite (finite-map pos-finite (decomp-pos G k u)) p)
+    -- helper p rewrite apply-finite-map-correct pos-finite (decomp-pos G k u) p = list-forall-map (p1 p)
+
 -- This lemma prodives the means to reasoning about the set recomp (decomp v)
 -- Namely, if you want to prove that some property holds of every element of recomp (decomp v),
 -- it suffices to show that for every position p, and every child of v at p, 
@@ -128,29 +146,34 @@ forall-redecomp G (V k u) F p1 = forall-concat-comprehension pos-finite _ _ λ p
 -- ... | [] = <>
 -- ... | (u' , w) ∷ ws rewrite (vertex-of-decomp' G w) = ({!   !} , {!   !}) , {!   !} 
 
-lemma2 : (G : Graph) → (v w : Vertex) → (pf : _) → (classify G [] w <> ≡ NPInner v pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
-lemma2 G v w pf eq = forall-redecomp G w _ (helper G v w pf eq)
-  where 
+mutual 
+  lemma2' : (G : Graph) → (v w : Vertex) → (pf : _) → (classify G [] w <> ≡ NPInner v pf) → (v' : Vertex) → ⊤ → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
+  lemma2' G v (V k u) pf eq (V k' u') <> with classify G [] (V k' u') <> 
+  ... | NPTop x = {!   !}
+  ... | MPTop x = <>
+  ... | UTop x = <>
+  ... | NPInner w x = {! lemma2 G v (V k u) _ _   !} --forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map {!   !})
+  ... | MPInner w x = {!   !}
+  ... | UInner w x = {!   !}
+
+  lemma2 : (G : Graph) → (v w : Vertex) → (pf : _) → (classify G [] w <> ≡ NPInner v pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
+  lemma2 G v w pf eq = forall-redecomp G w _ (helper G v w pf eq)
+    where 
     helper : (G : Graph) → (v (V k u) : Vertex) → (pf : _) → (classify G [] (V k u) <> ≡ NPInner v pf) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
-    helper G v (V k u) pf eq p = forall-implies (λ x → ⊤) _ _ {!   !} helper1
+    helper G v (V k u) pf eq p = forall-implies (λ x → ⊤) _ _ {!   !} (helper1 G v (V k u) pf eq p)
       where 
-        helper1 : {a : Ident × Vertex} → ⊤ → edge-classify G (E (S (V k u) p _) (vertex-of-term (π2 (decomp-sub G a))) (π1 (decomp-sub G a)) _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (π2 (decomp-sub G a)))
-        helper1 {u' , v'} <> rewrite vertex-of-decomp' G v' = simpler
-          where 
-            simpler : edge-classify G (E (S (V k u) p _) v' u' _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
-            simpler = {!   !}
-            -- I want to pattern match on classify w, but I can't do that 
-            -- from down here within these helper functions
-            -- but I need to do a rewrite first under a lambda, 
-            -- and I can only do that down here! help
-            -- with classify G [] (V k u) <>
-            -- ... | thing = {!  !}
+      helper1 : (G : Graph) → (v (V k u) : Vertex) → (pf : _) → (classify G [] (V k u) <> ≡ NPInner v pf) → (p : Pos) → {a : Ident × Vertex} → ⊤ → edge-classify G (E (S (V k u) p _) (vertex-of-term (π2 (decomp-sub G a))) (π1 (decomp-sub G a)) _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (π2 (decomp-sub G a)))
+      helper1 G v (V k u) pf eq p {u' , v'} <> rewrite vertex-of-decomp' G v' = simpler G v (V k u) pf eq p {u' , v'} <>
+        where 
+        simpler : (G : Graph) → (v (V k u) : Vertex) → (pf : _) → (classify G [] (V k u) <> ≡ NPInner v pf) → (p : Pos) → {a : Ident × Vertex} → ⊤ → edge-classify G (E (S (V k u) p _) v' u' _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
+        simpler G v (V k u) pf eq p {u' , v''} <> with classify G [] (V k u) <> | eq 
+        ... | NPInner .v _ | refl = refl , lemma2' G v (V k u) pf eq _ <>
 
 lemma : (G : Graph) → (v : Vertex) → Σ[ pf ∈ _ ] (classify G [] v <> ≡ NPTop pf) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G v))
 lemma G v eq = forall-redecomp G v _ (helper G v eq)
   where 
-    helper : (G : Graph) → ((V k u) : Vertex) → Σ[ pf ∈ _ ] (classify G [] (V k u) <> ≡ NPTop pf) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
-    helper G (V k u) eq p = {!   !}
+  helper : (G : Graph) → ((V k u) : Vertex) → Σ[ pf ∈ _ ] (classify G [] (V k u) <> ≡ NPTop pf) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE (V k u)) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
+  helper G (V k u) eq p = {!   !}
 
   -- forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (helper p)
   -- where

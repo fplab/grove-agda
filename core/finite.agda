@@ -72,10 +72,6 @@ forall-concat-comprehension (FinCons fin f g x x₁) F P fas = list-forall-appen
 ++assoc [] l2 l3 = refl
 ++assoc (x ∷ l1) l2 l3 rewrite ++assoc l1 l2 l3 = refl
 
-forall-implies : {A : Set} → (P1 P2 : A → Set) → (l : List A) → list-forall P1 l → ({a : A} → (P1 a) → (P2 a)) → list-forall P2 l
-forall-implies P1 P2 [] f i = <>
-forall-implies P1 P2 (x ∷ l) (p , f) i = i p , forall-implies P1 P2 l f i
-
 append-exist : {A : Set} → (P : A → Set) → (l1 l2 : List A) → (a : A) → list-exists P l2 → list-exists P (l1 ++ l2)
 append-exist P [] l2 a ex = ex
 append-exist P (x ∷ l1) l2 a ex = ListExistsSkip x (append-exist P l1 l2 a ex)
