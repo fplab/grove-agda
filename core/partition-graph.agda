@@ -191,6 +191,26 @@ classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPInner w
 classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPInner w | MPInnerCorrect _ (oa , top) = MPInnerCorrect w (HOA-step eq oa , top)
 classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | UInner w | UInnerCorrect _ (oa , top) = UInnerCorrect w (HOA-step eq oa , top)
 
+-- this typechecks for me... I have no idea how
+classify-correct-nptop : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (classify G v ws ≡ NPTop) → (NP-top G v)
+classify-correct-nptop G v ws oas eq with inspect (classify-parents G v) | eq 
+classify-correct-nptop G v ws oas eq | PC-MP with≡ eq' | ()
+classify-correct-nptop G v ws oas eq | PC-U with≡ eq' | ()
+
+-- this is important 
+-- classify-of-parent : (G : Graph) → 
+--   (v w : Vertex) → 
+--   (classify G w [] ≡ NPInner v) → 
+--   (v' : Vertex) → 
+--   (classify-parents G v' ≡ PC-UP w) → 
+--   (classify G v' [] ≡ NPInner v)
+-- classify-of-parent G v w eq1 v' eq2 with classify G w [] | classify-correct G w [] <> | eq1
+-- ... | NPInner .v | NPInnerCorrect .v (oa , top) | refl = let npinner' = (HOA-step eq2 oa , top) in {!   !}
+-- with inspect (classify-parents G v') | eq2
+-- ... | PC-NP with≡ eq | () 
+-- ... | PC-MP with≡ eq | ()
+-- ... | PC-UP x with≡ eq | _ rewrite eq = {!   !}
+
 data edge-class : Graph → Edge → Set where 
   NPE : ∀{G ε} → Vertex → edge-class G ε
   MPE : ∀{G ε} → Vertex → edge-class G ε
@@ -234,4 +254,4 @@ partition-graph : Graph → Partitioned-Graph
 partition-graph G = partition-graph-rec G G
  
 unpartition-graph : Partitioned-Graph → Graph       
-unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U))
+unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U)) 

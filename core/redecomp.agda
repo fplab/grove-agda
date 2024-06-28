@@ -147,16 +147,25 @@ forall-redecomp G (V k u) F p1 = forall-concat-comprehension pos-finite _ _ λ p
 -- ... | (u' , w) ∷ ws rewrite (vertex-of-decomp' G w) = ({!   !} , {!   !}) , {!   !} 
 
 mutual 
-  lemma2' : (G : Graph) → (v w : Vertex) → (classify G w [] ≡ NPInner v) → (v' : Vertex) → ⊤ → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
-  lemma2' G v (V k u) eq (V k' u') <> with classify G (V k' u') []
+  {-# TERMINATING #-}
+  lemma2' : (G : Graph) → 
+    (v w : Vertex) → 
+    (classify G w [] ≡ NPInner v) → 
+    (v' : Vertex) → 
+    (parent G w v') → 
+    list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
+  lemma2' G v (V k u) eq (V k' u') p with classify G (V k' u') []
   ... | NPTop = {!   !}
   ... | MPTop = <>
   ... | UTop = <>
-  ... | NPInner w = {! lemma2 G v (V k u) _ _   !} --forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map {!   !})
+  ... | NPInner w = lemma2 G v (V k' u') (classify-of-parent G v (V k u) eq (V k' u') p) --forall-concat-comprehension pos-finite _ _ λ p → list-forall-concat (list-forall-map {!   !})
   ... | MPInner w = {!   !}
   ... | UInner w = {!   !}
 
-  lemma2 : (G : Graph) → (v w : Vertex) → (classify G w [] ≡ NPInner v) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
+  lemma2 : (G : Graph) → 
+    (v w : Vertex) → 
+    (classify G w [] ≡ NPInner v) → 
+    list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G w))
   lemma2 G v w eq = forall-redecomp G w _ (helper G v w eq)
     where 
     helper : (G : Graph) → (v (V k u) : Vertex) → (classify G (V k u) [] ≡ NPInner v) → ((p : Pos) → list-forall (λ child → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-sub k u p (decomp-sub G child))) (children G (S (V k u) p <>)))
@@ -167,7 +176,7 @@ mutual
         where 
         simpler : (G : Graph) → (v (V k u) : Vertex) → (classify G (V k u) [] ≡ NPInner v) → (p : Pos) → {a : Ident × Vertex} → ⊤ → edge-classify G (E (S (V k u) p _) v' u' _) ≡ NPE v × list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v' G v'))
         simpler G v (V k u) eq p {u' , v''} <> with classify G (V k u) [] | eq 
-        ... | NPInner .v | refl = refl , lemma2' G v (V k u) eq _ <>
+        ... | NPInner .v | refl = refl , lemma2' G v (V k u) eq _ {!   !}
 
 lemma : (G : Graph) → (v : Vertex) → (classify G v [] ≡ NPTop) → list-forall (λ ε → edge-classify G ε ≡ NPE v) (recomp-t (decomp-v G v))
 lemma G v eq = forall-redecomp G v _ (helper G v eq)
