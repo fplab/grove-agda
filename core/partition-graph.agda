@@ -193,9 +193,18 @@ classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | UInner w 
 
 -- this typechecks for me... I have no idea how
 classify-correct-nptop : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (classify G v ws ≡ NPTop) → (NP-top G v)
-classify-correct-nptop G v ws oas eq with inspect (classify-parents G v) | eq 
-classify-correct-nptop G v ws oas eq | PC-MP with≡ eq' | ()
-classify-correct-nptop G v ws oas eq | PC-U with≡ eq' | ()
+classify-correct-nptop G v ws oas ()
+
+-- I broke it
+silly : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (classify G v ws ≡ NPTop) → ⊥
+silly G v ws oas ()
+
+postulate 
+  k : Ctor 
+  u : Ident 
+
+absurd : ⊥ 
+absurd = silly [] (V k u) [] <> refl
 
 -- this is important 
 -- classify-of-parent : (G : Graph) → 
