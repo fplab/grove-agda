@@ -90,83 +90,125 @@ MP-inner G v w = has-only-ancestor G v w × (MP-top G w)
 U-inner : Graph → Vertex → Vertex → Set 
 U-inner G v w = has-only-ancestor G v w × (U-top G w)
 
+-- this is true and can be used, but it might be so lightweight as to be confusing. depends on what level of abstraction you want to work. 
+-- NP-inner-parent : (G : Graph) → (v x w : Vertex) → (classify-parents G v ≡ PC-UP x) → (NP-inner G x w) → (NP-inner G v w)
+-- NP-inner-parent G v x w eq (oa , top) = HOA-step eq oa , top
+
+-- data class : Graph → Vertex → Set where 
+--   NPTop : ∀{G v} → (NP-top G v) → class G v
+--   MPTop : ∀{G v} → (MP-top G v) → class G v
+--   UTop : ∀{G v} → (U-top G v) → class G v
+--   NPInner : ∀{G v} → (w : Vertex) → (NP-inner G v w) → class G v
+--   MPInner : ∀{G v} → (w : Vertex) → (MP-inner G v w) → class G v
+--   UInner : ∀{G v} → (w : Vertex) → (U-inner G v w) → class G v
+
 data class : Graph → Vertex → Set where 
-  NPTop : ∀{G v} → (NP-top G v) → class G v
-  MPTop : ∀{G v} → (MP-top G v) → class G v
-  UTop : ∀{G v} → (U-top G v) → class G v
-  NPInner : ∀{G v} → (w : Vertex) → (NP-inner G v w) → class G v
-  MPInner : ∀{G v} → (w : Vertex) → (MP-inner G v w) → class G v
-  UInner : ∀{G v} → (w : Vertex) → (U-inner G v w) → class G v
+  NPTop : ∀{G v} → class G v
+  MPTop : ∀{G v} → class G v
+  UTop : ∀{G v} → class G v
+  NPInner : ∀{G v} → (w : Vertex) → class G v
+  MPInner : ∀{G v} → (w : Vertex) → class G v
+  UInner : ∀{G v} → (w : Vertex) → class G v
+
+data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
+  NPTopCorrect : ∀{G v} → (NP-top G v) → class-correct G v NPTop 
+  MPTopCorrect : ∀{G v} → (MP-top G v) → class-correct G v MPTop
+  UTopCorrect : ∀{G v} → (U-top G v) → class-correct G v UTop
+  NPInnerCorrect : ∀{G v} → (w : Vertex) → (NP-inner G v w) → class-correct G v (NPInner w)
+  MPInnerCorrect : ∀{G v} → (w : Vertex) → (MP-inner G v w) → class-correct G v (MPInner w)
+  UInnerCorrect : ∀{G v} → (w : Vertex) → (U-inner G v w) → class-correct G v (UInner w)
 
 only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
 only-descendants G v ws = list-forall (λ (w , u) → only-ancestor-min-id G w v u) ws
 
-locate-U :  (G : Graph) → (ws : List(Vertex × Ident)) → (v : Vertex) → (only-descendants G v ws) → (_+_ ⊤ (U-top G v))
-locate-U G [] v <> = Inl <>
-locate-U G ((v? , u) ∷ ws) v (od , ods) with (v ≟Vertex v?) | (u ≟𝕀 (id-of-vertex v))
-... | _ because ofʸ refl | _ because ofʸ refl = Inl <>
-... | _ | _ = locate-U G ws v ods
+-- returns true if ( v , v.id ) appears in ws
+locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
+locate-U G v [] = false
+locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
+... | true | true = true
+... | true | false = locate-U G v ws
+... | false | _ = locate-U G v ws
 
-{-# TERMINATING #-} 
+locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (U-top G v)
+locate-U-correct G v [] oas () 
+locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
+... | true | true | ofʸ refl | ofʸ refl = oa
+... | true | false | _ | _ = locate-U-correct G v ws oas eq
+... | false | _ | _ | _ = locate-U-correct G v ws oas eq
+
+-- {-# TERMINATING #-} 
 -- Why? because it terminates when it hits a node with 0 or multiple parents. 
 -- When it's running, it's following a chain of only-parents.
 -- Since G is finite, this chain will eventually meet itself again.
 -- This forms a loop. When the chain reaches the minimal-id element of the loop, it will terminate.
-classify : (G : Graph) → (ws : List(Vertex × Ident)) → (v : Vertex) → (only-descendants G v ws) → (class G v)
-classify G ws v ods with inspect (classify-parents G v)
-classify G ws v ods | (PC-NP with≡ eq) = NPTop eq
-classify G ws v ods | (PC-MP with≡ eq) = MPTop eq
-classify G ws v ods | (PC-UP x with≡ eq) with locate-U G ws v ods
-classify G ws v ods | (PC-UP x with≡ eq) | Inr utop = UTop utop
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> with classify G ((v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)) x (OAMI-base eq , forall-map-implies ods (λ {(w , u)} → λ oami → OAMI-step oami eq))
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPTop nptop = NPInner x (HOA-base eq , nptop)
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPTop mptop = MPInner x (HOA-base eq , mptop)
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UTop utop = UInner x (HOA-base eq , utop)
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step eq hoa) , nptop)
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step eq hoa) , mptop)
-classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step eq hoa) , utop)
+-- classify : (G : Graph) → (ws : List(Vertex × Ident)) → (v : Vertex) → (only-descendants G v ws) → (class G v)
+-- classify G ws v ods with inspect (classify-parents G v)
+-- classify G ws v ods | (PC-NP with≡ eq) = NPTop eq
+-- classify G ws v ods | (PC-MP with≡ eq) = MPTop eq
+-- classify G ws v ods | (PC-UP x with≡ eq) with locate-U G ws v ods
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inr utop = UTop utop
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> with classify G ((v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)) x (OAMI-base eq , forall-map-implies ods (λ {(w , u)} → λ oami → OAMI-step oami eq))
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPTop nptop = NPInner x (HOA-base eq , nptop)
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPTop mptop = MPInner x (HOA-base eq , mptop)
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UTop utop = UInner x (HOA-base eq , utop)
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | NPInner r (hoa , nptop) = NPInner r ((HOA-step eq hoa) , nptop)
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | MPInner r (hoa , mptop) = MPInner r ((HOA-step eq hoa) , mptop)
+-- classify G ws v ods | (PC-UP x with≡ eq) | Inl <> | UInner r (hoa , utop) = UInner r ((HOA-step eq hoa) , utop)
 
--- maybe this carries proofs later. e.g. NPE also holds a proof that ε is down from v, and that v is in NP-top
+update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
+update-ws v ws x = (v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
+
+update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
+update-ws-correct G v ws x oas eq = OAMI-base eq , forall-map-implies oas (λ {(w , u)} → λ oa → OAMI-step oa eq)
+
+{-# TERMINATING #-} 
+classify : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
+classify G v ws with classify-parents G v
+classify G v ws | PC-NP = NPTop
+classify G v ws | PC-MP = MPTop
+classify G v ws | PC-UP x with locate-U G v ws
+classify G v ws | PC-UP x | true = UTop
+classify G v ws | PC-UP x | false with classify G x (update-ws v ws x)
+classify G v ws | PC-UP x | false | NPTop = NPInner x
+classify G v ws | PC-UP x | false | MPTop = MPInner x
+classify G v ws | PC-UP x | false | UTop = UInner x
+classify G v ws | PC-UP x | false | NPInner w = NPInner w
+classify G v ws | PC-UP x | false | MPInner w = MPInner w
+classify G v ws | PC-UP x | false | UInner w = UInner w
+
+{-# TERMINATING #-} 
+classify-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify G v ws)
+classify-correct G v ws oas with inspect (classify-parents G v)
+classify-correct G v ws oas | PC-NP with≡ eq rewrite eq = NPTopCorrect eq
+classify-correct G v ws oas | PC-MP with≡ eq rewrite eq = MPTopCorrect eq
+classify-correct G v ws oas | PC-UP x with≡ eq rewrite eq with inspect (locate-U G v ws)
+classify-correct G v ws oas | PC-UP x with≡ eq | true with≡ eq' rewrite eq' = UTopCorrect (locate-U-correct G v ws oas eq')
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' rewrite eq' with classify G x (update-ws v ws x) | classify-correct G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPTop | NPTopCorrect top = NPInnerCorrect x (HOA-base eq , top)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPTop | MPTopCorrect top = MPInnerCorrect x (HOA-base eq , top)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | UTop | UTopCorrect top = UInnerCorrect x (HOA-base eq , top)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPInner w | NPInnerCorrect _ (oa , top) = NPInnerCorrect w (HOA-step eq oa , top)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPInner w | MPInnerCorrect _ (oa , top) = MPInnerCorrect w (HOA-step eq oa , top)
+classify-correct G v ws oas | PC-UP x with≡ eq | false with≡ eq' | UInner w | UInnerCorrect _ (oa , top) = UInnerCorrect w (HOA-step eq oa , top)
+
 data edge-class : Graph → Edge → Set where 
   NPE : ∀{G ε} → Vertex → edge-class G ε
   MPE : ∀{G ε} → Vertex → edge-class G ε
   UE : ∀{G ε} → Vertex → edge-class G ε
   
--- assume ε is assigned +. In fact the whole decomp recomp thing should just consider a graph to be a set of edges, and not account for dead ones.
 edge-classify : (G : Graph) → (ε : Edge) → edge-class G ε 
-edge-classify G (E (S v _ _) _ _ _) with classify G [] v <>
-... | NPTop x = NPE v 
-... | MPTop x = MPE v
-... | UTop x = UE v
-... | NPInner w x = NPE w
-... | MPInner w x = MPE w
-... | UInner w x = UE w
+edge-classify G (E (S v _ _) _ _ _) with classify G v []
+... | NPTop = NPE v 
+... | MPTop = MPE v
+... | UTop = UE v
+... | NPInner w = NPE w
+... | MPInner w = MPE w
+... | UInner w = UE w
 
 
-classify-np-top : (G : Graph) → (v : Vertex) → (eq : NP-top G v) → (classify G [] v <> ≡ NPTop eq)
-classify-np-top G v eq with inspect (classify-parents G v)
-classify-np-top G v eq | (PC-NP with≡ eq') = {!   !}
-
--- not fine enough!
--- record Partitioned-Graph : Set where
---   constructor PG
---   field
---     NP : List Edge
---     MP : List Edge
---     U : List Edge
-
--- partition-graph-rec : Graph → (List Edge) → Partitioned-Graph 
--- partition-graph-rec G [] = PG [] [] []
--- partition-graph-rec G (ε ∷ εs) with edge-classify G ε | partition-graph-rec G εs 
--- ... | NPE x | PG NP MP U = PG (ε ∷ NP) MP U
--- ... | MPE x | PG NP MP U = PG NP (ε ∷ MP) U
--- ... | UE x | PG NP MP U = PG NP MP (ε ∷ U)
- 
--- partition-graph : Graph → Partitioned-Graph 
--- partition-graph G = partition-graph-rec G G
-
--- unpartition-graph : Partitioned-Graph → Graph 
--- unpartition-graph (PG NP MP U) = NP ++ MP ++ U
+-- classify-np-top : (G : Graph) → (v : Vertex) → (eq : NP-top G v) → (classify G [] v <> ≡ NPTop eq)
+-- classify-np-top G v eq with inspect (classify-parents G v)
+-- classify-np-top G v eq | (PC-NP with≡ eq') = {!   !}
 
 list-assoc-update : List (Vertex × Graph) → Vertex → Edge → List (Vertex × Graph)
 list-assoc-update [] v ε = (v , ε ∷ []) ∷ []
@@ -185,11 +227,11 @@ partition-graph-rec : Graph → (List Edge) → Partitioned-Graph
 partition-graph-rec G [] = PG [] [] []
 partition-graph-rec G (ε ∷ εs) with edge-classify G ε | partition-graph-rec G εs 
 ... | NPE x | PG NP MP U = PG (list-assoc-update NP x ε) MP U
-... | MPE x | PG NP MP U = PG NP (list-assoc-update MP x ε)U
+... | MPE x | PG NP MP U = PG NP (list-assoc-update MP x ε)U  
 ... | UE x | PG NP MP U = PG NP MP (list-assoc-update U x ε)
- 
+    
 partition-graph : Graph → Partitioned-Graph 
 partition-graph G = partition-graph-rec G G
-
-unpartition-graph : Partitioned-Graph → Graph  
+ 
+unpartition-graph : Partitioned-Graph → Graph       
 unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U))
