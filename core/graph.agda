@@ -37,24 +37,17 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
 
--- well-sorted-source : Vertex → Pos → Set 
--- well-sorted-source v p = Σ[ S ∈ Sort ] ((p , S) ∈arity Vertex.ctor v)
-
 record Source : Set where
   constructor S
   field 
     v : Vertex
     p : Pos
-    .well-sorted : ⊤ -- well-sorted-source v p
 
 _≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
-S v₁ p₁ _ ≟Source S v₂ p₂ _ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
+S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
 ... | yes refl | yes refl = yes refl
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
-
--- well-sorted-edge : Source → Vertex → Set 
--- well-sorted-edge (S parent pos _) (V ctor _) = (well-sorted-source parent pos) × ((pos , sort ctor) ∈arity (Vertex.ctor parent))
 
 record Edge : Set where
   constructor E
@@ -62,10 +55,9 @@ record Edge : Set where
     source : Source
     child : Vertex
     ident : Ident
-    .wellSorted : ⊤ -- well-sorted-edge source child
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
-E source₁ child₁ ident₁ _ ≟Edge E source₂ child₂ ident₂ _
+E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂
   with source₁ ≟Source source₂
      | child₁ ≟Vertex child₂
      | ident₁ ≟𝕀 ident₂

@@ -14,7 +14,7 @@ mutual
   decomp-sub G (u' , v') = (u' , decomp-v' G v')
 
   decomp-pos : Graph → Ctor → Ident → Pos → List (Ident × Term)
-  decomp-pos G k u p = map (decomp-sub G) (children G (S (V k u) p <>))
+  decomp-pos G k u p = map (decomp-sub G) (children G (S (V k u) p))
 
   decomp-v : Graph → Vertex → Term
   decomp-v G (V k u) = T u k (finite-map pos-finite (decomp-pos G k u)) 
@@ -29,12 +29,12 @@ mutual
   ... | UInner w = decomp-v G v
 
 decomp-ε : Graph → Edge → Term 
-decomp-ε G (E (S v _ _) _ _ _) = decomp-v G v
+decomp-ε G (E (S v _) _ _) = decomp-v G v
 
 -- note: in the actual implementation, this would map over vertices in G directly
 decomp-εs : Graph → List(Edge) → Grove 
 decomp-εs G [] = γ [] [] []
-decomp-εs G (E (S v _ _) _ _ _ ∷ εs) with classify G v [] | decomp-εs G εs
+decomp-εs G (E (S v _) _ _ ∷ εs) with classify G v [] | decomp-εs G εs
 ... | NPTop | γ NP MP U = γ (decomp-v G v ∷ NP) MP U
 ... | MPTop | γ NP MP U = γ NP (decomp-v G v ∷ MP) U
 ... | UTop | γ NP MP U = γ NP MP (decomp-v G v ∷ U)

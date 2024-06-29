@@ -22,33 +22,33 @@ id-min u1 u2 with u1 ≤𝕀 u2
 ... | false = u2
 
 data parent : Graph → (v w : Vertex) → Set where 
-  ParentHave : ∀{G v w a b c d} → parent ((E (S v a b) w c d) ∷ G) v w
+  ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w
   ParentSkip : ∀{G v w ε} → parent G v w → parent (ε ∷ G) v w
 
 -- might need to emit proofs one day
 parents : Graph → Vertex → List(Vertex) 
 parents [] v = [] 
-parents ((E s v? _ _) ∷ G) v with Dec.does (v ≟Vertex v?)
-parents ((E (S w _ _) _ _ _) ∷ G) v | true = w ∷ (parents G v) 
+parents ((E s v? _) ∷ G) v with Dec.does (v ≟Vertex v?)
+parents ((E (S w _) _ _) ∷ G) v | true = w ∷ (parents G v) 
 parents (_ ∷ G) v | false = parents G v
 
 parents-correct : (G : Graph) → (v : Vertex) → list-forall (λ w → parent G w v) (parents G v) 
 parents-correct [] v = <>
-parents-correct ((E s v? _ _) ∷ G) v with Dec.does (v ≟Vertex v?) | Dec.proof (v ≟Vertex v?)
-parents-correct (E (S w _ _) v _ _ ∷ G) .v | true | ofʸ refl = ParentHave , list-forall-implies (parents-correct G v) (λ x → ParentSkip x)
+parents-correct ((E s v? _) ∷ G) v with Dec.does (v ≟Vertex v?) | Dec.proof (v ≟Vertex v?)
+parents-correct (E (S w _) v _ ∷ G) .v | true | ofʸ refl = ParentHave , list-forall-implies (parents-correct G v) (λ x → ParentSkip x)
 parents-correct (_ ∷ G) v | false | _ = list-forall-implies (parents-correct G v) (λ x → ParentSkip x)
 
 -- might need to emit proofs one day
 children : Graph → Source → List(Ident × Vertex) 
 children [] s = [] 
-children ((E s? _ _ _) ∷ G) s with Dec.does (s ≟Source s?)
-children ((E _ v u _) ∷ G) s | true = (u , v) ∷ (children G s) 
+children ((E s? _ _) ∷ G) s with Dec.does (s ≟Source s?)
+children ((E _ v u) ∷ G) s | true = (u , v) ∷ (children G s) 
 children (_ ∷ G) s | false = children G s
 
-children-correct : (G : Graph) → (v : Vertex) → (p : Pos) → list-forall (λ (_ , w) → parent G v w) (children G (S v p <>))
+children-correct : (G : Graph) → (v : Vertex) → (p : Pos) → list-forall (λ (_ , w) → parent G v w) (children G (S v p))
 children-correct [] v p = <>
-children-correct ((E s? _ _ _) ∷ G) v p with Dec.does ((S v p <>) ≟Source s?) | Dec.proof ((S v p <>) ≟Source s?)
-children-correct ((E _ w u _) ∷ G) v p | true | ofʸ refl = ParentHave , (list-forall-implies (children-correct G v p) (λ x → ParentSkip x))
+children-correct ((E s? _ _) ∷ G) v p with Dec.does ((S v p) ≟Source s?) | Dec.proof ((S v p) ≟Source s?)
+children-correct ((E _ w u) ∷ G) v p | true | ofʸ refl = ParentHave , (list-forall-implies (children-correct G v p) (λ x → ParentSkip x))
 children-correct (_ ∷ G) v p | false | _ = list-forall-implies (children-correct G v p) (λ x → ParentSkip x)
 
 data parent-class : Graph → Vertex → Set where 
@@ -226,7 +226,7 @@ data edge-class : Graph → Edge → Set where
   UE : ∀{G ε} → Vertex → edge-class G ε
   
 edge-classify : (G : Graph) → (ε : Edge) → edge-class G ε 
-edge-classify G (E (S v _ _) _ _ _) with classify G v []
+edge-classify G (E (S v _) _ _) with classify G v []
 ... | NPTop = NPE v 
 ... | MPTop = MPE v
 ... | UTop = UE v
@@ -262,5 +262,5 @@ partition-graph-rec G (ε ∷ εs) with edge-classify G ε | partition-graph-rec
 partition-graph : Graph → Partitioned-Graph 
 partition-graph G = partition-graph-rec G G
  
-unpartition-graph : Partitioned-Graph → Graph       
+unpartition-graph : Partitioned-Graph → Graph          
 unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U)) 

@@ -19,4 +19,4 @@ record Grove : Set₁ where
   field
     NP : Θ
     MP : Θ
-    U : Θ
+    U : Θ 

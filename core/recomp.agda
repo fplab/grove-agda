@@ -15,7 +15,7 @@ vertex-of-term (⤾ v) = v
 {-# TERMINATING #-}
 mutual 
   recomp-sub : Ctor → Ident → Pos → (Ident × Term) → List Edge
-  recomp-sub k u p (u' , t) = (E (S (V k u) p <>) (vertex-of-term t) u' <>) ∷ (recomp-t t)
+  recomp-sub k u p (u' , t) = (E (S (V k u) p) (vertex-of-term t) u') ∷ (recomp-t t)
 
   recomp-pos : Ident → Ctor → (Finite-Fun Pos (List (Ident × Term)) pos-finite) → Pos → (List Edge)
   recomp-pos u k ts p = concat (map (recomp-sub k u p) (apply-finite-map pos-finite ts p))

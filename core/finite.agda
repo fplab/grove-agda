@@ -4,6 +4,7 @@ module core.finite where
 open import core.logic
 open import Data.List
 open import Relation.Binary.PropositionalEquality hiding (inspect)
+open import Data.Bool hiding (_<_; _≟_)
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
 
   
@@ -16,6 +17,39 @@ data Finite : Set → Set₁ where
     ((a : (⊤ + A)) → g (f a) ≡ a) → 
     ((b : B) → f (g b) ≡ b) → 
     Finite B
+
+
+-- these are just to help validate the definition
+
+finite-top : Finite ⊤
+finite-top = FinCons {A = ⊥} (FinEmpty (λ z → z)) f g gf fg
+  where 
+  f : ⊤ + ⊥ → ⊤
+  f (Inl <>) = <>
+  f (Inr ())
+  g : ⊤ → ⊤ + ⊥ 
+  g <> = (Inl <>)
+  gf : (a : ⊤ + ⊥) → g (f a) ≡ a
+  gf (Inl <>) = refl
+  gf (Inr ())
+  fg : (b : ⊤) → f (g b) ≡ b
+  fg <> = refl
+
+finite-bool : Finite Bool
+finite-bool = FinCons {A = ⊤} finite-top f g gf fg
+  where 
+  f : ⊤ + ⊤ → Bool
+  f (Inl <>) = true
+  f (Inr <>) = false
+  g : Bool → ⊤ + ⊤ 
+  g true = (Inl <>)
+  g false = (Inr <>)
+  gf : (a : ⊤ + ⊤) → g (f a) ≡ a
+  gf (Inl <>) = refl
+  gf (Inr <>) = refl
+  fg : (b : Bool) → f (g b) ≡ b
+  fg true = refl
+  fg false = refl
 
 data Finite-Fun : (A : Set) → (B : Set₁) → (Finite A) → Set₁ where 
   FinFunEmpty : {A : Set} → {B : Set₁} → (empty : A → ⊥) → Finite-Fun A B (FinEmpty empty)
