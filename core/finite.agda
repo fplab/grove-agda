@@ -1,7 +1,6 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module core.finite where
   
-open import Data.List
 open import core.logic
 open import Data.List hiding (lookup)
 open import Data.Fin
@@ -28,6 +27,9 @@ lookup-vec-of-map : {A : Set} → {n : ℕ} → (f : (Fin n) → A) → (i : Fin
 lookup-vec-of-map {n = suc n} f zero = refl
 lookup-vec-of-map {n = suc n} f (suc i) = lookup-vec-of-map (λ z → f (suc z)) i
 
+comprehend : {A B : Set} → {n : ℕ} → (Vec A n) → ((Fin n) → A → B) → List B 
+comprehend {n = zero} [] f = []
+comprehend {n = suc n} (a ∷ v) f = (f zero a) ∷ comprehend v (λ x → f (suc x))
 
 -- ++assoc : {A : Set} → (l1 l2 l3 : List A) → (l1 ++ l2) ++ l3 ≡ l1 ++ (l2 ++ l3)
 -- ++assoc [] l2 l3 = refl
@@ -36,8 +38,3 @@ lookup-vec-of-map {n = suc n} f (suc i) = lookup-vec-of-map (λ z → f (suc z))
 -- append-exist : {A : Set} → (P : A → Set) → (l1 l2 : List A) → (a : A) → list-exists P l2 → list-exists P (l1 ++ l2)
 -- append-exist P [] l2 a ex = ex
 -- append-exist P (x ∷ l1) l2 a ex = ListExistsSkip x (append-exist P l1 l2 a ex)
-
--- forall-map-implies : {A B : Set} → {P1 : A → Set} → {P2 : B → Set} → {l : List A} → {f : A → B} → list-forall P1 l → ({a : A} → (P1 a) → (P2 (f a))) → list-forall P2 (map f l)
--- forall-map-implies {A} {B} {P1} {P2} {[]} {f} fa i = <>
--- forall-map-implies {A} {B} {P1} {P2} {x ∷ l} {f} (p , fa) i = i p , forall-map-implies {A} {B} {P1} {P2} {l} {f} fa i
- 

@@ -6,6 +6,7 @@ open import Relation.Binary.PropositionalEquality hiding(inspect)
 open import Relation.Nullary hiding(¬_)
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List
+open import Data.Fin
 open import Data.Maybe hiding(map) 
 open import Data.Nat hiding (_+_)
 
@@ -45,7 +46,7 @@ children ((E s? _ _) ∷ G) s with Dec.does (s ≟Source s?)
 children ((E _ v u) ∷ G) s | true = (u , v) ∷ (children G s) 
 children (_ ∷ G) s | false = children G s
 
-children-correct : (G : Graph) → (v : Vertex) → (p : Pos) → list-forall (λ (_ , w) → parent G v w) (children G (S v p))
+children-correct : (G : Graph) → (v : Vertex) → (p : Fin (arity-v v)) → list-forall (λ (_ , w) → parent G v w) (children G (S v p))
 children-correct [] v p = <>
 children-correct ((E s? _ _) ∷ G) v p with Dec.does ((S v p) ≟Source s?) | Dec.proof ((S v p) ≟Source s?)
 children-correct ((E _ w u) ∷ G) v p | true | ofʸ refl = ParentHave , (list-forall-implies (children-correct G v p) (λ x → ParentSkip x))

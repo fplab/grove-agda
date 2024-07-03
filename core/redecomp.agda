@@ -13,6 +13,8 @@ open import core.partition-graph
 open import core.decomp
 open import core.recomp
 
+-- this file is a mess. do not attempt to use. 
+
 -- all using the old, coarse partitioning
 -- redepart-rec : (G : Graph) → (εs : List Edge) → list-equiv (unpartition-graph (partition-graph-rec G εs)) εs
 -- redepart-rec G [] = ListEquivRefl []

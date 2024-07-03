@@ -73,6 +73,10 @@ list-forall-implies : {A : Set} → {P1 P2 : A → Set} → {l : List A} → lis
 list-forall-implies {l = []} f i = <>
 list-forall-implies {l = x ∷ l} (p , f) i = i p , list-forall-implies f i
 
+forall-map-implies : {A B : Set} → {P1 : A → Set} → {P2 : B → Set} → {l : List A} → {f : A → B} → list-forall P1 l → ({a : A} → (P1 a) → (P2 (f a))) → list-forall P2 (map f l)
+forall-map-implies {A} {B} {P1} {P2} {[]} {f} fa i = <>
+forall-map-implies {A} {B} {P1} {P2} {x ∷ l} {f} (p , fa) i = i p , forall-map-implies {A} {B} {P1} {P2} {l} {f} fa i
+
 list-forall-× : {A : Set} → {P1 P2 : A → Set} → {l : List A} → (list-forall P1 l) → (list-forall P2 l) → list-forall (λ a → (P1 a) × (P2 a)) l
 list-forall-× {l = []} <> <> = <>
 list-forall-× {l = x ∷ l} (p1 , f1) (p2 , f2) = (p1 , p2) , list-forall-× f1 f2

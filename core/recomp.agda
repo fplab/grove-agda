@@ -1,6 +1,9 @@
 module core.recomp where
 
-open import Data.List
+open import Data.Nat
+open import Data.List hiding(lookup)
+open import Data.Fin
+open import Data.Vec hiding(_++_; concat; map)
 
 open import prelude
 open import core.finite
@@ -13,16 +16,16 @@ vertex-of-term (T u k _) = V k u
 vertex-of-term (⋎ v) = v
 vertex-of-term (⤾ v) = v
 
-{-# TERMINATING #-}
 mutual 
-  recomp-sub : Ctor → Ident → Pos → (Ident × Term) → List Edge
-  recomp-sub k u p (u' , t) = (E (S (V k u) p) (vertex-of-term t) u') ∷ (recomp-t t)
+  recomp-sub : Ident → (k : Ctor) → (p : Fin (arity k)) → (Ident × Term) → List Edge
+  recomp-sub u k p (u' , t) = (E (S (V k u) p) (vertex-of-term t) u') ∷ (recomp-t t)
 
-  recomp-pos : Ident → Ctor → (Finite-Fun Pos (List (Ident × Term)) pos-finite) → Pos → (List Edge)
-  recomp-pos u k ts p = concat (map (recomp-sub k u p) (apply-finite-map pos-finite ts p))
+  recomp-pos : Ident → (k : Ctor) → (p : Fin (arity k)) → (List (Ident × Term)) → (List Edge)
+  recomp-pos u k p ts = concat (map (recomp-sub u k p) ts)
 
-  recomp-t : Term → List(Edge)
-  recomp-t (T u k ts) = concat (finite-comprehension pos-finite λ p → recomp-pos u k ts p)
+  {-# TERMINATING #-}
+  recomp-t : Term → (List Edge)
+  recomp-t (T u k ts) = concat (comprehend ts (recomp-pos u k))
   recomp-t (⋎ x) = []
   recomp-t (⤾ x) = []
 
@@ -31,4 +34,4 @@ recomp-ts [] = []
 recomp-ts (t ∷ ts) = (recomp-t t) ++ (recomp-ts ts)
   
 recomp-grove : Grove → Graph 
-recomp-grove (γ NP MP U) = (recomp-ts NP) ++ (recomp-ts MP) ++ (recomp-ts U)
+recomp-grove (γ np mp u) = (recomp-ts np) ++ (recomp-ts mp) ++ (recomp-ts u)
