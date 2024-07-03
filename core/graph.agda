@@ -4,6 +4,7 @@ open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_⊔_; _+_)
 open import Data.List
+open import Data.Fin
 open import Function.Equivalence hiding (_∘_)
 open import Function hiding (_⇔_)
 open import Function.Equality using (_⟨$⟩_)
@@ -17,9 +18,7 @@ postulate
   Ctor : Set 
   _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
 
-  Pos : Set
-  pos-finite : Finite Pos
-  _≟ℙ_ : (p₁ p₂ : Pos) → Dec (p₁ ≡ p₂)
+  arity : Ctor → ℕ
 
   Ident : Set
   _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
@@ -41,13 +40,14 @@ record Source : Set where
   constructor S
   field 
     v : Vertex
-    p : Pos
+    p : Fin (arity (Vertex.ctor v))
 
 _≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
-S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂ | p₁ ≟ℙ p₂
-... | yes refl | yes refl = yes refl
-... | _        | no p     = no (λ { refl → p refl })
-... | no p     | _        = no (λ { refl → p refl })
+S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂
+S v₁ p₁ ≟Source S v₂ p₂ | yes refl with p₁ ≟Fin p₂ 
+S v₁ p₁ ≟Source S v₂ p₂ | yes refl | yes refl = yes refl
+S v₁ p₁ ≟Source S v₂ p₂ | yes refl | no neq = no (λ { refl → neq refl })
+S v₁ p₁ ≟Source S v₂ p₂ | no neq = no (λ { refl → neq refl })
 
 record Edge : Set where
   constructor E
