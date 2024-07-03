@@ -1,5 +1,6 @@
 module core.decomp where
 
+open import Data.Fin
 open import Data.List
 open import core.logic
 open import core.finite
@@ -13,11 +14,11 @@ mutual
   decomp-sub : Graph → (Ident × Vertex) → (Ident × Term)
   decomp-sub G (u' , v') = (u' , decomp-v' G v')
 
-  decomp-pos : Graph → Ctor → Ident → Pos → List (Ident × Term)
+  decomp-pos : Graph → (k : Ctor) → Ident → (p : Fin (arity k)) → List (Ident × Term)
   decomp-pos G k u p = map (decomp-sub G) (children G (S (V k u) p))
 
   decomp-v : Graph → Vertex → Term
-  decomp-v G (V k u) = T u k (finite-map pos-finite (decomp-pos G k u)) 
+  decomp-v G (V k u) = T u k (vec-of-map (decomp-pos G k u)) 
 
   decomp-v' : Graph → Vertex → Term 
   decomp-v' G v with classify G v [] 
@@ -44,7 +45,3 @@ decomp-εs G (E (S v _) _ _ ∷ εs) with classify G v [] | decomp-εs G εs
 
 decomp-G : Graph → Grove 
 decomp-G G = decomp-εs G G
-
--- WRONG!!!
--- decomp-PG : Graph → Partitioned-Graph → Grove 
--- decomp-PG G (PG NP MP U) = γ (map (decomp-ε G) NP) (map (decomp-ε G) MP) (map (decomp-ε G) U)

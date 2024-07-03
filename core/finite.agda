@@ -2,9 +2,10 @@
 module core.finite where
   
 open import core.logic
-open import Data.List
+open import Data.List hiding (lookup)
 open import Data.Fin
 open import Data.Nat
+open import Data.Vec
 open import Relation.Binary.PropositionalEquality hiding (inspect)
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
@@ -18,6 +19,14 @@ zero ≟Fin (suc _) = no (λ ())
 ... | yes refl = yes refl
 ... | no neq = no (λ { refl → neq refl })
 
+vec-of-map : {A : Set} → {n : ℕ} → ((Fin n) → A) → Vec A n
+vec-of-map {n = zero} f = []
+vec-of-map {n = suc n} f = f zero ∷ vec-of-map {n = n} (λ x → f (suc x))
+
+lookup-vec-of-map : {A : Set} → {n : ℕ} → (f : (Fin n) → A) → (i : Fin n) → (lookup (vec-of-map f) i ≡ (f i))
+lookup-vec-of-map {n = suc n} f zero = refl
+lookup-vec-of-map {n = suc n} f (suc i) = lookup-vec-of-map (λ z → f (suc z)) i
+
 
 -- ++assoc : {A : Set} → (l1 l2 l3 : List A) → (l1 ++ l2) ++ l3 ≡ l1 ++ (l2 ++ l3)
 -- ++assoc [] l2 l3 = refl
@@ -30,3 +39,4 @@ zero ≟Fin (suc _) = no (λ ())
 -- forall-map-implies : {A B : Set} → {P1 : A → Set} → {P2 : B → Set} → {l : List A} → {f : A → B} → list-forall P1 l → ({a : A} → (P1 a) → (P2 (f a))) → list-forall P2 (map f l)
 -- forall-map-implies {A} {B} {P1} {P2} {[]} {f} fa i = <>
 -- forall-map-implies {A} {B} {P1} {P2} {x ∷ l} {f} (p , fa) i = i p , forall-map-implies {A} {B} {P1} {P2} {l} {f} fa i
+ 

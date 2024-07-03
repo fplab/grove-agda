@@ -36,11 +36,14 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
 
+arity-v : Vertex → ℕ
+arity-v (V k _) = arity k
+
 record Source : Set where
   constructor S
   field 
     v : Vertex
-    p : Fin (arity (Vertex.ctor v))
+    p : Fin (arity-v v)
 
 _≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
 S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂

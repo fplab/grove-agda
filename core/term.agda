@@ -4,14 +4,14 @@ open import core.graph
 open import core.logic
 open import core.finite
 open import Data.List
+open import Data.Vec
 
-{-# NO_POSITIVITY_CHECK #-}
-data Term : Set₁ where
- T : Ident → Ctor → (Finite-Fun Pos (List (Ident × Term)) pos-finite) → Term 
+data Term : Set where
+ T : Ident → (k : Ctor) → (Vec (List (Ident × Term)) (arity k)) → Term 
  ⋎ : Vertex → Term 
  ⤾ : Vertex → Term
 
-Θ : Set₁
+Θ : Set
 Θ = (List Term)
 
 record Grove : Set₁ where
