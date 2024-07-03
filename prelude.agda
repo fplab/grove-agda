@@ -1,188 +1,113 @@
 module prelude where
-  -- top
-  data ⊤ : Set where
-    ⟨⟩ : ⊤
 
-  -- bottom
-  data ⊥ : Set where
+open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
+open import Data.List
+open import Relation.Binary.PropositionalEquality hiding ([_]; inspect)
 
-  ⊥-elim : ∀ {A : Set} → ⊥ → A
-  ⊥-elim ()
+private
+  variable
+    ℓ ℓ₁ ℓ₂ ℓ₃ : Level
 
-  -- case
-  case_of_ : ∀ {a b} {A : Set a} {B : Set b} → A → (A → B) → B
-  case x of f = f x
+-- empty type
+data ⊥ : Set where
 
-  -- bools
-  data Bool : Set where
-    true  : Bool
-    false : Bool
-  
-  -- if then else
-  if_then_else_ : ∀ {a} {A : Set a} → Bool → A → A → A
-  if true  then t else f = t
-  if false then t else f = f
+-- from false, derive whatever
+abort : ∀ {C : Set ℓ} → ⊥ → C
+abort ()
 
-  -- negation
-  module negation where
-    open import Agda.Primitive using (Level)
+-- negation 
+open import Agda.Primitive using (Level)
+¬_ : Set ℓ → Set ℓ
+¬ A = A → ⊥
 
-    ¬_ : ∀ {ℓ : Level} → Set ℓ → Set ℓ
-    ¬ A = A → ⊥
+-- unit
+data ⊤ {ℓ} : Set ℓ where
+  <> : ⊤
 
-  -- decidability
-  module decidability where
-    open negation
-    open import Agda.Primitive using (Level)
-    open import Relation.Nullary using (Dec)
-    
-    -- data Dec (A : Set) : Set where
-    --   yes :   A → Dec A
-    --   no  : ¬ A → Dec  
+-- pairs
+infixr 1 _,_
+record Σ (A : Set ℓ₁) (B : A → Set ℓ₂) : Set (lmax ℓ₁ ℓ₂) where
+  constructor _,_
+  field
+    π1 : A
+    π2 : B π1
+open Σ public
 
-    
-  -- equality
-  module eq where
-    open import Agda.Primitive using (Level)
-    open negation
+-- Sigma types, or dependent pairs, with nice notation.
+syntax Σ A (\ x -> B) = Σ[ x ∈ A ] B
 
-    infix 4 _≡_
-    infix 4 _≢_
+_×_ : (Set ℓ₁) → (Set ℓ₂) → Set (lmax ℓ₁ ℓ₂)
+A × B = Σ A λ _ → B
 
-    data _≡_ {ℓ : Level} {A : Set ℓ} (x : A) : A → Set ℓ where
-      refl : x ≡ x
-    -- {-# BUILTIN EQUALITY _≡_ #-}
+-- sums
+data _+_ (A : Set ℓ₁) (B : Set ℓ₂) : Set (lmax ℓ₁ ℓ₂) where
+  Inl : A → A + B
+  Inr : B → A + B
 
-    _≢_ : ∀ {ℓ : Level} {A : Set ℓ} → A → A → Set ℓ
-    x ≢ y = ¬ (x ≡ y)
+infixr 1 _×_
+infixr 1 _+_
 
-    ≡-sym : ∀ {ℓ : Level} {A : Set ℓ} {x y : A} → x ≡ y → y ≡ x
-    ≡-sym refl = refl
+data Singleton {A : Set ℓ} (x : A) : Set ℓ where
+  _with≡_ : (y : A) → x ≡ y → Singleton x
 
-    postulate
-      extensionality : ∀ {A B : Set} {f g : A → B}
-        → (∀ (x : A) → f x ≡ g x)
-          -----------------------
-        → f ≡ g
+inspect : ∀ {A : Set ℓ} (x : A) → Singleton x
+inspect x = x with≡ refl
 
-    ¬-≡ : ∀ {A : Set} → (¬a : ¬ A) → (¬a′ : ¬ A) → ¬a ≡ ¬a′
-    ¬-≡ ¬a ¬a′ = extensionality λ { a → ⊥-elim (¬a a) }
+list-forall : ∀ {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → (Set (lmax ℓ₁ ℓ₂))
+list-forall P [] = ⊤
+list-forall P (a ∷ l) = (P a) × (list-forall P l)
 
-    transport : {ℓ ℓ′ : Level} {A : Set ℓ} {x y : A}
-              → (B : A → Set ℓ′) → x ≡ y → B x → B y
-    transport B refl x = x
+list-forall-append : {A : Set} → {P : A → Set} → {l1 l2 : List A} → (list-forall P l1) → (list-forall P l2) → (list-forall P (l1 ++ l2))
+list-forall-append {l1 = []} <> f2 = f2
+list-forall-append {l1 = _ ∷ _} (p , f1) f2 = p , list-forall-append f1 f2
 
-    assimilation : ∀ {A : Set} (¬x ¬x′ : ¬ A) → ¬x ≡ ¬x′
-    assimilation ¬x ¬x′ = extensionality (λ x → ⊥-elim (¬x x))
+list-forall-concat : {A : Set} → {P : A → Set} → {ls : List (List A)} → (list-forall (λ l → list-forall P l) ls) → list-forall P (concat ls)
+list-forall-concat {ls = []} f = <>
+list-forall-concat {ls = l ∷ ls} (p , f) = list-forall-append p (list-forall-concat f)
 
-  -- naturals
-  module nat where
-    open eq
-    open decidability
-    open import Relation.Nullary using (Dec; yes; no)
+list-forall-map : ∀ {A : Set ℓ₁} → {B : Set ℓ₂} → {P : B → Set ℓ₃} → {l : List A} → {f : A → B} → (list-forall (λ a → P (f a)) l) → list-forall P (map f l)
+list-forall-map {l = []} fa = <>
+list-forall-map {l = x ∷ l} (p , fa) = p , list-forall-map fa
 
-    data ℕ : Set where
-      zero : ℕ
-      suc  : ℕ → ℕ
-    {-# BUILTIN NATURAL ℕ #-}
+list-forall-implies : {A : Set} → {P1 P2 : A → Set} → {l : List A} → list-forall P1 l → ({a : A} → (P1 a) → (P2 a)) → list-forall P2 l
+list-forall-implies {l = []} f i = <>
+list-forall-implies {l = x ∷ l} (p , f) i = i p , list-forall-implies f i
 
-    suc-≡ : ∀ {m n} → m ≡ n → suc m ≡ suc n
-    suc-≡ refl = refl
+list-forall-× : {A : Set} → {P1 P2 : A → Set} → {l : List A} → (list-forall P1 l) → (list-forall P2 l) → list-forall (λ a → (P1 a) × (P2 a)) l
+list-forall-× {l = []} <> <> = <>
+list-forall-× {l = x ∷ l} (p1 , f1) (p2 , f2) = (p1 , p2) , list-forall-× f1 f2
 
-    suc-inj : ∀ {m n} → suc m ≡ suc n → m ≡ n
-    suc-inj refl = refl
+data list-exists {ℓ₁ ℓ₂} : {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → Set (lmax (lsuc ℓ₁) (lsuc ℓ₂)) where 
+  ListExistsHave : {A : Set ℓ₁} → {P : A → Set ℓ₂} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
+  ListExistsSkip : {A : Set ℓ₁} → {P : A → Set ℓ₂} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
 
-    suc-≢ : ∀ {m n} → m ≢ n → suc m ≢ suc n
-    suc-≢ {zero}  z≢z   refl    = z≢z refl
-    suc-≢ {suc m} sm≢sn ssm≡ssn = sm≢sn (suc-inj ssm≡ssn)
+data list-equiv {ℓ} : {A : Set ℓ} → (l1 l2 : List A) → Set (lsuc ℓ) where 
+  -- congruence
+  ListEquivNil : {A : Set ℓ} → (list-equiv {ℓ} {A} [] [])
+  ListEquivCons : {A : Set ℓ} → {l1 l2 : List A} → (a : A) → (list-equiv l1 l2) → (list-equiv (a ∷ l1) (a ∷ l2))
+  -- symmetry
+  ListEquivSym : {A : Set ℓ} → {l1 l2 : List A} → (list-equiv l1 l2) → (list-equiv l2 l1)
+  -- transitvity
+  ListEquivTrans : {A : Set ℓ} → {l1 l2 l3 : List A} → (list-equiv l1 l2) → (list-equiv l2 l3) → (list-equiv l1 l3)
+  -- allow permutations
+  ListEquivSwap : {A : Set ℓ} → {l1 l2 : List A} → (a b : A) → (list-equiv l1 l2) → (list-equiv (a ∷ b ∷ l1) (b ∷ a ∷ l2))
+  -- todo? allow repeat entries
 
-    _≡ℕ?_ : (m : ℕ) → (n : ℕ) → Dec (m ≡ n)
-    zero  ≡ℕ? zero               = yes refl
-    zero  ≡ℕ? suc n              = no (λ ())
-    suc m ≡ℕ? zero               = no (λ ())
-    suc m ≡ℕ? suc n with m ≡ℕ? n
-    ...                | yes m≡n = yes (suc-≡ m≡n)
-    ...                | no m≢n  = no  (suc-≢ m≢n)
+ListEquivRefl : {A : Set} → (l : List A) → (list-equiv l l)
+ListEquivRefl [] = ListEquivNil
+ListEquivRefl (x ∷ l) = ListEquivCons x (ListEquivRefl l)
 
-  -- products
-  module product where
-    open import Agda.Primitive using (Level; _⊔_)
+ListEquivApp : {A : Set} → {l1 l2 l3 l4 : List A} → (list-equiv l1 l2) → (list-equiv l3 l4) → (list-equiv (l1 ++ l3) (l2 ++ l4))
+ListEquivApp ListEquivNil eq = eq
+ListEquivApp (ListEquivCons a e) eq = ListEquivCons a (ListEquivApp e eq)
+ListEquivApp (ListEquivSym e) eq = ListEquivSym (ListEquivApp e (ListEquivSym eq))
+ListEquivApp (ListEquivTrans e e₁) eq = ListEquivTrans (ListEquivApp e eq) (ListEquivApp e₁ (ListEquivTrans (ListEquivSym eq) eq))
+ListEquivApp (ListEquivSwap a b e) eq = ListEquivSwap a b (ListEquivApp e eq)
 
-    -- dependent products
-    record Σ {ℓ ℓ′ : Level} (A : Set ℓ) (B : A → Set ℓ′) : Set (ℓ ⊔ ℓ′) where
-      constructor ⟨_,_⟩
-      field
-        fst : A
-        snd : B fst
-    infixr 4 ⟨_,_⟩
-    {-# BUILTIN SIGMA Σ #-}
+ListEquivAppCons : {A : Set} → (l1 l2 : List A) → (a : A) → (list-equiv (l1 ++ (a ∷ l2)) (a ∷ (l1 ++ l2)))
+ListEquivAppCons [] l2 a = ListEquivCons a (ListEquivRefl l2)
+ListEquivAppCons (x ∷ l1) l2 a = ListEquivTrans (ListEquivCons x (ListEquivAppCons l1 l2 a)) (ListEquivSwap x a (ListEquivRefl _)) 
 
-    -- nice syntax
-    open Σ public
-      renaming (fst to proj₁; snd to proj₂)
-
-    Σ-syntax = Σ
-    syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
-    infix 2 Σ-syntax
-
-    -- existence
-    ∃ : ∀ {ℓ ℓ′ : Level} {A : Set ℓ} → (A → Set ℓ′) → Set (ℓ ⊔ ℓ′)
-    ∃ = Σ _
-
-    -- existence syntax
-    infix 2 ∃-syntax
-    ∃-syntax : ∀ {ℓ ℓ′ : Level} {A : Set ℓ} → (A → Set ℓ′) → Set (ℓ ⊔ ℓ′)
-    ∃-syntax = ∃
-    syntax ∃-syntax (λ x → B) = ∃[ x ] B
-
-    -- non-dependent products
-    _×_ : ∀ {ℓ ℓ′ : Level} (A : Set ℓ) (B : Set ℓ′) → Set (ℓ ⊔ ℓ′)
-    A × B = Σ[ x ∈ A ] B
-    infixr 2 _×_
-
-  module list where
-    data List (A : Set) : Set where
-      []  : List A
-      _∷_ : A → List A → List A
-
-    infixr 99 _∷_
-    infixr 9 _++_
-
-
-    pattern ∣[_] z = z ∷ []
-    pattern ∣[_,_] y z = y ∷ z ∷ []
-    pattern ∣[_,_,_] x y z = x ∷ y ∷ z ∷ []
-    pattern ∣[_,_,_,_] w x y z = w ∷ x ∷ y ∷ z ∷ []
-    pattern ∣[_,_,_,_,_] v w x y z = v ∷ w ∷ x ∷ y ∷ z ∷ []
-    pattern ∣[_,_,_,_,_,_] u v w x y z = u ∷ v ∷ w ∷ x ∷ y ∷ z ∷ []
-
-    _++_ : ∀ {A : Set} → List A → List A → List A
-    []       ++ ys = ys
-    (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
-
-  module iso where
-    open eq using (_≡_)
-
-    infix 0 _≃_
-    record _≃_ (A B : Set) : Set where
-      field
-        to      : A → B
-        from    : B → A
-        from∘to : ∀ (x : A) → from (to x) ≡ x
-        to∘from : ∀ (y : B) → to (from y) ≡ y
-
-  module iff where
-    infix 0 _⇔_
-    record _⇔_ (A B : Set) : Set where
-      field
-        to : A → B
-        from : B → A
-
-  open negation public
-  open decidability public
-  open eq public
-  open nat public
-  open product public
-  open list public
-  open iso public
-  open iff public
+ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
+ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a         
+ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))

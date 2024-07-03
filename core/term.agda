@@ -1,7 +1,9 @@
 module core.term where
 
+open import Data.List
+
+open import prelude
 open import core.graph
-open import core.logic
 open import core.finite
 open import Data.List
 open import Data.Vec

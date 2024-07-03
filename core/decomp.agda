@@ -2,7 +2,8 @@ module core.decomp where
 
 open import Data.Fin
 open import Data.List
-open import core.logic
+
+open import prelude
 open import core.finite
 open import core.graph
 open import core.term

@@ -5,7 +5,7 @@ open import Relation.Nullary hiding(¬_)
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List
 
-open import core.logic
+open import prelude
 open import core.finite
 open import core.graph
 open import core.term

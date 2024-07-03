@@ -9,7 +9,7 @@ open import Data.List
 open import Data.Maybe hiding(map) 
 open import Data.Nat hiding (_+_)
 
-open import core.logic
+open import prelude
 open import core.finite
 open import core.graph
 
