@@ -1,9 +1,10 @@
 module core.term where
 
-open import core.graph
-open import core.logic
-open import core.finite
 open import Data.List
+
+open import prelude
+open import core.graph
+open import core.finite
 
 {-# NO_POSITIVITY_CHECK #-}
 data Term : Set₁ where

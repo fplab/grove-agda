@@ -1,7 +1,6 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module core.finite where
   
-open import core.logic
 open import Data.List
 open import Data.Fin
 open import Data.Nat
@@ -17,7 +16,6 @@ zero ≟Fin (suc _) = no (λ ())
 (suc n) ≟Fin (suc m) with n ≟Fin m
 ... | yes refl = yes refl
 ... | no neq = no (λ { refl → neq refl })
-
 
 -- ++assoc : {A : Set} → (l1 l2 l3 : List A) → (l1 ++ l2) ++ l3 ≡ l1 ++ (l2 ++ l3)
 -- ++assoc [] l2 l3 = refl

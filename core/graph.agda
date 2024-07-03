@@ -11,7 +11,8 @@ open import Function.Equality using (_⟨$⟩_)
 open import Level using (Level)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
-open import core.logic
+
+open import prelude
 open import core.finite
 
 postulate
