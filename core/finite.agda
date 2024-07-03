@@ -7,12 +7,15 @@ open import Relation.Binary.PropositionalEquality hiding (inspect)
 open import Data.Bool hiding (_<_; _≟_)
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
 
+private
+  variable
+    ℓ ℓ₁ ℓ₂ ℓ₃ : Level
   
-data Finite : Set → Set₁ where 
-  FinEmpty : {A : Set} → (A → ⊥) → Finite A 
-  FinCons : {A B : Set} → 
+data Finite {ℓ} : Set ℓ → Set (lsuc ℓ) where 
+  FinEmpty : {A : Set ℓ} → (A → ⊥) → Finite A 
+  FinCons : {A B : Set ℓ} → 
     (Finite A) → 
-    (f : (⊤ + A) → B) → 
+    (f : (_+_ {lzero} ⊤ A) → B) → 
     (g : B → (⊤ + A)) → 
     ((a : (⊤ + A)) → g (f a) ≡ a) → 
     ((b : B) → f (g b) ≡ b) → 
@@ -51,9 +54,9 @@ finite-bool = FinCons {A = ⊤} finite-top f g gf fg
   fg true = refl
   fg false = refl
 
-data Finite-Fun : (A : Set) → (B : Set₁) → (Finite A) → Set₁ where 
-  FinFunEmpty : {A : Set} → {B : Set₁} → (empty : A → ⊥) → Finite-Fun A B (FinEmpty empty)
-  FinFunCons : {A B : Set} → {C : Set₁}→ 
+data Finite-Fun {ℓ₁ ℓ₂} : (A : Set ℓ₁) → (B : Set ℓ₂) → (Finite A) → (Set (lmax (lsuc ℓ₁) (lsuc ℓ₂))) where 
+  FinFunEmpty : {A : Set ℓ₁} → {B : Set ℓ₂} → (empty : A → ⊥) → Finite-Fun A B (FinEmpty empty)
+  FinFunCons : {A B : Set ℓ₁} {C : Set ℓ₂}→ 
     (fin : Finite A) → 
     (f : (⊤ + A) → B) → 
     (g : B → (⊤ + A)) → 
@@ -63,17 +66,17 @@ data Finite-Fun : (A : Set) → (B : Set₁) → (Finite A) → Set₁ where
     (c : C) → 
     (Finite-Fun B C (FinCons fin f g i1 i2))
 
-finite-map : {B : Set} → {C : Set₁} → (fin : Finite B) → (B → C) → (Finite-Fun B C fin)
+finite-map : {B : Set ℓ} → {C : Set ℓ} → (fin : Finite B) → (B → C) → (Finite-Fun B C fin)
 finite-map (FinEmpty x) F = FinFunEmpty x
 finite-map (FinCons fin f g i1 i2) F = FinFunCons fin f g i1 i2 (finite-map fin (λ a → F (f (Inr a)))) (F (f (Inl <>)))
 
-apply-finite-map : {B : Set} → {C : Set₁} → (fin : Finite B) → (Finite-Fun B C fin) → B → C 
+apply-finite-map : {B : Set ℓ} → {C : Set ℓ} → (fin : Finite B) → (Finite-Fun B C fin) → B → C 
 apply-finite-map (FinEmpty x) (FinFunEmpty .x) b = abort (x b)
-apply-finite-map (FinCons fin f g i1 i2) (FinFunCons .fin .f .g .i1 .i2 finfun c) b with inspect (g b) 
-... | Inl <> with≡ _ = c
-... | Inr a with≡ _ = apply-finite-map fin finfun a
+apply-finite-map (FinCons fin f g i1 i2) (FinFunCons .fin .f .g .i1 .i2 finfun c) b with inspect (g b)
+... | (Inl <>) with≡ eq = c
+... | (Inr a) with≡ eq = apply-finite-map fin finfun a
 
-apply-finite-map-correct : {B : Set} → {C : Set₁} → (fin : Finite B) → (F : B → C) → (b : B) → (apply-finite-map fin (finite-map fin F) b ≡ F b)
+apply-finite-map-correct : {B : Set ℓ} → {C : Set ℓ} → (fin : Finite B) → (F : B → C) → (b : B) → (apply-finite-map fin (finite-map fin F) b ≡ F b)
 apply-finite-map-correct (FinEmpty x) F b = abort (x b)
 apply-finite-map-correct (FinCons fin f g i1 i2) F b with inspect (g b) 
 ... | Inl <> with≡ eq rewrite (sym eq) rewrite (i2 b) = refl 
