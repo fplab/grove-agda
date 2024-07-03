@@ -73,7 +73,7 @@ list-forall-× : {A : Set} → {P1 P2 : A → Set} → {l : List A} → (list-fo
 list-forall-× {l = []} <> <> = <>
 list-forall-× {l = x ∷ l} (p1 , f1) (p2 , f2) = (p1 , p2) , list-forall-× f1 f2
 
-data list-exists : {A : Set} → (A → Set) → (List A) → Set where 
+data list-exists : {A : Set} → (A → Set) → (List A) → Set₁ where 
   ListExistsHave : {A : Set} → {P : A → Set} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
   ListExistsSkip : {A : Set} → {P : A → Set} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
 
