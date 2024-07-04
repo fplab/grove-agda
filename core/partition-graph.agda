@@ -74,93 +74,77 @@ data has-only-ancestor : Graph → Vertex → Vertex → Set where
   HOA-step : {G : Graph} → {v w x : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G w x) → (has-only-ancestor G v x)
 
 -- this predicate holds on G v w u if it is possible to follow a chain of only-parents 
--- from v to w, and u is the minimal vertex id encountered on that chain (excluding v, including w)
+-- from v to w, none of which except the endpoints is w, and u is the minimal vertex id encountered on that chain (excluding v, including w)
 data only-ancestor-min-id : Graph → Vertex → Vertex → Ident → Set where 
   OAMI-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id G v w (id-of-vertex w) 
-  OAMI-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id G v x u')
+  OAMI-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (classify-parents G v ≡ PC-UP w) → (only-ancestor-min-id G w x u) → ¬(w ≡ x) → ((id-min u (id-of-vertex w)) ≡ u') → (only-ancestor-min-id G v x u')
 
-data only-ancestor-min-id' : Graph → Vertex → Vertex → Ident → Set where 
-  OAMI'-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id' G v w (id-of-vertex w) 
-  OAMI'-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (classify-parents G v ≡ PC-UP w) → (only-ancestor-min-id' G w x u) → ¬(w ≡ x) → ((id-min u (id-of-vertex w)) ≡ u') → (only-ancestor-min-id' G v x u')
+OMAI-step-end : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id G v x u')
+OMAI-step-end (OAMI-base cp) cp' neq' eq' = OAMI-step cp (OAMI-base cp') neq' {!   !} -- min comm
+OMAI-step-end (OAMI-step cp oa neq eq) cp' neq' eq' = OAMI-step cp (OMAI-step-end oa cp' neq' refl) {!   !} {!   !} -- min assoc
 
-OAMI-equiv1 : {G : Graph} → {v x : Vertex} → {u : Ident} → only-ancestor-min-id G v x u → only-ancestor-min-id' G v x u
-OAMI-equiv1 (OAMI-base cp) = OAMI'-base cp
-OAMI-equiv1 (OAMI-step oa cp neq eq) = helper (OAMI-equiv1 oa) cp neq eq
-  where 
-  helper : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id' G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id' G v x u')
-  helper {G} {v} {w} {x} (OAMI'-base cp) cp' neq' eq rewrite (id-min-comm (id-of-vertex w) (id-of-vertex x)) = OAMI'-step cp (OAMI'-base cp') neq' eq
-  helper {G} {v} {w} {x} (OAMI'-step cp oa neq' eq) cp' neq'' eq' = OAMI'-step cp (helper oa cp' neq'' refl) {!   !} {!   !}
+data X : Set where 
+  NP : X 
+  MP : X 
+  U : X 
 
--- OAMI-equiv2 : {G : Graph} → {v x : Vertex} → {u : Ident} → only-ancestor-min-id' G v x u → only-ancestor-min-id G v x u
--- OAMI-equiv2 (OAMI'-base cp) = OAMI-base cp
--- OAMI-equiv2 (OAMI'-step cp oa neq eq) = helper cp (OAMI-equiv2 oa) eq
---   where 
---   helper : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (classify-parents G v ≡ PC-UP w) → (only-ancestor-min-id G w x u) → ¬(w ≡ x) → ((id-min u (id-of-vertex w)) ≡ u') → (only-ancestor-min-id G v x u')
---   helper {G} {v} {w} {x} cp (OAMI-base cp') eq = OAMI-step (OAMI-base cp) cp' {!   !}
---   helper {G} {v} {w} {x} cp (OAMI-step oa cp' neq eq) eq' = OAMI-step (helper cp oa refl) cp' {!   !}
+top : X → Graph → Vertex → Set 
+top NP G v = classify-parents G v ≡ PC-NP
+top MP G v = classify-parents G v ≡ PC-MP 
+top U G v = only-ancestor-min-id G v v (id-of-vertex v)
 
--- data X : Set where 
---   NP : X 
---   MP : X 
---   U : X 
+inner : X → Graph → Vertex → Vertex → Set 
+inner X G v w = ¬(top U G v) × has-only-ancestor G v w × (top X G w)
 
--- top : X → Graph → Vertex → Set 
--- top NP G v = classify-parents G v ≡ PC-NP
--- top MP G v = classify-parents G v ≡ PC-MP 
--- top U G v = only-ancestor-min-id G v v (id-of-vertex v)
+data class : Graph → Vertex → Set where 
+  Top : ∀{G v} → (X : X) → class G v
+  Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
 
--- inner : X → Graph → Vertex → Vertex → Set 
--- inner X G v w = ¬(top U G v) × has-only-ancestor G v w × (top X G w)
-
--- data class : Graph → Vertex → Set where 
---   Top : ∀{G v} → (X : X) → class G v
---   Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
-
--- data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
---   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 
---   InnerCorrect : ∀{X G v} → (w : Vertex) → (inner X G v w) → class-correct G v (Inner X w)
+data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
+  TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 
+  InnerCorrect : ∀{X G v} → (w : Vertex) → (inner X G v w) → class-correct G v (Inner X w)
   
--- only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
--- only-descendants G v ws = list-forall (λ (w , u) → only-ancestor-min-id G w v u) ws
+only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
+only-descendants G v ws = list-forall (λ (w , u) → only-ancestor-min-id G w v u) ws
 
--- -- returns true if ( v , v.id ) appears in ws
--- locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
--- locate-U G v [] = false
--- locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
--- ... | true | true = true
--- ... | true | false = locate-U G v ws
--- ... | false | _ = locate-U G v ws
+-- returns true if ( v , v.id ) appears in ws
+locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
+locate-U G v [] = false
+locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
+... | true | true = true
+... | true | false = locate-U G v ws
+... | false | _ = locate-U G v ws
 
--- locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
--- locate-U-correct G v [] oas () 
--- locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
--- ... | true | true | ofʸ refl | ofʸ refl = oa
--- ... | true | false | _ | _ = locate-U-correct G v ws oas eq
--- ... | false | _ | _ | _ = locate-U-correct G v ws oas eq
+locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
+locate-U-correct G v [] oas () 
+locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
+... | true | true | ofʸ refl | ofʸ refl = oa
+... | true | false | _ | _ = locate-U-correct G v ws oas eq
+... | false | _ | _ | _ = locate-U-correct G v ws oas eq
 
--- update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
--- update-ws v ws x = (v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
+update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
+update-ws v ws x = (v , (id-of-vertex x)) ∷ (map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
 
--- update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
--- update-ws-correct G v ws x oas eq = OAMI-base eq , forall-map-implies oas (λ {(w , u)} → λ oa → OAMI-step oa eq refl)
+update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
+update-ws-correct G v ws x oas eq = OAMI-base eq , forall-map-implies oas (λ {(w , u)} → λ oa → {!   !}) --OAMI-step oa eq refl)
 
--- -- {-# TERMINATING #-} 
--- classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
--- classify zero G v ws = Top NP -- this is a meaningless return value
--- classify (suc fuel) G v ws with classify-parents G v
--- classify (suc fuel) G v ws | PC-NP = Top NP -- if it has no parents, it is Top NP
--- classify (suc fuel) G v ws | PC-MP = Top MP -- if it has multiple parents, it is Top MP
--- classify (suc fuel) G v ws | PC-UP x with locate-U G v ws
--- classify (suc fuel) G v ws | PC-UP x | true = Top U -- if it appears in the seen list with minimal id, it is Top U
--- classify (suc fuel) G v ws | PC-UP x | false with Dec.does (v ≟Vertex x)
--- classify (suc fuel) G v ws | PC-UP x | false | true = Top U -- if its parent is itself, it is Top U
--- classify (suc fuel) G v ws | PC-UP x | false | false with classify fuel G x (update-ws v ws x)
--- classify (suc fuel) G v ws | PC-UP x | false | false | Top X = Inner X x -- if its parent is Top, it is Inner
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner NP w = Inner NP w -- if its parent is Inner NP, it's the same
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner MP w = Inner MP w -- if its parent is Inner MP, it's the same
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (v ≟Vertex w)
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
+-- {-# TERMINATING #-} 
+classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
+classify zero G v ws = Top NP -- this is a meaningless return value
+classify (suc fuel) G v ws with classify-parents G v
+classify (suc fuel) G v ws | PC-NP = Top NP -- if it has no parents, it is Top NP
+classify (suc fuel) G v ws | PC-MP = Top MP -- if it has multiple parents, it is Top MP
+classify (suc fuel) G v ws | PC-UP x with locate-U G v ws
+classify (suc fuel) G v ws | PC-UP x | true = Top U -- if it appears in the seen list with minimal id, it is Top U
+classify (suc fuel) G v ws | PC-UP x | false with Dec.does (v ≟Vertex x)
+classify (suc fuel) G v ws | PC-UP x | false | true = Top U -- if its parent is itself, it is Top U
+classify (suc fuel) G v ws | PC-UP x | false | false with classify fuel G x (update-ws v ws x)
+classify (suc fuel) G v ws | PC-UP x | false | false | Top X = Inner X x -- if its parent is Top, it is Inner
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner NP w = Inner NP w -- if its parent is Inner NP, it's the same
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner MP w = Inner MP w -- if its parent is Inner MP, it's the same
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (v ≟Vertex w)
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
 
 
 -- -- lemm :  (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → ((id-of-vertex w) ≤𝕀 (id-of-vertex v) ≡ true) → (top U G v) → (v ≡ w) 
