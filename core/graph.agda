@@ -37,6 +37,9 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
 
+postulate 
+  V-ident-uniq : (v₁ v₂ : Vertex) → (Vertex.ident v₁) ≡ (Vertex.ident v₂) → v₁ ≡ v₂  
+
 arity-v : Vertex → ℕ
 arity-v (V k _) = arity k
 
