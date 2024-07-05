@@ -14,7 +14,6 @@ module marking.uexp where
 
   mutual
     data UExp : Set where
-      -⦇-⦈^_    : (u : VertexId) → UExp
       -_^_      : (x : Var) → (u : VertexId) → UExp
       -λ_∶_∙_^_ : (x : Var) → (τ : Typ) → (e : USubExp) → (u : VertexId) → UExp
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
@@ -29,9 +28,6 @@ module marking.uexp where
     USubExp' = EdgeId × UExp
 
   data USubsumable : UExp → Set where
-    USuHole : ∀ {u}
-      → USubsumable (-⦇-⦈^ u)
-
     USuVar : ∀ {x u}
       → USubsumable (- x ^ u)
 
@@ -47,9 +43,6 @@ module marking.uexp where
   mutual
     -- synthesis
     data _⊢_⇒_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
-      USHole : ∀ {Γ u}
-        → Γ ⊢ -⦇-⦈^ u ⇒ unknown
-
       USVar : ∀ {Γ x u τ}
         → (∋x : Γ ∋ x ∶ τ)
         → Γ ⊢ - x ^ u ⇒ τ
