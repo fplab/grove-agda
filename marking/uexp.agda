@@ -21,9 +21,9 @@ module marking.uexp where
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
 
     data USubExp : Set where
-      -□_ : (w  : EdgeId) → USubExp
-      -_  : (ė  : USubExp') → USubExp
-      -*_ : (ė* : List USubExp') → USubExp
+      -□[_,_] : (w  : EdgeId) → (p : Position) → USubExp
+      -_      : (ė  : USubExp') → USubExp
+      -*_     : (ė* : List USubExp') → USubExp
 
     USubExp' = EdgeId × UExp
 
@@ -66,8 +66,8 @@ module marking.uexp where
         → Γ ⊢ - e₁ + e₂ ^ u ⇒ num
 
     data _⊢s_⇒_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
-      USubSHole : ∀ {Γ w}
-        → Γ ⊢s -□ w ⇒ unknown
+      USubSHole : ∀ {Γ w p}
+        → Γ ⊢s -□[ w , p ] ⇒ unknown
 
       USubSJust : ∀ {Γ w e τ}
         → (e⇒τ : Γ ⊢ e ⇒ τ)
@@ -80,12 +80,6 @@ module marking.uexp where
         → Γ ⊢s -* ė* ⇒ unknown
 
     -- analysis
-    data _⊢s_⇐_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
-      USubASubsume : ∀ {Γ e τ τ′} 
-        → (e⇒τ′ : Γ ⊢s e ⇒ τ′)
-        → (τ~τ′ : τ ~ τ′)
-        → Γ ⊢s e ⇐ τ
-
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
       UALam : ∀ {Γ x τ e u τ₁ τ₂ τ₃}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
@@ -98,3 +92,9 @@ module marking.uexp where
         → (τ~τ′ : τ ~ τ′)
         → (su : USubsumable e)
         → Γ ⊢ e ⇐ τ
+
+    data _⊢s_⇐_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
+      USubASubsume : ∀ {Γ e τ τ′} 
+        → (e⇒τ′ : Γ ⊢s e ⇒ τ′)
+        → (τ~τ′ : τ ~ τ′)
+        → Γ ⊢s e ⇐ τ
