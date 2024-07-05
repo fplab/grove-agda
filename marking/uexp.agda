@@ -13,6 +13,7 @@ module marking.uexp where
   infix  4 _⊢s_⇐_
 
   mutual
+    -- TODO multiparent + unicycle conflicts
     data UTyp : Set where
       num^_  : (u : VertexId) → UTyp
       _-→_^_ : (σ₁ : USubTyp) → (σ₂ : USubTyp) → (u : VertexId) → UTyp
@@ -24,14 +25,14 @@ module marking.uexp where
 
     USubTyp' = EdgeId × UTyp
 
-    _▲ : UTyp → Typ
-    (num^ u)       ▲ = num
-    (σ₁ -→ σ₂ ^ u) ▲ = (σ₁ ▲s) -→ (σ₂ ▲s)
+    _△ : UTyp → Typ
+    (num^ u)       △ = num
+    (σ₁ -→ σ₂ ^ u) △ = (σ₁ △s) -→ (σ₂ △s)
 
-    _▲s : USubTyp → Typ
-    (□^ u ^ p)    ▲s = unknown
-    (∶ ⟨ w , σ ⟩) ▲s = σ ▲
-    (* σ*)        ▲s = unknown
+    _△s : USubTyp → Typ
+    (□^ u ^ p)    △s = unknown
+    (∶ ⟨ w , σ ⟩) △s = σ △
+    (* σ*)        △s = unknown
 
   mutual
     -- TODO multiparent + unicycle conflicts
@@ -70,8 +71,8 @@ module marking.uexp where
         → Γ ⊢ - x ^ u ⇒ τ
 
       USLam : ∀ {Γ x σ e u τ′}
-        → (e⇒τ′ : Γ , x ∶ (σ ▲) ⊢s e ⇒ τ′)
-        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ ▲) -→ τ′
+        → (e⇒τ′ : Γ , x ∶ (σ △) ⊢s e ⇒ τ′)
+        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ △) -→ τ′
 
       USAp : ∀ {Γ e₁ e₂ u τ τ₁ τ₂}
         → (e₁⇒τ : Γ ⊢s e₁ ⇒ τ)
@@ -105,8 +106,8 @@ module marking.uexp where
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
       UALam : ∀ {Γ x σ e u τ₁ τ₂ τ₃}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
-        → (τ~τ₁ : (σ ▲) ~ τ₁)
-        → (e⇐τ₂ : Γ , x ∶ (σ ▲) ⊢s e ⇐ τ₂)
+        → (τ~τ₁ : (σ △) ~ τ₁)
+        → (e⇐τ₂ : Γ , x ∶ (σ △) ⊢s e ⇐ τ₂)
         → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇐ τ₃
 
       UASubsume : ∀ {Γ e τ τ′}
