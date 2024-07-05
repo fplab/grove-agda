@@ -42,22 +42,22 @@ module marking.theorems.wellformed where
     ⇒τ→↬⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇒ τ
            → Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě
-    ⇒τ→↬⇒τ {e = ‵⦇-⦈^ u}        USHole     = ⟨ ⊢⦇-⦈^ u , MKSHole ⟩
-    ⇒τ→↬⇒τ {e = ‵ x}            (USVar ∋x) = ⟨ ⊢ ∋x , MKSVar ∋x ⟩
-    ⇒τ→↬⇒τ {e = ‵λ x ∶ τ ∙ e}   (USLam e⇒τ)
+    ⇒τ→↬⇒τ {e = -⦇-⦈^ u}        USHole     = ⟨ ⊢⦇-⦈^ u , MKSHole ⟩
+    ⇒τ→↬⇒τ {e = - x}            (USVar ∋x) = ⟨ ⊢ ∋x , MKSVar ∋x ⟩
+    ⇒τ→↬⇒τ {e = -λ x ∶ τ ∙ e}   (USLam e⇒τ)
       with ⟨ ě  , e↬⇒ě   ⟩ ← ⇒τ→↬⇒τ e⇒τ    = ⟨ ⊢λ x ∶ τ ∙ ě , MKSLam e↬⇒ě ⟩
-    ⇒τ→↬⇒τ {e = ‵ e₁ ∙ e₂} (USAp e₁⇒τ τ▸ e₂⇐τ₂)
+    ⇒τ→↬⇒τ {e = - e₁ ∙ e₂} (USAp e₁⇒τ τ▸ e₂⇐τ₂)
       with ⟨ ě₁ , e₁↬⇒ě₁ ⟩ ← ⇒τ→↬⇒τ e₁⇒τ
          | ⟨ ě₂ , e₂↬⇐ě₂ ⟩ ← ⇐τ→↬⇐τ e₂⇐τ₂  = ⟨ ⊢ ě₁ ∙ ě₂ [ τ▸ ] , MKSAp1 e₁↬⇒ě₁ τ▸ e₂↬⇐ě₂ ⟩
-    ⇒τ→↬⇒τ {e = ‵ℕ n}           USNum      = ⟨ ⊢ℕ n , MKSNum ⟩
-    ⇒τ→↬⇒τ {e = ‵ e₁ + e₂}      (USPlus e₁⇐num e₂⇐num)
+    ⇒τ→↬⇒τ {e = -ℕ n}           USNum      = ⟨ ⊢ℕ n , MKSNum ⟩
+    ⇒τ→↬⇒τ {e = - e₁ + e₂}      (USPlus e₁⇐num e₂⇐num)
       with ⟨ ě₁ , e₁↬⇐ě₁ ⟩ ← ⇐τ→↬⇐τ e₁⇐num
          | ⟨ ě₂ , e₂↬⇐ě₂ ⟩ ← ⇐τ→↬⇐τ e₂⇐num = ⟨ ⊢ ě₁ + ě₂ , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂ ⟩
 
     ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇐ τ
            → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě
-    ⇐τ→↬⇐τ {e = ‵λ x ∶ τ ∙ e}   (UALam τ₃▸ τ~τ₁ e⇐τ₂)
+    ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e}   (UALam τ₃▸ τ~τ₁ e⇐τ₂)
       with ⟨ ě , e↬⇐ě ⟩ ← ⇐τ→↬⇐τ e⇐τ₂     = ⟨ ⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ] , MKALam1 τ₃▸ τ~τ₁ e↬⇐ě ⟩
     ⇐τ→↬⇐τ {e = e}              (UASubsume e⇒τ′ τ~τ′ su)
       with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ′     = ⟨ ⊢∙ ě [ τ~τ′ ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ′ su ⟩
