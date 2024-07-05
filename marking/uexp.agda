@@ -13,40 +13,44 @@ module marking.uexp where
   infix  4 _⊢s_⇐_
 
   mutual
-    -- TODO multiparent + unicycle conflicts
     data UTyp : Set where
       num^_  : (u : VertexId) → UTyp
       _-→_^_ : (σ₁ : USubTyp) → (σ₂ : USubTyp) → (u : VertexId) → UTyp
+      ⋎^_    : (u : VertexId) → UTyp
+      ↻^_    : (u : VertexId) → UTyp
 
     data USubTyp : Set where
       □^_^_ : (u  : VertexId) → (p : Position) → USubTyp
       ∶_    : (σ  : USubTyp') → USubTyp
-      *_    : (σ* : List USubTyp') → USubTyp
+      ⋏_    : (σ* : List USubTyp') → USubTyp
 
     USubTyp' = EdgeId × UTyp
 
     _△ : UTyp → Typ
     (num^ u)       △ = num
     (σ₁ -→ σ₂ ^ u) △ = (σ₁ △s) -→ (σ₂ △s)
+    (⋎^ u)         △ = unknown
+    (↻^ u)         △ = unknown
 
     _△s : USubTyp → Typ
     (□^ u ^ p)    △s = unknown
     (∶ ⟨ w , σ ⟩) △s = σ △
-    (* σ*)        △s = unknown
+    (⋏ σ*)        △s = unknown
 
   mutual
-    -- TODO multiparent + unicycle conflicts
     data UExp : Set where
       -_^_      : (x : Var) → (u : VertexId) → UExp
       -λ_∶_∙_^_ : (x : Var) → (σ : UTyp) → (e : USubExp) → (u : VertexId) → UExp
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
+      -⋎^_       : (u : VertexId) → UExp
+      -↻^_       : (u : VertexId) → UExp
 
     data USubExp : Set where
       -□^_^_ : (w  : EdgeId) → (p : Position) → USubExp
       -∶_    : (ė  : USubExp') → USubExp
-      -*_    : (ė* : List USubExp') → USubExp
+      -⋏_    : (ė* : List USubExp') → USubExp
 
     USubExp' = EdgeId × UExp
 
@@ -62,6 +66,12 @@ module marking.uexp where
 
     USuPlus : ∀ {e₁ e₂ u}
       → USubsumable (- e₁ + e₂ ^ u)
+
+    USuMultiParent : ∀ {u}
+      → USubsumable (-⋎^ u)
+
+    USuUnicycle : ∀ {u}
+      → USubsumable (-↻^ u)
 
   mutual
     -- synthesis
@@ -88,6 +98,12 @@ module marking.uexp where
         → (e₂⇐num : Γ ⊢s e₂ ⇐ num)
         → Γ ⊢ - e₁ + e₂ ^ u ⇒ num
 
+      USMultiParent : ∀ {Γ u}
+        → Γ ⊢ -⋎^ u ⇒ unknown
+
+      USUnicycle : ∀ {Γ u}
+        → Γ ⊢ -↻^ u ⇒ unknown
+
     data _⊢s_⇒_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
       USubSHole : ∀ {Γ w p}
         → Γ ⊢s -□^ w ^ p ⇒ unknown
@@ -98,9 +114,8 @@ module marking.uexp where
 
       -- TODO synthesize meet
       USubSConflict : ∀ {Γ ė*}
-        -- → (ė⇒* : Γ ⊢s* ė*)
         → (ė⇒* : All (λ (⟨ w , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
-        → Γ ⊢s -* ė* ⇒ unknown
+        → Γ ⊢s -⋏ ė* ⇒ unknown
 
     -- analysis
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
