@@ -1,7 +1,7 @@
 open import marking.prelude
 
 open import marking.typ
-open import marking.hole
+open import marking.id
 open import marking.var
 open import marking.ctx
 
@@ -11,7 +11,7 @@ module marking.uexp where
   infix  4 _⊢_⇐_
 
   data UExp : Set where
-    ‵⦇-⦈^_  : (u : Hole) → UExp
+    ‵⦇-⦈^_  : (u : VertexId) → UExp
     ‵_      : (x : Var) → UExp
     ‵λ_∶_∙_ : (x : Var) → (τ : Typ) → (e : UExp) → UExp
     ‵_∙_    : (e₁ : UExp) → (e₂ : UExp) → UExp
