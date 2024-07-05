@@ -134,7 +134,6 @@ module marking.prelude where
     infixr 99 _∷_
     infixr 9 _++_
 
-
     pattern ∣[_] z = z ∷ []
     pattern ∣[_,_] y z = y ∷ z ∷ []
     pattern ∣[_,_,_] x y z = x ∷ y ∷ z ∷ []
@@ -145,6 +144,10 @@ module marking.prelude where
     _++_ : ∀ {A : Set} → List A → List A → List A
     []       ++ ys = ys
     (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+    data All {A : Set} (P : A → Set) : List A → Set where
+      []  : All P []
+      _∷_ : ∀ {x : A} {xs : List A} → P x → All P xs → All P (x ∷ xs)
 
   module iso where
     open eq using (_≡_)
