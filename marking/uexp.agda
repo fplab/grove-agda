@@ -15,15 +15,8 @@ module marking.uexp where
     ‵_      : (x : Var) → UExp
     ‵λ_∶_∙_ : (x : Var) → (τ : Typ) → (e : UExp) → UExp
     ‵_∙_    : (e₁ : UExp) → (e₂ : UExp) → UExp
-    ‵_←_∙_  : (x : Var) → (e₁ : UExp) → (e₂ : UExp) → UExp
     ‵ℕ_     : (n : ℕ) → UExp
     ‵_+_    : (e₁ : UExp) → (e₂ : UExp) → UExp
-    ‵tt     : UExp
-    ‵ff     : UExp
-    ‵_∙_∙_  : (e₁ : UExp) → (e₂ : UExp) → (e₃ : UExp) → UExp
-    ‵⟨_,_⟩  : (e₁ : UExp) → (e₂ : UExp) → UExp
-    ‵π₁_    : (e : UExp) → UExp
-    ‵π₂_    : (e : UExp) → UExp
 
   data USubsumable : UExp → Set where
     USuHole : ∀ {u}
@@ -40,18 +33,6 @@ module marking.uexp where
 
     USuPlus : ∀ {e₁ e₂}
       → USubsumable (‵ e₁ + e₂)
-
-    USuTrue :
-        USubsumable ‵tt
-
-    USuFalse :
-        USubsumable ‵ff
-
-    USuProjL : ∀ {e}
-      → USubsumable (‵π₁ e)
-
-    USuProjR : ∀ {e}
-      → USubsumable (‵π₂ e)
 
   mutual
     -- synthesis
@@ -73,11 +54,6 @@ module marking.uexp where
         → (e₁⇐τ₁ : Γ ⊢ e₂ ⇐ τ₁)
         → Γ ⊢ ‵ e₁ ∙ e₂ ⇒ τ₂
 
-      USLet : ∀ {Γ x e₁ e₂ τ₁ τ₂}
-        → (e₁⇒τ₁ : Γ ⊢ e₁ ⇒ τ₁)
-        → (e₂⇒τ₂ : Γ , x ∶ τ₁ ⊢ e₂ ⇒ τ₂)
-        → Γ ⊢ ‵ x ← e₁ ∙ e₂ ⇒ τ₂
-
       USNum : ∀ {Γ n}
         → Γ ⊢ ‵ℕ n ⇒ num
 
@@ -86,34 +62,6 @@ module marking.uexp where
         → (e₂⇐num : Γ ⊢ e₂ ⇐ num)
         → Γ ⊢ ‵ e₁ + e₂ ⇒ num
 
-      USTrue : ∀ {Γ}
-        → Γ ⊢ ‵tt ⇒ bool
-
-      USFalse : ∀ {Γ}
-        → Γ ⊢ ‵ff ⇒ bool
-
-      USIf : ∀ {Γ e₁ e₂ e₃ τ τ₁ τ₂}
-        → (e₁⇐bool : Γ ⊢ e₁ ⇐ bool)
-        → (e₂⇒τ₁ : Γ ⊢ e₂ ⇒ τ₁)
-        → (e₃⇒τ₂ : Γ ⊢ e₃ ⇒ τ₂)
-        → (τ₁⊓τ₂ : τ₁ ⊓ τ₂ ⇒ τ)
-        → Γ ⊢ ‵ e₁ ∙ e₂ ∙ e₃ ⇒ τ
-
-      USPair : ∀ {Γ e₁ e₂ τ₁ τ₂}
-        → (e₁⇒τ₁ : Γ ⊢ e₁ ⇒ τ₁)
-        → (e₁⇒τ₂ : Γ ⊢ e₂ ⇒ τ₂)
-        → Γ ⊢ ‵⟨ e₁ , e₂ ⟩ ⇒ τ₁ -× τ₂
-
-      USProjL : ∀ {Γ e τ τ₁ τ₂}
-        → (e⇒τ : Γ ⊢ e ⇒ τ)
-        → (τ▸ : τ ▸ τ₁ -× τ₂)
-        → Γ ⊢ ‵π₁ e ⇒ τ₁
-
-      USProjR : ∀ {Γ e τ τ₁ τ₂}
-        → (e⇒τ : Γ ⊢ e ⇒ τ)
-        → (τ▸ : τ ▸ τ₁ -× τ₂)
-        → Γ ⊢ ‵π₂ e ⇒ τ₂
-
     -- analysis
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
       UALam : ∀ {Γ x τ e τ₁ τ₂ τ₃}
@@ -121,23 +69,6 @@ module marking.uexp where
         → (τ~τ₁ : τ ~ τ₁)
         → (e⇐τ₂ : Γ , x ∶ τ ⊢ e ⇐ τ₂)
         → Γ ⊢ ‵λ x ∶ τ ∙ e ⇐ τ₃
-
-      UALet : ∀ {Γ x e₁ e₂ τ₁ τ₂}
-        → (e₁⇒τ₁ : Γ ⊢ e₁ ⇒ τ₁)
-        → (e₂⇐τ₂ : Γ , x ∶ τ₁ ⊢ e₂ ⇐ τ₂)
-        → Γ ⊢ ‵ x ← e₁ ∙ e₂ ⇐ τ₂
-
-      UAIf : ∀ {Γ e₁ e₂ e₃ τ}
-        → (e₁⇐bool : Γ ⊢ e₁ ⇐ bool)
-        → (e₂⇐τ : Γ ⊢ e₂ ⇐ τ)
-        → (e₃⇐τ : Γ ⊢ e₃ ⇐ τ)
-        → Γ ⊢ ‵ e₁ ∙ e₂ ∙ e₃ ⇐ τ
-
-      UAPair : ∀ {Γ e₁ e₂ τ τ₁ τ₂}
-        → (τ▸ : τ ▸ τ₁ -× τ₂)
-        → (e₁⇐τ₁ : Γ ⊢ e₁ ⇐ τ₁)
-        → (e₂⇐τ₂ : Γ ⊢ e₂ ⇐ τ₂)
-        → Γ ⊢ ‵⟨ e₁ , e₂ ⟩ ⇐ τ
 
       UASubsume : ∀ {Γ e τ τ′}
         → (e⇒τ′ : Γ ⊢ e ⇒ τ′)
