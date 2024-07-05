@@ -7,3 +7,4 @@ module marking.definitions where
   open import marking.mexp public
   open import marking.erasure public
   open import marking.lemmas public
+  open import marking.marking public
