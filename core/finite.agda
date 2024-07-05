@@ -19,6 +19,10 @@ zero ≟Fin (suc _) = no (λ ())
 ... | yes refl = yes refl
 ... | no neq = no (λ { refl → neq refl })
 
+cast-up : {n : ℕ} → (i : Fin n) → (Fin (suc n))
+cast-up zero = zero 
+cast-up (suc i) = suc (cast-up i)
+
 vec-of-map : {A : Set} → {n : ℕ} → ((Fin n) → A) → Vec A n
 vec-of-map {n = zero} f = []
 vec-of-map {n = suc n} f = f zero ∷ vec-of-map {n = n} (λ x → f (suc x))

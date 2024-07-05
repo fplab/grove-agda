@@ -23,7 +23,10 @@ postulate
 
   Ident : Set
   _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
-  _≤𝕀_ : (i₁ i₂ : Ident) → Bool
+  _≤𝕀_ : (i₁ i₂ : Ident) → Set 
+  _≤?𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≤𝕀 i₂) 
+
+  ≤𝕀-antisym : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₁) → (i₁ ≡ i₂)
 
 record Vertex : Set where
   constructor V

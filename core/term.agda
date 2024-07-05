@@ -13,6 +13,8 @@ data Term : Set where
  ⋎ : Vertex → Term 
  ⤾ : Vertex → Term
 
+-- todo: have two sorts so that holes store sources
+
 Θ : Set
 Θ = (List Term)
 

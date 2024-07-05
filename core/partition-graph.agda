@@ -5,7 +5,8 @@ module core.partition-graph where
 open import Relation.Binary.PropositionalEquality hiding(inspect)
 open import Relation.Nullary hiding(¬_)
 open import Data.Bool hiding (_<_; _≟_)
-open import Data.List
+open import Data.List hiding (lookup; _∷ʳ_)
+open import Data.Vec
 open import Data.Fin hiding(_+_)
 open import Data.Maybe hiding(map) 
 open import Data.Nat hiding (_+_)
@@ -18,15 +19,15 @@ id-of-vertex : Vertex → Ident
 id-of-vertex (V ctor ident) = ident
 
 id-min : Ident → Ident → Ident  
-id-min u1 u2 with u1 ≤𝕀 u2 
+id-min u1 u2 with Dec.does (u1 ≤?𝕀 u2)
 ... | true = u1
 ... | false = u2
 
-id-min-comm : (u1 u2 : Ident) → (id-min u1 u2) ≡ (id-min u2 u1)
-id-min-comm u1 u2 = {!   !}
+-- id-min-comm : (u1 u2 : Ident) → (id-min u1 u2) ≡ (id-min u2 u1)
+-- id-min-comm u1 u2 = {!   !}
 
-id-min-assoc : (u1 u2 u3 : Ident) → (id-min u1 (id-min u2 u3)) ≡ (id-min (id-min u1 u2) u3)
-id-min-assoc u1 u2 u3 = {!   !}
+-- id-min-assoc : (u1 u2 u3 : Ident) → (id-min u1 (id-min u2 u3)) ≡ (id-min (id-min u1 u2) u3)
+-- id-min-assoc u1 u2 u3 = {!   !}
 
 data parent : Graph → (v w : Vertex) → Set where 
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w
@@ -69,27 +70,173 @@ classify-parents G v | [] = PC-NP
 classify-parents G v | x ∷ [] = PC-UP x
 classify-parents G v | _ ∷ _ ∷ _ = PC-MP
 
-data has-only-ancestor : Graph → Vertex → Vertex → Set where
-  HOA-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G v w)
-  HOA-step : {G : Graph} → {v w x : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G w x) → (has-only-ancestor G v x)
+only-ancestor : Graph → (v w : Vertex) → (n : ℕ) → (Vec Vertex (suc (suc n))) → Set 
+only-ancestor G v w n ws = 
+    (lookup ws zero ≡ v) × 
+    (lookup ws (fromℕ (suc n)) ≡ w) × 
+    ((i : Fin (suc n)) → classify-parents G (lookup ws (cast-up i)) ≡ PC-UP (lookup ws (suc i)))
 
--- this predicate holds on G v w u if it is possible to follow a chain of only-parents 
--- from v to w, and u is the minimal vertex id encountered on that chain (excluding v, including w)
-data only-ancestor-min-id : Graph → Vertex → Vertex → Ident → Set where 
-  OAMI-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id G v w (id-of-vertex w) 
-  OAMI-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id G v x u')
+is-only-ancestor : Graph → (v w : Vertex) → Set 
+is-only-ancestor G v w = 
+  Σ[ n ∈ ℕ ] 
+  Σ[ ws ∈ (Vec Vertex (suc (suc n))) ] 
+  (only-ancestor G v w n ws)
 
-data only-ancestor-min-id' : Graph → Vertex → Vertex → Ident → Set where 
-  OAMI'-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id' G v w (id-of-vertex w) 
-  OAMI'-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (classify-parents G v ≡ PC-UP w) → (only-ancestor-min-id' G w x u) → ¬(w ≡ x) → ((id-min u (id-of-vertex w)) ≡ u') → (only-ancestor-min-id' G v x u')
+min-id : {m : ℕ} → Vec Vertex m → Ident → Set
+min-id {m} ws u = (i : Fin m) → u ≤𝕀 id-of-vertex (lookup ws i)
 
-OAMI-equiv1 : {G : Graph} → {v x : Vertex} → {u : Ident} → only-ancestor-min-id G v x u → only-ancestor-min-id' G v x u
-OAMI-equiv1 (OAMI-base cp) = OAMI'-base cp
-OAMI-equiv1 (OAMI-step oa cp neq eq) = helper (OAMI-equiv1 oa) cp neq eq
+is-only-ancestor-min-id : Graph → (v w : Vertex) → (u : Ident) → Set 
+is-only-ancestor-min-id G v w u = 
+  Σ[ n ∈ ℕ ] 
+  Σ[ ws ∈ (Vec Vertex (suc (suc n))) ] 
+  ((only-ancestor G v w n ws) × 
+  min-id ws u)
+
+data X : Set where 
+  NP : X 
+  MP : X 
+  U : X 
+
+top : X → Graph → Vertex → Set 
+top NP G v = classify-parents G v ≡ PC-NP
+top MP G v = classify-parents G v ≡ PC-MP 
+top U G v = is-only-ancestor-min-id G v v (id-of-vertex v)
+
+inner : X → Graph → Vertex → Vertex → Set 
+inner X G v w = ¬(top U G v) × (is-only-ancestor G v w) × (top X G w)
+
+-- zip-ancestors : (only-ancestor G v w1 n1 (v?1 ∷ v'1 ∷ ws1)) → (only-ancestor G v w2 n2 (v?2 ∷ v'2 ∷ ws2)) → (only-ancestor G v w)
+
+oami-implies-oa : (G : Graph) → (v w : Vertex) → (u : Ident) → 
+  is-only-ancestor-min-id G v w u → 
+  is-only-ancestor G v w
+oami-implies-oa G v w u (a , b , c , d) = (a , b , c)
+
+{-# TERMINATING #-} -- obivously terminating, decreasing on the nats in only ancestors
+lem1 : (G : Graph) → (x v w : Vertex) → 
+  is-only-ancestor G x v → 
+  is-only-ancestor G x w → 
+  (v ≡ w + is-only-ancestor G v w + is-only-ancestor G w v)
+lem1 G x v w (zero , .x ∷ .v ∷ [] , refl , refl , cp1) (zero , .x ∷ .w ∷ [] , refl , refl , cp2) with classify-parents G x | cp1 zero | cp2 zero 
+lem1 G x v w (zero , .x ∷ .v ∷ [] , refl , refl , cp1) (zero , .x ∷ .w ∷ [] , refl , refl , cp2) | .(PC-UP v) | refl | refl = Inl refl
+lem1 G x v w (zero , .x ∷ .v ∷ [] , refl , refl , cp1) (suc n2 , .x ∷ v? ∷ ws , refl , eq , cp2) with classify-parents G x | cp1 zero | cp2 zero
+lem1 G x v w (zero , .x ∷ .v ∷ [] , refl , refl , cp1) (suc n2 , .x ∷ v? ∷ ws , refl , eq , cp2) | .(PC-UP v) | refl | refl = Inr (Inl (n2 , v ∷ ws , refl , eq , λ i → cp2 (suc i)))
+lem1 G x v w (suc n1 , .x ∷ w? ∷ ws , refl , eq , cp1) (zero , .x ∷ .w ∷ [] , refl , refl , cp2) with classify-parents G x | cp1 zero | cp2 zero
+lem1 G x v w (suc n1 , .x ∷ w? ∷ ws , refl , eq , cp1) (zero , .x ∷ .w ∷ [] , refl , refl , cp2) | .(PC-UP w) | refl | refl = Inr (Inr (n1 , w ∷ ws , refl , eq , λ i → cp1 (suc i)))
+lem1 G x v w (suc n1 , .x ∷ x' ∷ ws1 , refl , eq1 , cp1) (suc n2 , .x ∷ x'? ∷ ws2 , refl , eq2 , cp2) with classify-parents G x | cp1 zero | cp2 zero
+lem1 G x v w (suc n1 , .x ∷ x' ∷ ws1 , refl , eq1 , cp1) (suc n2 , .x ∷ x'? ∷ ws2 , refl , eq2 , cp2) | .(PC-UP x') | refl | refl = lem1 G x' v w (n1 , x' ∷ ws1 , refl , eq1 , λ i → cp1 (suc i)) (n2 , x' ∷ ws2 , refl , eq2 , λ i → cp2 (suc i))
+
+{-# TERMINATING #-} -- need to manifest the fact that lem1 produces a shorter proof that it's given
+lem2 : (G : Graph) → (v w : Vertex) → 
+  is-only-ancestor G v v → 
+  is-only-ancestor G v w → 
+  is-only-ancestor G w v 
+lem2 G v w oa1 oa2 with lem1 G v v w oa1 oa2 
+lem2 G v w oa1 oa2 | Inl refl = oa1
+lem2 G v w oa1 oa2 | Inr (Inl oa3) = lem2 G v w oa1 oa3
+lem2 G v w oa1 oa2 | Inr (Inr oa3) = oa3 
+
+lem3 : (G : Graph) → (u : Ident) → (v v' : Vertex) → (n : ℕ) → (ws : Vec Vertex n) → 
+  (only-ancestor G v v n (v ∷ v' ∷ ws)) →
+  (min-id (v ∷ v' ∷ ws) u) → 
+  is-only-ancestor-min-id G v' v' u
+lem3 G u v v' n ws (refl , eq , cp) min = (n , (v' ∷ ws) ∷ʳ v' , (refl , lookup-snoc v' ws , cycle-cp ws eq cp) , cycle-min v v' ws min)
   where 
-  helper : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id' G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id' G v x u')
-  helper {G} {v} {w} {x} (OAMI'-base cp) cp' neq' eq rewrite (id-min-comm (id-of-vertex w) (id-of-vertex x)) = OAMI'-step cp (OAMI'-base cp') neq' eq
-  helper {G} {v} {w} {x} (OAMI'-step cp oa neq' eq) cp' neq'' eq' = OAMI'-step cp (helper oa cp' neq'' refl) {!   !} {!   !}
+  lookup-snoc : {A : Set} → {n : ℕ} → (a : A) → (l : Vec A n) → lookup (l ∷ʳ a) (fromℕ n) ≡ a
+  lookup-snoc a [] = refl
+  lookup-snoc a (x ∷ l) = lookup-snoc a l
+
+  cycle-min : {n : ℕ} → (v v' : Vertex) → (ws : Vec Vertex n) → min-id (v ∷ v' ∷ ws) u → min-id (v' ∷ (ws ∷ʳ v')) u
+  cycle-min v v' ws min zero = min (suc zero)
+  cycle-min v v' ws min (suc i) = min-helper ws (λ i → min (suc (suc i))) (min (suc zero)) i
+    where 
+    min-helper : {n : ℕ} → (ws : Vec Vertex n) → min-id ws u → (u ≤𝕀 id-of-vertex v') → min-id (ws ∷ʳ v') u 
+    min-helper [] min lt zero = lt
+    min-helper (x ∷ ws) min lt zero = min zero
+    min-helper (x ∷ ws) min lt (suc i) = min-helper ws (λ j → min (suc j)) lt i
+
+  cycle-cp : {n : ℕ} → (ws : Vec Vertex n) → 
+    (lookup (v' ∷ ws) (fromℕ n) ≡ v) →
+    ((i : Fin (suc n)) → classify-parents G (lookup (v ∷ v' ∷ ws) (cast-up i)) ≡ PC-UP (lookup (v' ∷ ws) i)) → 
+    ((i : Fin (suc n)) → classify-parents G (lookup (v' ∷ (ws ∷ʳ v')) (cast-up i)) ≡ PC-UP (lookup (ws ∷ʳ v') i))  
+  cycle-cp [] eq cp zero rewrite eq = cp zero
+  cycle-cp (x ∷ ws) eq cp zero = cp (suc zero)
+  cycle-cp {suc n} (x ∷ ws) eq cp (suc i) rewrite eq = cp-helper x ws (equation eq) ((λ j → cp (suc (suc j)))) i
+    where 
+    equation : (lookup (x ∷ ws) (fromℕ n) ≡ v) → classify-parents G (lookup (x ∷ ws) (fromℕ n)) ≡ PC-UP v'
+    equation eq rewrite eq = cp zero
+
+    cp-helper : {n : ℕ} → (x : Vertex) → (ws : Vec Vertex n) → 
+      (classify-parents G (lookup (x ∷ ws) (fromℕ n)) ≡ PC-UP v') →
+      ((i : Fin n) → classify-parents G (lookup (x ∷ ws) (cast-up i)) ≡ PC-UP (lookup (x ∷ ws) (suc i))) → 
+      ((i : Fin (suc n)) → classify-parents G (lookup ((x ∷ ws) ∷ʳ v') (cast-up i)) ≡ PC-UP (lookup ((x ∷ ws) ∷ʳ v') (suc i)))
+    cp-helper x [] eq cp zero = eq
+    cp-helper x (x₁ ∷ ws) eq cp zero = cp zero
+    cp-helper x (x₁ ∷ ws) eq cp (suc i) = cp-helper x₁ ws eq (λ j → cp (suc j)) i
+
+{-# TERMINATING #-} -- obivously terminating, decreasing on the nats in only ancestors
+lem4 : (G : Graph) → (u : Ident) →  (v w : Vertex) → 
+  is-only-ancestor-min-id G v v u → 
+  is-only-ancestor G v w → 
+  (u ≤𝕀 id-of-vertex w)
+lem4 G u v w (n1 , .v ∷ _ ∷ _ , (refl , _ , cp1) , min) (zero , .v ∷ .w ∷ ws , refl , refl , cp2) with classify-parents G v | cp1 zero | cp2 zero 
+lem4 G u v w (n1 , .v ∷ _ ∷ _ , (refl , _ , cp1) , min) (zero , .v ∷ .w ∷ ws , refl , refl , cp2) | .(PC-UP w) | refl | refl = min (suc zero)
+lem4 G u v w (zero , .v ∷ .v ∷ [] , (refl , refl , cp1) , min) (suc n2 , .v ∷ v? ∷ ws2 , refl , eq2 , cp2) with classify-parents G v | cp1 zero | cp2 zero
+lem4 G u v w (zero , .v ∷ .v ∷ [] , (refl , refl , cp1) , min) (suc n2 , .v ∷ v? ∷ ws2 , refl , eq2 , cp2) | .(PC-UP v) | refl | refl = lem4 G u v w ((zero , v ∷ v ∷ [] , (refl , refl , cp1) , min)) (n2 , v ∷ ws2 , refl , eq2 , λ i → cp2 (suc i))
+lem4 G u v w (suc n1 , .v ∷ v' ∷ ws1 , (refl , eq1 , cp1) , min) (suc n2 , .v ∷ v'? ∷ ws2 , refl , eq2 , cp2) with classify-parents G v | cp1 zero | cp2 zero
+lem4 G u v w (suc n1 , .v ∷ v' ∷ ws1 , (refl , eq1 , cp1) , min) (suc n2 , .v ∷ v'? ∷ ws2 , refl , eq2 , cp2) | .(PC-UP v') | refl | refl = lem4 G u v' w (lem3 G u v v' (suc n1) ws1 (refl , eq1 , cp1) min) (n2 , v' ∷ ws2 , refl , eq2 , λ i → cp2 (suc i))
+
+lem5 : (G : Graph) → (v w : Vertex) → (top U G v) → is-only-ancestor G v w → (id-of-vertex v ≤𝕀 id-of-vertex w)
+lem5 G v w top oa = lem4 G _ v w top oa
+
+lem6 : (G : Graph) → (v w : Vertex) → (top U G v) → (top U G w) → is-only-ancestor G v w → (v ≡ w)
+lem6 G v w top1 top2 oa1 = V-ident-uniq _ _ (≤𝕀-antisym _ _ (lem4 _ _ _ _ top1 oa1) (lem4 _ _ _ _ top2 oa2))
+  where 
+  oa2 : is-only-ancestor G w v 
+  oa2 = lem2 G v w (oami-implies-oa _ _ _ _ top1) oa1
+
+-- lem4 : 
+--   (G : Graph) →
+--   (u : Ident) →  
+--   (v x w : Vertex) → 
+--   (n1 n2 n3 : ℕ) → 
+--   (ws1 : Vec Vertex (suc (suc n1))) → 
+--   (ws2 : Vec Vertex (suc (suc n2))) → 
+--   (ws3 : Vec Vertex (suc (suc n3))) → 
+--   only-ancestor G v x n1 ws1 → 
+--   only-ancestor G x v n2 ws2 → 
+--   only-ancestor G x w n3 ws3 → 
+--   min-id (Data.Vec._++_ ws1 ws2) u → 
+--   (u ≤𝕀 id-of-vertex w)
+-- lem4 G u v x w n1 n2 n3 ws1 ws2 ws3 oa1 oa2 oa3 min = {!   !}
+
+-- lem4 : (G : Graph) → (v w : Vertex) → (top U G v) → is-only-ancestor G v w → (id-of-vertex v ≤𝕀 id-of-vertex w)
+-- lem4 = ?
+
+-- lem1 : (G : Graph) → (v w : Vertex) → (top U G v) → (top U G w) → is-only-ancestor G v w → (v ≡ w)
+-- lem1 G v w top1 top2 oa = {!   !}
+
+-- data has-only-ancestor : Graph → Vertex → Vertex → Set where
+--   HOA-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G v w)
+--   HOA-step : {G : Graph} → {v w x : Vertex} → (classify-parents G v ≡ PC-UP w) → (has-only-ancestor G w x) → (has-only-ancestor G v x)
+
+-- -- this predicate holds on G v w u if it is possible to follow a chain of only-parents 
+-- -- from v to w, and u is the minimal vertex id encountered on that chain (excluding v, including w)
+-- data only-ancestor-min-id : Graph → Vertex → Vertex → Ident → Set where 
+--   OAMI-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id G v w (id-of-vertex w) 
+--   OAMI-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id G v x u')
+
+-- data only-ancestor-min-id' : Graph → Vertex → Vertex → Ident → Set where 
+--   OAMI'-base : {G : Graph} → {v w : Vertex} → (classify-parents G v ≡ PC-UP w) → only-ancestor-min-id' G v w (id-of-vertex w) 
+--   OAMI'-step : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (classify-parents G v ≡ PC-UP w) → (only-ancestor-min-id' G w x u) → ¬(w ≡ x) → ((id-min u (id-of-vertex w)) ≡ u') → (only-ancestor-min-id' G v x u')
+
+-- OAMI-equiv1 : {G : Graph} → {v x : Vertex} → {u : Ident} → only-ancestor-min-id G v x u → only-ancestor-min-id' G v x u
+-- OAMI-equiv1 (OAMI-base cp) = OAMI'-base cp
+-- OAMI-equiv1 (OAMI-step oa cp neq eq) = helper (OAMI-equiv1 oa) cp neq eq
+--   where 
+--   helper : {G : Graph} → {v w x : Vertex} → {u u' : Ident} → (only-ancestor-min-id' G v w u) → (classify-parents G w ≡ PC-UP x) → ¬(w ≡ x) → ((id-min u (id-of-vertex x)) ≡ u') → (only-ancestor-min-id' G v x u')
+--   helper {G} {v} {w} {x} (OAMI'-base cp) cp' neq' eq rewrite (id-min-comm (id-of-vertex w) (id-of-vertex x)) = OAMI'-step cp (OAMI'-base cp') neq' eq
+--   helper {G} {v} {w} {x} (OAMI'-step cp oa neq' eq) cp' neq'' eq' = OAMI'-step cp (helper oa cp' neq'' refl) {!   !} {!   !}
 
 -- OAMI-equiv2 : {G : Graph} → {v x : Vertex} → {u : Ident} → only-ancestor-min-id' G v x u → only-ancestor-min-id G v x u
 -- OAMI-equiv2 (OAMI'-base cp) = OAMI-base cp
@@ -294,4 +441,4 @@ OAMI-equiv1 (OAMI-step oa cp neq eq) = helper (OAMI-equiv1 oa) cp neq eq
   
 -- -- unpartition-graph : Partitioned-Graph → Graph          
 -- -- unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U)) 
-  
+   
