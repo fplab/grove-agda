@@ -34,3 +34,32 @@ module marking.ctx where
   ...                | yes ∋x = yes (S x≢x′ ∋x)
   ...                | no ∌x  = no λ { ⟨ _ , Z ⟩ → x≢x′ refl
                                      ; ⟨ τ′ , S _ ∋x₁ ⟩ → ∌x ⟨ τ′ , ∋x₁ ⟩ }
+
+  -- membership type equality
+  ∋→τ-≡ : ∀ {Γ x τ₁ τ₂}
+        → (Γ ∋ x ∶ τ₁)
+        → (Γ ∋ x ∶ τ₂)
+        → τ₁ ≡ τ₂
+  ∋→τ-≡ Z         Z         = refl
+  ∋→τ-≡ Z         (S x≢x _) = ⊥-elim (x≢x refl)
+  ∋→τ-≡ (S x≢x _) Z         = ⊥-elim (x≢x refl)
+  ∋→τ-≡ (S _ ∋x)  (S _ ∋x′) = ∋→τ-≡ ∋x ∋x′
+
+  -- membership derivation equality
+  ∋-≡ : ∀ {Γ x τ}
+      → (∋x : Γ ∋ x ∶ τ)
+      → (∋x′ : Γ ∋ x ∶ τ)
+      → ∋x ≡ ∋x′
+  ∋-≡ Z           Z         = refl
+  ∋-≡ Z           (S x≢x _) = ⊥-elim (x≢x refl)
+  ∋-≡ (S x≢x _)   Z         = ⊥-elim (x≢x refl)
+  ∋-≡ (S x≢x′ ∋x) (S x≢x′′ ∋x′)
+    rewrite ¬-≡ x≢x′ x≢x′′
+          | ∋-≡ ∋x ∋x′ = refl
+
+  -- non-membership derivation equality
+  ∌-≡ : ∀ {Γ y}
+      → (∌y : Γ ∌ y)
+      → (∌y′ : Γ ∌ y)
+      → ∌y ≡ ∌y′
+  ∌-≡ ∌y ∌y′ = assimilation ∌y ∌y′
