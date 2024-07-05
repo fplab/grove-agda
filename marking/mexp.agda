@@ -1,7 +1,7 @@
 open import marking.prelude
 
 open import marking.typ
-open import marking.hole
+open import marking.id
 open import marking.var
 open import marking.ctx
 
@@ -15,7 +15,7 @@ module marking.mexp where
     data _⊢⇒_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MSHole
       ⊢⦇-⦈^_ : ∀ {Γ}
-        → (u : Hole)
+        → (u : VertexId)
         → Γ ⊢⇒ unknown
 
       -- MSVar
@@ -62,7 +62,7 @@ module marking.mexp where
 
     data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
       MSuHole : ∀ {Γ}
-        → {u : Hole}
+        → {u : VertexId} 
         → MSubsumable {Γ} (⊢⦇-⦈^ u)
 
       MSuVar : ∀ {Γ x τ}
