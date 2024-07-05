@@ -1,8 +1,6 @@
 open import marking.prelude
 open import marking.definitions
 
-open import marking.theorems.marking
-
 module marking.theorems.unicity where
   ↬⇒-τ-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
                → Γ ⊢ e ↬⇒ ě₁

@@ -1,8 +1,6 @@
 open import marking.prelude
 open import marking.definitions
 
-open import marking.theorems.marking
-
 module marking.theorems.totality where
   mutual
     ↬⇒-totality : (Γ : Ctx)

@@ -1,7 +1,10 @@
 open import marking.prelude
-open import marking.definitions
+open import marking.typ
+open import marking.ctx
+open import marking.uexp
+open import marking.mexp
 
-module marking.theorems.marking where
+module marking.marking where
   infix 4 _⊢_↬⇒_
   infix 4 _⊢_↬⇐_
 

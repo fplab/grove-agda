@@ -1,8 +1,6 @@
 open import marking.prelude
 open import marking.definitions
 
-open import marking.theorems.marking
-
 module marking.theorems.wellformed where
   mutual
     -- marking preserves syntactic structure
