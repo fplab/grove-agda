@@ -8,17 +8,17 @@ private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
 
--- empty type
-data ⊥ : Set where
+-- -- empty type
+-- data ⊥ : Set where
 
--- from false, derive whatever
-abort : ∀ {C : Set ℓ} → ⊥ → C
-abort ()
+-- -- from false, derive whatever
+-- abort : ∀ {C : Set ℓ} → ⊥ → C
+-- abort ()
 
--- negation 
-open import Agda.Primitive using (Level)
-¬_ : Set ℓ → Set ℓ
-¬ A = A → ⊥
+-- -- negation 
+-- open import Agda.Primitive using (Level)
+-- ¬_ : Set ℓ → Set ℓ
+-- ¬ A = A → ⊥
 
 -- unit
 data ⊤ {ℓ} : Set ℓ where
