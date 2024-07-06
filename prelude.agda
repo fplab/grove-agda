@@ -47,11 +47,11 @@ data _+_ (A : Set ℓ₁) (B : Set ℓ₂) : Set (lmax ℓ₁ ℓ₂) where
 infixr 1 _×_
 infixr 1 _+_
 
-data Singleton {A : Set ℓ} (x : A) : Set ℓ where
-  _with≡_ : (y : A) → x ≡ y → Singleton x
+-- data Singleton {A : Set ℓ} (x : A) : Set ℓ where
+--   _with≡_ : (y : A) → x ≡ y → Singleton x
 
-inspect : ∀ {A : Set ℓ} (x : A) → Singleton x
-inspect x = x with≡ refl
+-- inspect : ∀ {A : Set ℓ} (x : A) → Singleton x
+-- inspect x = x with≡ refl
 
 list-forall : ∀ {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → (Set (lmax ℓ₁ ℓ₂))
 list-forall P [] = ⊤

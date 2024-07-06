@@ -2,7 +2,7 @@
 
 module core.partition-graph where
 
-open import Relation.Binary.PropositionalEquality hiding(inspect)
+open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List hiding (lookup; _∷ʳ_)
@@ -368,6 +368,11 @@ classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
 
+record class-complete (fuel : ℕ) (G : Graph) (v : Vertex) (ws : List(Vertex × Ident)) : Set where 
+  constructor Complete
+  field 
+    TopComplete : ∀{X G v} → (top X G v) → (classify fuel G v ws ≡ Top X)
+    InnerComplete : ∀{X G v} → (w : Vertex) → (inner X G v w) → (classify fuel G v ws ≡ Inner X w)
 
 -- lemm :  (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → ((id-of-vertex w) ≤𝕀 (id-of-vertex v) ≡ true) → (top U G v) → (v ≡ w) 
 -- lemm G v w u oa leq top with OAMI-equiv1 oa | OAMI-equiv1 top 
@@ -403,22 +408,60 @@ classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner
 -- not-utop G v x eq neq not-inner (OAMI-step oa eq2 eq3) = not-inner ({!   !} , {!   !})
 
 -- {-# TERMINATING #-} 
-classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
-classify-correct zero G v ws oas = {!   !}
-classify-correct (suc fuel) G v ws oas with inspect (classify-parents G v)
-classify-correct (suc fuel) G v ws oas | PC-NP with≡ eq rewrite eq = TopCorrect eq
-classify-correct (suc fuel) G v ws oas | PC-MP with≡ eq rewrite eq = TopCorrect eq
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq rewrite eq with inspect (locate-U G v ws)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | true with≡ eq' rewrite eq' = TopCorrect (locate-U-correct G v ws oas eq')
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' rewrite eq' with Dec.does (v ≟Vertex x) | Dec.proof (v ≟Vertex x)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | true | ofʸ refl = TopCorrect (parent-implies-oami G v v eq)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq with classify fuel G x (update-ws v ws x) | classify-correct fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Top X | TopCorrect top = InnerCorrect x ({!  !} , parent-implies-oa G v x eq , top) 
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner NP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner MP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) with Dec.does (v ≟Vertex w) | Dec.proof (v ≟Vertex w) 
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | true | ofʸ refl = TopCorrect top 
-classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | false | ofⁿ neq' = InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
+mutual 
+  classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
+  classify-correct zero G v ws oas = {!   !}
+  classify-correct (suc fuel) G v ws oas with classify-parents G v | inspect (classify-parents G) v
+  classify-correct (suc fuel) G v ws oas | PC-NP | [ eq ] rewrite eq = TopCorrect eq
+  classify-correct (suc fuel) G v ws oas | PC-MP | [ eq ] rewrite eq = TopCorrect eq
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] rewrite eq with locate-U G v ws | inspect (locate-U G v) ws
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | true | [ eq2 ] rewrite eq2 = TopCorrect (locate-U-correct G v ws oas eq2)
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] rewrite eq2 with Dec.does (v ≟Vertex x) | Dec.proof (v ≟Vertex x)
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | true | ofʸ refl = TopCorrect (parent-implies-oami G v v eq)
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq with classify fuel G x (update-ws v ws x) | inspect (classify fuel G x) (update-ws v ws x) | classify-correct fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Top X | [ eq3 ] | TopCorrect is-top = InnerCorrect x (not-top , parent-implies-oa G v x eq , is-top) 
+    where 
+    not-top : ¬(top U G v)
+    not-top is-top' with lem9 G x v is-top' eq 
+    not-top is-top' | Inl eq2 = neq (sym eq2)
+    not-top is-top' | Inr eq4 with classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+    not-top is-top' | Inr eq4 | (Complete _ inner-complete) with inner-complete _ eq4 
+    ... | eq5 rewrite eq3 with eq5 
+    ... | ()
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Inner NP w | [ eq3 ] | InnerCorrect _ (not-utop , oa , is-top)= InnerCorrect w ( not-top , oa-extend-left G _ _ _ eq oa , is-top)
+    where 
+    not-top : ¬(top U G v)
+    not-top is-top' with lem9 G x v is-top' eq 
+    not-top is-top' | Inl eq2 = neq (sym eq2)
+    not-top is-top' | Inr eq4 with classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+    not-top is-top' | Inr eq4 | (Complete _ inner-complete) with inner-complete _ eq4 
+    ... | eq5 rewrite eq3 with eq5 
+    ... | ()
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Inner MP w | [ eq3 ] | InnerCorrect _ (not-utop , oa , is-top)= InnerCorrect w ( not-top , oa-extend-left G _ _ _ eq oa , is-top)
+    where 
+    not-top : ¬(top U G v)
+    not-top is-top' with lem9 G x v is-top' eq 
+    not-top is-top' | Inl eq2 = neq (sym eq2)
+    not-top is-top' | Inr eq4 with classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+    not-top is-top' | Inr eq4 | (Complete _ inner-complete) with inner-complete _ eq4 
+    ... | eq5 rewrite eq3 with eq5 
+    ... | ()
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Inner U w | [ eq3 ] | InnerCorrect _ (not-utop , oa , is-top) with Dec.does (v ≟Vertex w) | Dec.proof (v ≟Vertex w) 
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Inner U w | [ eq3 ] | InnerCorrect _ (not-utop , oa , is-top) | true | ofʸ refl = TopCorrect is-top 
+  classify-correct (suc fuel) G v ws oas | PC-UP x | [ eq ] | false | [ eq2 ] | false | ofⁿ neq | Inner U w | [ eq3 ] | InnerCorrect _ (not-utop , oa , is-top) | false | ofⁿ neq' = InnerCorrect w ( not-top , oa-extend-left G _ _ _ eq oa , is-top)
+    where 
+    not-top : ¬(top U G v)
+    not-top is-top' with lem9 G x v is-top' eq 
+    not-top is-top' | Inl eq2 = neq (sym eq2)
+    not-top is-top' | Inr eq4 with classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+    not-top is-top' | Inr eq4 | (Complete _ inner-complete) with inner-complete _ eq4 
+    ... | eq5 rewrite eq3 with eq5
+    ... | refl = neq' refl
+  classify-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-complete fuel G v ws
+  
+  class-complete.TopComplete (classify-complete fuel G v ws oas) = {!   !}
+  class-complete.InnerComplete (classify-complete fuel G v ws oas) = {!   !}
+
 
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPTop | NPTopCorrect top = InnerCorrect NP x (HOA-base eq , top)
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPTop | MPTopCorrect top = InnerCorrect MP x (HOA-base eq , top)
