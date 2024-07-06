@@ -25,6 +25,11 @@ id-min u1 u2 with Dec.does (u1 ≤?𝕀 u2)
 ... | true = u1
 ... | false = u2
 
+id-min-leq : (u1 u2 : Ident) → id-min u1 u2 ≤𝕀 u1
+id-min-leq u1 u2 with (u1 ≤?𝕀 u2)
+... | yes leq = ≤𝕀-reflexive u1
+... | no nleq = {!   !} -- requires total order
+
 id-min-comm : (u1 u2 : Ident) → (id-min u1 u2) ≡ (id-min u2 u1)
 id-min-comm u1 u2 = {!   !}
 
@@ -114,6 +119,25 @@ inner X G v w = ¬(top U G v) × (is-only-ancestor G v w) × (top X G w)
 
 -- zip-ancestors : (only-ancestor G v w1 n1 (v?1 ∷ v'1 ∷ ws1)) → (only-ancestor G v w2 n2 (v?2 ∷ v'2 ∷ ws2)) → (only-ancestor G v w)
 
+lookup-snoc : {A : Set} → {n : ℕ} → (a : A) → (l : Vec A n) → lookup (l ∷ʳ a) (fromℕ n) ≡ a
+lookup-snoc a [] = refl
+lookup-snoc a (x ∷ l) = lookup-snoc a l
+
+cp-snoc : {n : ℕ} → (G : Graph) → (x : Vertex) → (ws : Vec Vertex (suc (suc n))) → 
+  classify-parents G (lookup ws (fromℕ (suc n))) ≡ PC-UP x → 
+  ((i : Fin (suc n)) → classify-parents G (lookup ws (cast-up i)) ≡ PC-UP (lookup ws (suc i))) →
+  ((i : Fin (suc (suc n))) → classify-parents G (lookup (ws ∷ʳ x) (cast-up i)) ≡ PC-UP (lookup (ws ∷ʳ x) (suc i)))
+cp-snoc G x (_ ∷ y ∷ ws) eq cp zero = cp zero
+cp-snoc G x (_ ∷ y ∷ []) eq cp (suc zero) = eq
+cp-snoc G x (_ ∷ y ∷ z ∷ ws) eq cp (suc i) = cp-snoc G x (y ∷ z ∷ ws) eq (λ j → cp (suc j)) i
+
+min-snoc : {n : ℕ} → (G : Graph) → (u : Ident) → (x : Vertex) → (ws : Vec Vertex (suc n)) → 
+  ((i : Fin (suc n)) → u ≤𝕀 id-of-vertex (lookup ws i)) → 
+  ((i : Fin (suc (suc n))) → id-min u (id-of-vertex x) ≤𝕀 id-of-vertex (lookup (ws ∷ʳ x) i))
+min-snoc G u x (_ ∷ []) min (suc zero) rewrite id-min-comm u (id-of-vertex x) = id-min-leq _ _
+min-snoc G u x (_ ∷ ws) min zero = ≤𝕀-transitive _ _ _ (id-min-leq _ _) (min zero)
+min-snoc G u x (_ ∷ x₁ ∷ ws) min (suc i) = min-snoc G u x (x₁ ∷ ws) (λ j → min (suc j)) i
+
 parent-implies-oa : (G : Graph) → (v w : Vertex) →
   classify-parents G v ≡ PC-UP w →
   is-only-ancestor G v w
@@ -121,6 +145,27 @@ parent-implies-oa G v w eq = zero , v ∷ w ∷ [] , refl , refl , cp
   where 
   cp : (i : Fin 1) → classify-parents G (lookup (v ∷ w ∷ []) (cast-up i)) ≡ PC-UP (lookup (w ∷ []) i)
   cp zero = eq
+
+oa-extend-left : (G : Graph) → (v x w : Vertex) → 
+  (classify-parents G v ≡ PC-UP x) → 
+  (is-only-ancestor G x w) → 
+  (is-only-ancestor G v w)
+oa-extend-left G v x w cp (n , ws , eq1 , eq2 , cps) = suc n , v ∷ ws , refl , eq2 , cps'
+  where 
+  cps' : (i : Fin (suc (suc n))) → classify-parents G (lookup (v ∷ ws) (cast-up i)) ≡ PC-UP (lookup ws i)
+  cps' zero rewrite eq1 = cp
+  cps' (suc i) = cps i
+
+parent-implies-oami : (G : Graph) → (v w : Vertex) →
+  classify-parents G v ≡ PC-UP w →
+  is-only-ancestor-min-id G v w (id-of-vertex w)
+parent-implies-oami G v w eq = zero , v ∷ w ∷ [] , (refl , refl , cp) , min
+  where 
+  cp : (i : Fin 1) → classify-parents G (lookup (v ∷ w ∷ []) (cast-up i)) ≡ PC-UP (lookup (w ∷ []) i)
+  cp zero = eq
+
+  min : (i : Fin 1) → id-of-vertex w ≤𝕀 id-of-vertex (lookup (w ∷ []) i)
+  min zero = ≤𝕀-reflexive _
 
 oami-implies-oa : (G : Graph) → (v w : Vertex) → (u : Ident) → 
   is-only-ancestor-min-id G v w u → 
@@ -199,9 +244,6 @@ lem3 : (G : Graph) → (u : Ident) → (v v' : Vertex) → (n : ℕ) → (ws : V
   is-only-ancestor-min-id G v' v' u
 lem3 G u v v' n ws (refl , eq , cp) min = (n , (v' ∷ ws) ∷ʳ v' , (refl , lookup-snoc v' ws , cycle-cp ws eq cp) , cycle-min v v' ws min)
   where 
-  lookup-snoc : {A : Set} → {n : ℕ} → (a : A) → (l : Vec A n) → lookup (l ∷ʳ a) (fromℕ n) ≡ a
-  lookup-snoc a [] = refl
-  lookup-snoc a (x ∷ l) = lookup-snoc a l
 
   cycle-min : {n : ℕ} → (v v' : Vertex) → (ws : Vec Vertex n) → min-id (v ∷ v' ∷ ws) u → min-id (v' ∷ (ws ∷ʳ v')) u
   cycle-min v v' ws min i = min-helper (v ∷ ws) (λ j → min (suc j)) (min zero) i
@@ -267,74 +309,72 @@ lem8 G v w top oa = lem7 G v w top (lem2 _ _ _ (oami-implies-oa _ _ _ _ top) oa)
 lem9 : (G : Graph) → (v w : Vertex) → (top U G w) → (classify-parents G w ≡ PC-UP v) → ((v ≡ w) + (inner U G v w))
 lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
 
--- data class : Graph → Vertex → Set where 
---   Top : ∀{G v} → (X : X) → class G v
---   Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
+data class : Graph → Vertex → Set where 
+  Top : ∀{G v} → (X : X) → class G v
+  Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
 
--- data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
---   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 
---   InnerCorrect : ∀{X G v} → (w : Vertex) → (inner X G v w) → class-correct G v (Inner X w)
+data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
+  TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 
+  InnerCorrect : ∀{X G v} → (w : Vertex) → (inner X G v w) → class-correct G v (Inner X w)
   
--- only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
--- only-descendants G v ws = list-forall (λ (w , u) → is-only-ancestor-min-id G w v u) ws
+only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
+only-descendants G v ws = list-forall (λ (w , u) → is-only-ancestor-min-id G w v u) ws
 
--- -- returns true if ( v , v.id ) appears in ws
--- locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
--- locate-U G v [] = false
--- locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
--- ... | true | true = true
--- ... | true | false = locate-U G v ws
--- ... | false | _ = locate-U G v ws
+-- returns true if ( v , v.id ) appears in ws
+locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
+locate-U G v [] = false
+locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
+... | true | true = true
+... | true | false = locate-U G v ws
+... | false | _ = locate-U G v ws
 
--- locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
--- locate-U-correct G v [] oas () 
--- locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
--- ... | true | true | ofʸ refl | ofʸ refl = oa
--- ... | true | false | _ | _ = locate-U-correct G v ws oas eq
--- ... | false | _ | _ | _ = locate-U-correct G v ws oas eq
+locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
+locate-U-correct G v [] oas () 
+locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
+... | true | true | ofʸ refl | ofʸ refl = oa
+... | true | false | _ | _ = locate-U-correct G v ws oas eq
+... | false | _ | _ | _ = locate-U-correct G v ws oas eq
 
--- update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
--- update-ws v ws x = (v , (id-of-vertex x)) ∷ (Data.List.map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
+update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
+update-ws v ws x = (v , (id-of-vertex x)) ∷ (Data.List.map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
 
--- -- update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
--- -- update-ws-correct G v ws x oas eq = base , {!   !}
--- --   where   
--- --   cp : classify-parents G v ≡ PC-UP x → (i : Fin 1) → classify-parents G (lookup (v ∷ x ∷ []) (cast-up i)) ≡ PC-UP (lookup (x ∷ []) i)
--- --   cp eq zero = eq
-
--- --   min : min-id (v ∷ x ∷ []) (id-of-vertex x)
--- --   min zero = {!   !}
-
--- --   base : is-only-ancestor-min-id G v x (id-of-vertex x)
--- --   base = (zero , v ∷ x ∷ [] , (refl , refl , cp eq) , {!   !})
+update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
+update-ws-correct G v ws x oas eq = (parent-implies-oami G v x eq) , forall-map-implies oas step
+  where   
+  step : {(w , u) : Vertex × Ident} →
+    is-only-ancestor-min-id G w v u →
+    is-only-ancestor-min-id G w x (id-min u (id-of-vertex x))
+  step {(w , u)} (n , (.w ∷ ws1) , (refl , eq2 , cp) , min) = 
+      (suc n , (w ∷ ws1) ∷ʳ x , (refl , lookup-snoc x ws1 , cp-snoc G x (w ∷ ws1) (equation eq2 eq) cp) , min-snoc G u x ws1 min)
+    where 
+    equation : lookup ws1 (fromℕ n) ≡ v → classify-parents G v ≡ PC-UP x → classify-parents G (lookup ws1 (fromℕ n)) ≡ PC-UP x
+    equation eq1 eq2 rewrite eq1 rewrite eq2 = refl
   
---   --OAMI-base eq , forall-map-implies oas (λ {(w , u)} → λ oa → OAMI-step oa eq refl)
-
--- -- {-# TERMINATING #-} 
--- classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
--- classify zero G v ws = Top NP -- this is a meaningless return value
--- classify (suc fuel) G v ws with classify-parents G v
--- classify (suc fuel) G v ws | PC-NP = Top NP -- if it has no parents, it is Top NP
--- classify (suc fuel) G v ws | PC-MP = Top MP -- if it has multiple parents, it is Top MP
--- classify (suc fuel) G v ws | PC-UP x with locate-U G v ws
--- classify (suc fuel) G v ws | PC-UP x | true = Top U -- if it appears in the seen list with minimal id, it is Top U
--- classify (suc fuel) G v ws | PC-UP x | false with Dec.does (v ≟Vertex x)
--- classify (suc fuel) G v ws | PC-UP x | false | true = Top U -- if its parent is itself, it is Top U
--- classify (suc fuel) G v ws | PC-UP x | false | false with classify fuel G x (update-ws v ws x)
--- classify (suc fuel) G v ws | PC-UP x | false | false | Top X = Inner X x -- if its parent is Top, it is Inner
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner NP w = Inner NP w -- if its parent is Inner NP, it's the same
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner MP w = Inner MP w -- if its parent is Inner MP, it's the same
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (v ≟Vertex w)
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
--- classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
+-- {-# TERMINATING #-} 
+classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
+classify zero G v ws = Top NP -- this is a meaningless return value
+classify (suc fuel) G v ws with classify-parents G v
+classify (suc fuel) G v ws | PC-NP = Top NP -- if it has no parents, it is Top NP
+classify (suc fuel) G v ws | PC-MP = Top MP -- if it has multiple parents, it is Top MP
+classify (suc fuel) G v ws | PC-UP x with locate-U G v ws
+classify (suc fuel) G v ws | PC-UP x | true = Top U -- if it appears in the seen list with minimal id, it is Top U
+classify (suc fuel) G v ws | PC-UP x | false with Dec.does (v ≟Vertex x)
+classify (suc fuel) G v ws | PC-UP x | false | true = Top U -- if its parent is itself, it is Top U
+classify (suc fuel) G v ws | PC-UP x | false | false with classify fuel G x (update-ws v ws x)
+classify (suc fuel) G v ws | PC-UP x | false | false | Top X = Inner X x -- if its parent is Top, it is Inner
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner NP w = Inner NP w -- if its parent is Inner NP, it's the same
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner MP w = Inner MP w -- if its parent is Inner MP, it's the same
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (v ≟Vertex w)
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
+classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
 
 
--- -- lemm :  (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → ((id-of-vertex w) ≤𝕀 (id-of-vertex v) ≡ true) → (top U G v) → (v ≡ w) 
--- -- lemm G v w u oa leq top with OAMI-equiv1 oa | OAMI-equiv1 top 
--- -- ... | OAMI'-base x | OAMI'-base x₁ = {!   !}
--- -- ... | OAMI'-base x | OAMI'-step x₁ t2 x₂ = {!   !}
--- -- ... | OAMI'-step x t1 x₁ | OAMI'-base x₂ = {!   !}
--- -- ... | OAMI'-step x t1 x₁ | OAMI'-step x₂ t2 x₃ = {!   !}
+-- lemm :  (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → ((id-of-vertex w) ≤𝕀 (id-of-vertex v) ≡ true) → (top U G v) → (v ≡ w) 
+-- lemm G v w u oa leq top with OAMI-equiv1 oa | OAMI-equiv1 top 
+-- ... | OAMI'-base x | OAMI'-base x₁ = {!   !}
+-- ... | OAMI'-base x | OAMI'-step x₁ t2 x₂ = {!   !}
+-- ... | OAMI'-step x t1 x₁ | OAMI'-base x₂ = {!   !}
+-- ... | OAMI'-step x t1 x₁ | OAMI'-step x₂ t2 x₃ = {!   !}
 
 -- thing : (G : Graph) → (v w : Vertex) (u : Ident) → 
 --   only-ancestor-min-id G v w u → 
@@ -342,19 +382,19 @@ lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
 -- thing G w v u oa t1 t2 = {!   !} 
 
 
--- -- thing : (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → (top U G w) → ((v ≡ w) + (inner U G v w))
--- -- thing G v w u oa top with v ≟Vertex w
--- -- thing G v w u oa top | yes refl = Inl refl
--- -- thing G v w u oa top | no neq with OAMI-equiv1 oa 
--- -- ... | OAMI'-base cp = Inr (thing2 , HOA-base cp , top)  
--- --   where
--- --   thing2 : only-ancestor-min-id G v v (Vertex.ident v) → ⊥
--- --   thing2 oa' with OAMI-equiv1 oa' 
--- --   thing2 _ | OAMI'-base cp' = {! neq _ !} -- obvious from cp' and neq
--- --   thing2 _ | OAMI'-step {w = w?} cp' oa' eq = {!   !} -- combine cp and cp' to get w = w?. 
--- -- ... | OAMI'-step x thing₁ x₁ = {!   !} --Inr ({!   !} , {!   !} , top)
--- -- with thing G _ w oa 
--- -- ... | ose = Inr ({!   !} , {!   !} , {!   !})
+-- thing : (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → (top U G w) → ((v ≡ w) + (inner U G v w))
+-- thing G v w u oa top with v ≟Vertex w
+-- thing G v w u oa top | yes refl = Inl refl
+-- thing G v w u oa top | no neq with OAMI-equiv1 oa 
+-- ... | OAMI'-base cp = Inr (thing2 , HOA-base cp , top)  
+--   where
+--   thing2 : only-ancestor-min-id G v v (Vertex.ident v) → ⊥
+--   thing2 oa' with OAMI-equiv1 oa' 
+--   thing2 _ | OAMI'-base cp' = {! neq _ !} -- obvious from cp' and neq
+--   thing2 _ | OAMI'-step {w = w?} cp' oa' eq = {!   !} -- combine cp and cp' to get w = w?. 
+-- ... | OAMI'-step x thing₁ x₁ = {!   !} --Inr ({!   !} , {!   !} , top)
+-- with thing G _ w oa 
+-- ... | ose = Inr ({!   !} , {!   !} , {!   !})
 
 
 -- not-utop : (G : Graph) → (v x : Vertex) → (classify-parents G v ≡ PC-UP x) → ¬(v ≡ x) → ¬(inner U G x v) → ¬(top U G v)
@@ -362,23 +402,23 @@ lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
 -- not-utop G v x eq neq not-inner (OAMI-base eq2) | refl = neq refl
 -- not-utop G v x eq neq not-inner (OAMI-step oa eq2 eq3) = not-inner ({!   !} , {!   !})
 
--- -- {-# TERMINATING #-} 
--- classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
--- classify-correct zero G v ws oas = {!   !}
--- classify-correct (suc fuel) G v ws oas with inspect (classify-parents G v)
--- classify-correct (suc fuel) G v ws oas | PC-NP with≡ eq rewrite eq = TopCorrect eq
--- classify-correct (suc fuel) G v ws oas | PC-MP with≡ eq rewrite eq = TopCorrect eq
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq rewrite eq with inspect (locate-U G v ws)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | true with≡ eq' rewrite eq' = TopCorrect (locate-U-correct G v ws oas eq')
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' rewrite eq' with Dec.does (v ≟Vertex x) | Dec.proof (v ≟Vertex x)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | true | ofʸ refl = TopCorrect (OAMI-base eq)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq with classify fuel G x (update-ws v ws x) | classify-correct fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Top X | TopCorrect top = InnerCorrect x ({!   !} , HOA-base eq , top)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner NP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , HOA-step eq oa , top)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner MP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , HOA-step eq oa , top)
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) with Dec.does (v ≟Vertex w) | Dec.proof (v ≟Vertex w) 
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | true | ofʸ refl = TopCorrect top 
--- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | false | ofⁿ neq' = InnerCorrect w ( {!   !} , HOA-step eq oa , top)
+-- {-# TERMINATING #-} 
+classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
+classify-correct zero G v ws oas = {!   !}
+classify-correct (suc fuel) G v ws oas with inspect (classify-parents G v)
+classify-correct (suc fuel) G v ws oas | PC-NP with≡ eq rewrite eq = TopCorrect eq
+classify-correct (suc fuel) G v ws oas | PC-MP with≡ eq rewrite eq = TopCorrect eq
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq rewrite eq with inspect (locate-U G v ws)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | true with≡ eq' rewrite eq' = TopCorrect (locate-U-correct G v ws oas eq')
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' rewrite eq' with Dec.does (v ≟Vertex x) | Dec.proof (v ≟Vertex x)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | true | ofʸ refl = TopCorrect (parent-implies-oami G v v eq)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq with classify fuel G x (update-ws v ws x) | classify-correct fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Top X | TopCorrect top = InnerCorrect x ({!  !} , parent-implies-oa G v x eq , top) 
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner NP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner MP w | InnerCorrect _ (not-utop , oa , top)= InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) with Dec.does (v ≟Vertex w) | Dec.proof (v ≟Vertex w) 
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | true | ofʸ refl = TopCorrect top 
+classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | false | ofⁿ neq | Inner U w | InnerCorrect _ (not-utop , oa , top) | false | ofⁿ neq' = InnerCorrect w ( {!   !} , oa-extend-left G _ _ _ eq oa , top)
 
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPTop | NPTopCorrect top = InnerCorrect NP x (HOA-base eq , top)
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPTop | MPTopCorrect top = InnerCorrect MP x (HOA-base eq , top)
@@ -460,4 +500,4 @@ lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
    
 -- -- unpartition-graph : Partitioned-Graph → Graph          
 -- -- unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U)) 
-     
+          

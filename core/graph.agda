@@ -26,7 +26,9 @@ postulate
   _≤𝕀_ : (i₁ i₂ : Ident) → Set 
   _≤?𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≤𝕀 i₂) 
 
+  ≤𝕀-reflexive : (i : Ident) → (i ≤𝕀 i) 
   ≤𝕀-antisym : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₁) → (i₁ ≡ i₂)
+  ≤𝕀-transitive : (i₁ i₂ i₃ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₃) → (i₁ ≤𝕀 i₃)
 
 record Vertex : Set where
   constructor V
