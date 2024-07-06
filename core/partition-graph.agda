@@ -371,8 +371,8 @@ classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner
 record class-complete (fuel : ℕ) (G : Graph) (v : Vertex) (ws : List(Vertex × Ident)) : Set where 
   constructor Complete
   field 
-    TopComplete : ∀{X G v} → (top X G v) → (classify fuel G v ws ≡ Top X)
-    InnerComplete : ∀{X G v} → (w : Vertex) → (inner X G v w) → (classify fuel G v ws ≡ Inner X w)
+    TopComplete : ∀{X} → (top X G v) → (classify fuel G v ws ≡ Top X)
+    InnerComplete : ∀{X} → (w : Vertex) → (inner X G v w) → (classify fuel G v ws ≡ Inner X w)
 
 -- lemm :  (G : Graph) → (v w : Vertex) (u : Ident) → only-ancestor-min-id G v w u → ((id-of-vertex w) ≤𝕀 (id-of-vertex v) ≡ true) → (top U G v) → (v ≡ w) 
 -- lemm G v w u oa leq top with OAMI-equiv1 oa | OAMI-equiv1 top 
@@ -457,11 +457,26 @@ mutual
     not-top is-top' | Inr eq4 | (Complete _ inner-complete) with inner-complete _ eq4 
     ... | eq5 rewrite eq3 with eq5
     ... | refl = neq' refl
-  classify-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-complete fuel G v ws
-  
-  class-complete.TopComplete (classify-complete fuel G v ws oas) = {!   !}
-  class-complete.InnerComplete (classify-complete fuel G v ws oas) = {!   !}
 
+
+  classify-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-complete fuel G v ws
+  classify-complete zero G v ws oas = {!   !}
+  -- (classify-complete (suc fuel) G v ws oas) = Complete classify-complete-top {!   !} 
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {NP} is-top with classify-parents G v
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {NP} refl | .PC-NP = refl
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {MP} is-top with classify-parents G v
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {MP} refl | .PC-MP = refl
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp), min) with lookup ws1 zero | eq1 | classify-parents G v | (cp zero) 
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp), min) | _ | refl | parent | eq3 = {!   !}
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} is-inner = {!   !}
+    -- where 
+    -- classify-complete-top : {X : X} → top X G v → (classify (suc fuel) G v ws ≡ Top X)
+    -- classify-complete-top {NP} is-top with classify-parents G v
+    -- classify-complete-top {NP} refl | .PC-NP = refl
+    -- classify-complete-top {MP} is-top with classify-parents G v
+    -- classify-complete-top {MP} refl | .PC-MP = refl
+    -- classify-complete-top {U} is-top with classify-parents G v
+    -- classify-complete-top {U} eq | (PC-UP x) = ?
 
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | NPTop | NPTopCorrect top = InnerCorrect NP x (HOA-base eq , top)
 -- -- classify-correct (suc fuel) G v ws oas | PC-UP x with≡ eq | false with≡ eq' | MPTop | MPTopCorrect top = InnerCorrect MP x (HOA-base eq , top)
@@ -543,4 +558,4 @@ mutual
    
 -- -- unpartition-graph : Partitioned-Graph → Graph          
 -- -- unpartition-graph (PG NP MP U) = (concat (map (λ (v , εs) → εs) NP)) ++ (concat (map (λ (v , εs) → εs) MP)) ++ (concat (map (λ (v , εs) → εs) U)) 
-          
+           
