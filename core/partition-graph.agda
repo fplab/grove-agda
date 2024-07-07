@@ -309,6 +309,14 @@ lem8 G v w top oa = lem7 G v w top (lem2 _ _ _ (oami-implies-oa _ _ _ _ top) oa)
 lem9 : (G : Graph) → (v w : Vertex) → (top U G w) → (classify-parents G w ≡ PC-UP v) → ((v ≡ w) + (inner U G v w))
 lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
 
+lem10 : (G : Graph) → (X : X) → (v w : Vertex) → (top U G v) → (top X G w) → is-only-ancestor G v w → (X ≡ U) × (v ≡ w)
+lem10 G U v w top1 top2 oa =  (refl , lem6 G v w top1 top2 oa)
+lem10 G NP v w top1 top2 oa = {!   !}
+lem10 G MP v w top1 top2 oa = {!   !}
+
+-- lem10 : (G : Graph) → (X : X) → (v x w : Vertex) → (inner X G v w) → (classify-parents G v ≡ PC-UP x) → ((top X G x) + (inner X G x w))
+-- lem10 G X v x w (not-top , (n , ws , (eq1 , eq2 , cps)) , is-top) cp = {!   !} 
+
 data class : Graph → Vertex → Set where 
   Top : ∀{G v} → (X : X) → class G v
   Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
@@ -443,7 +451,49 @@ mutual
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | false | no neq | eq5 rewrite eq5 with (v ≟Vertex v) 
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | false | no neq | eq5 | yes refl = refl
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | false | no neq | eq5 | no neq2 = ⊥-elim (neq2 refl)
-  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} is-inner = {!   !}
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) with classify-correct (suc fuel) G v ws oas | lookup ws1 zero | eq1 | classify-parents G v | inspect (classify-parents G) v | (cp zero) 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-NP | [ eq3 ] | eq4 rewrite eq3 with eq4 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-NP | [ eq3 ] | eq4 | ()
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-MP | [ eq3 ] | eq4 rewrite eq3 with eq4 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-MP | [ eq3 ] | eq4 | ()
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP x | [ eq3 ] | eq4 rewrite eq3 with eq4 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl with locate-U G v ws
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | TopCorrect is-top2 | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | true = ⊥-elim (not-top is-top2)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | false with (v ≟Vertex (lookup ws1 (suc zero)))
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (n , ws1 , (eq1 , eq2 , cp)) , is-top) | TopCorrect is-top2 | _ | refl | PC-UP .(lookup ws1 (suc zero)) | [ eq3 ] | eq4 | refl | false | yes eq5 = ⊥-elim (not-top is-top2)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (zero , .v ∷ .w ∷ [] , (refl , refl , cp)) , is-top) | correct | _ | refl | PC-UP w | [ eq3 ] | eq4 | refl | false | no neq with classify-complete fuel G w (update-ws v ws w) (update-ws-correct G v ws w oas eq3)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (zero , .v ∷ .w ∷ [] , (refl , refl , cp)) , is-top) | correct | _ | refl | PC-UP w | [ eq3 ] | eq4 | refl | false | no neq | Complete top-complete _ rewrite (top-complete is-top) = refl
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq with classify fuel G x (update-ws v ws x) | inspect (classify fuel G x) (update-ws v ws x) | classify-correct fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq3) | classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq3)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top NP | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ with classify-parents G x | is-top2 | cp (suc zero)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top NP | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ | PC-NP | refl | () 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top MP | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ with classify-parents G x | is-top2 | cp (suc zero)
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top MP | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ | PC-MP | refl | () 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {NP} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ with lem8 G w x is-top2 (n , x ∷ ws1 , (refl , eq2 , λ i → cp (suc i)))
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {NP} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ | Inl eq6 rewrite eq6 with classify-parents G x | is-top | cp (suc zero) 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {NP} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ | Inl eq6 | .PC-NP | refl | () 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {NP} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ | Inr thing = {!   !}
+    where 
+    silly : ⊥ 
+    silly with  
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {MP} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ = {!   !} 
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {U} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Top U | [ eq5 ] | TopCorrect is-top2 | Complete top-complete _ rewrite lem6 G x w is-top2 is-top (n , x ∷ ws1 , (refl , eq2 , λ i → cp (suc i))) = refl
+  class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Inner X? w? | [ eq5 ] | InnerCorrect thing is-inner | complete = {!   !}
+    
+    
+    -- where 
+    --   v-x?-inner : inner X? G v x
+    --   v-x?-inner = not-top , (zero , v ∷ x ∷ []  , (refl , refl , cp')) , is-top2
+    --     where 
+    --     cp' : (i : Fin 1) → classify-parents G (lookup (v ∷ x ∷ []) (cast-up i)) ≡ PC-UP (lookup (x ∷ []) i)
+    --     cp' zero = cp zero
+
+    -- classify-complete fuel G x (update-ws v ws x) (update-ws-correct G v ws x oas eq3)
+  -- class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Complete _ inner-complete with inner-complete w ({!   !} , (n , x ∷ ws1  , (refl , eq2 , λ i → cp (suc i))) , is-top)
+  -- class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} w (not-top , (suc n , .v ∷ x ∷ ws1  , (refl , eq2 , cp)) , is-top) | correct | _ | refl | PC-UP .x | [ eq3 ] | eq4 | refl | false | no neq | Complete _ inner-complete | thing = {!   !}
+    
+    
+    
+    
     -- where 
     -- classify-complete-top : {X : X} → top X G v → (classify (suc fuel) G v ws ≡ Top X)
     -- classify-complete-top {NP} is-top with classify-parents G v
