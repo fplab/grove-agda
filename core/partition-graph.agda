@@ -467,7 +467,9 @@ mutual
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {MP} is-top with classify-parents G v
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {MP} refl | .PC-MP = refl
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp), min) with lookup ws1 zero | eq1 | classify-parents G v | (cp zero) 
-  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp), min) | _ | refl | parent | eq3 = {!   !}
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-NP | eq3 rewrite eq3 = {! eq3  !}
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-MP | eq3 = {!   !}
+  class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {U} (n , ws1 , (eq1 , eq2 , cp) , min) | _ | refl | PC-UP x | eq3 = {!   !}
   class-complete.InnerComplete (classify-complete (suc fuel) G v ws oas) {X} is-inner = {!   !}
     -- where 
     -- classify-complete-top : {X : X} → top X G v → (classify (suc fuel) G v ws ≡ Top X)
