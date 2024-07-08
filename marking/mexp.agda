@@ -65,6 +65,14 @@ module marking.mexp where
         → (u : VertexId)
         → Γ ⊢⇒ unknown
 
+      ⊢⋎^_ : ∀ {Γ}
+        → (u : VertexId)
+        → Γ ⊢⇒ unknown
+
+      ⊢↻^_ : ∀ {Γ}
+        → (u : VertexId)
+        → Γ ⊢⇒ unknown
+
     data _⊢s⇒_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MSubSHole: \vdash\sq^_^_
       ⊢□^_^_ : ∀ {Γ}
@@ -118,6 +126,12 @@ module marking.mexp where
       MSuFree : ∀ {Γ y u}
         → {∌y : Γ ∌ y}
         → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
+
+      MSuMultiParent : ∀ {Γ u}
+        → MSubsumable {Γ} (⊢⋎^ u)
+
+      MSuUnicycle : ∀ {Γ u}
+        → MSubsumable {Γ} (⊢↻^ u)
 
     -- analysis
     data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where

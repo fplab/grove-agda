@@ -15,6 +15,8 @@ module marking.erasure where
     (⊢ℕ n ^ u)               ⇒□ = -ℕ n ^ u
     (⊢ ě₁ + ě₂ ^ u)          ⇒□ = - (ě₁ ⇐□s) + (ě₂ ⇐□s) ^ u
     (⊢⟦_⟧^_ {y = y} ∌y u)    ⇒□ = - y ^ u
+    (⊢⋎^ u)                  ⇒□ = -⋎^ u
+    (⊢↻^ u)                  ⇒□ = -↻^ u
 
     _⇒□s : ∀ {Γ τ} → (ě : Γ ⊢s⇒ τ) → USubExp
     (⊢□^ w ^ p)     ⇒□s = -□^ w ^ p
@@ -84,6 +86,8 @@ module marking.erasure where
     ⊢⇒-⊢⇐ ě@(⊢ℕ n ^ u)               = ⊢⇒-⊢⇐-subsume ě MSuNum
     ⊢⇒-⊢⇐ ě@(⊢ ě₁ + ě₂ ^ u)          = ⊢⇒-⊢⇐-subsume ě MSuPlus
     ⊢⇒-⊢⇐ ě@(⊢⟦ ∌y ⟧^ u)             = ⊢⇒-⊢⇐-subsume ě MSuFree
+    ⊢⇒-⊢⇐ ě@(⊢⋎^ u)                  = ⊢⇒-⊢⇐-subsume ě MSuMultiParent
+    ⊢⇒-⊢⇐ ě@(⊢↻^ u)                  = ⊢⇒-⊢⇐-subsume ě MSuUnicycle
 
     ⊢s⇒-⊢s⇐ : ∀ {Γ τ τ′} → (ě : Γ ⊢s⇒ τ) → Σ[ ě′ ∈ Γ ⊢s⇐ τ′ ] ě ⇒□s ≡ ě′ ⇐□s
     ⊢s⇒-⊢s⇐ ě = ⊢s⇒-⊢s⇐-subsume ě
