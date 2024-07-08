@@ -62,6 +62,26 @@ module marking.mexp where
         → (u : VertexId)
         → Γ ⊢⇒ unknown
 
+    data _⊢s⇒_ : (Γ : Ctx) (τ : Typ) → Set where
+      ⊢□^_^_ : ∀ {Γ}
+        → (w : EdgeId)
+        → (p : Position)
+        → Γ ⊢s⇒ unknown
+
+      ⊢:_ : ∀ {Γ w τ}
+        → (ė : Γ ⊢s w ⇒ τ)
+        → Γ ⊢s⇒ τ
+
+      ⊢⋏_ : ∀ {Γ}
+        → (ė* : List (∃[ τ ] Γ ⊢⇒ τ))
+        → Γ ⊢s⇒ unknown
+
+    data _⊢s_⇒_ : (Γ : Ctx) (w : EdgeId) (τ : Typ) → Set where
+      ⊢⟨_,_⟩ :  ∀ {Γ τ}
+        → (w : EdgeId)
+        → (ě : Γ ⊢⇒ τ)
+        → Γ ⊢s w ⇒ τ
+
     data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
       MSuVar : ∀ {Γ x u τ}
         → {∋x : Γ ∋ x ∶ τ}
