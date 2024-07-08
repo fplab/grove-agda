@@ -66,18 +66,18 @@ module marking.mexp where
         → Γ ⊢⇒ unknown
 
     data _⊢s⇒_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MSubSHole
+      -- MSubSHole: \vdash\sq^_^_
       ⊢□^_^_ : ∀ {Γ}
         → (w : EdgeId)
         → (p : Position)
         → Γ ⊢s⇒ unknown
 
-      -- MSubSJust
-      ⊢:_ : ∀ {Γ w τ}
+      -- MSubSJust: \vdash\ratio_
+      ⊢∶_ : ∀ {Γ w τ}
         → (ė : Γ ⊢s w ⇒ τ)
         → Γ ⊢s⇒ τ
 
-      -- MSubSConflict
+      -- MSubSConflict: \vdash\curlywedge_
       -- TODO synthesize meet?
       ⊢⋏_ : ∀ {Γ}
         → (ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ))
@@ -165,10 +165,16 @@ module marking.mexp where
         → Γ ⊢⇐ τ
 
     data _⊢s⇐_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MSubASbusume
+      -- MSubASubsume
       ⊢∙_[_] : ∀ {Γ τ τ′}
         → (ě : Γ ⊢s⇒ τ′)
         → (τ~τ′ : τ ~ τ′)
+        → Γ ⊢s⇐ τ
+
+      -- MSubAInconsistentTypes
+      ⊢⸨_⸩[_] : ∀ {Γ τ τ′}
+        → (ě : Γ ⊢s⇒ τ′)
+        → (τ~̸τ′ : τ ~̸ τ′)
         → Γ ⊢s⇐ τ
 
   mutual
@@ -207,7 +213,7 @@ module marking.mexp where
       MLSubSJust : ∀ {Γ w τ}
         → {ė : Γ ⊢s w ⇒ τ}
         → (less : Markless⇒s′ ė)
-        → Markless⇒s {Γ} (⊢: ė)
+        → Markless⇒s {Γ} (⊢∶ ė)
 
       -- TODO maybe this is a mark?
       MLSubSConflict : ∀ {Γ}
