@@ -1,8 +1,9 @@
 open import marking.prelude
 
+open import marking.id
 open import marking.typ
 open import marking.gtyp
-open import marking.uexp hiding (_⊢s_⇒_)
+open import marking.uexp
 open import marking.mexp
 
 module marking.erasure where
@@ -19,13 +20,13 @@ module marking.erasure where
     (⊢↻^ u)                  ⇒□ = -↻^ u
 
     _⇒□s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → USubExp
-    (⊢□^ w ^ p)     ⇒□s = -□^ w ^ p
-    (⊢∶ ⊢⟨ w , ě ⟩) ⇒□s = -∶ (⟨ w , ě ⇒□ ⟩)
-    (⊢⋏ ė*)         ⇒□s = -⋏ (ė* ⇒□s*)
+    (⊢□^ w ^ p)    ⇒□s = -□^ w ^ p
+    (⊢∶ ⟨ w , ě ⟩) ⇒□s = -∶ (⟨ w , ě ⇒□ ⟩)
+    (⊢⋏ ė*)        ⇒□s = -⋏ (ė* ⇒□s*)
 
-    _⇒□s* : ∀ {Γ} → (ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ)) → List USubExp'
-    []                                ⇒□s* = []
-    (⟨ _ , ⟨ _ , ⊢⟨ w , ě ⟩ ⟩ ⟩ ∷ ė*) ⇒□s* = ⟨ w , ě ⇒□ ⟩ ∷ (ė* ⇒□s*)
+    _⇒□s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → List USubExp'
+    []                       ⇒□s* = []
+    (⟨ w , ⟨ _ , ě ⟩ ⟩ ∷ ė*) ⇒□s* = ⟨ w , ě ⇒□ ⟩ ∷ (ė* ⇒□s*)
 
     _⇐□ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → UExp
     (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)   ⇐□ = -λ x ∶ τ ∙ (ě ⇐□s) ^ u

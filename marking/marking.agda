@@ -2,7 +2,7 @@ open import marking.prelude
 open import marking.typ
 open import marking.gtyp
 open import marking.ctx
-open import marking.uexp hiding (_⊢s_⇒_)
+open import marking.uexp
 open import marking.mexp
 
 module marking.marking where
@@ -67,11 +67,11 @@ module marking.marking where
       MKSubSJust : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇒ τ} 
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
-        → Γ ⊢s -∶ ⟨ w , e ⟩ ↬⇒ ⊢∶ ⊢⟨ w , ě ⟩
+        → Γ ⊢s -∶ ⟨ w , e ⟩ ↬⇒ ⊢∶ ⟨ w , ě ⟩
 
       MKSubSConflict : ∀ {Γ ė*}
         → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-        → Γ ⊢s -⋏ ė* ↬⇒ ⊢⋏ (map (λ { ⟨ ⟨ w , e ⟩ , ⟨ τ , ⟨ ě , _ ⟩ ⟩ ⟩ → ⟨ _ , ⟨ τ , ⊢⟨ w , ě ⟩ ⟩ ⟩ }) (all.toList ė↬⇒ě*))
+        → Γ ⊢s -⋏ ė* ↬⇒ ⊢⋏ (map (λ { ⟨ ⟨ w , _ ⟩ , ⟨ τ , ⟨ ě , _ ⟩ ⟩ ⟩ → ⟨ w , ⟨ τ , ě ⟩ ⟩ }) (all.toList ė↬⇒ě*))
 
     USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar

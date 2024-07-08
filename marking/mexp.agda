@@ -80,22 +80,16 @@ module marking.mexp where
         → (p : Position)
         → Γ ⊢⇒s unknown
 
-      -- MSubSJust: \vdash\ratio_
-      ⊢∶_ : ∀ {Γ w τ}
-        → (ė : Γ ⊢s w ⇒ τ)
+      -- MSubSJust
+      ⊢∶ : ∀ {Γ τ}
+        → (ė : EdgeId × Γ ⊢⇒ τ)
         → Γ ⊢⇒s τ
 
       -- MSubSConflict: \vdash\curlywedge_
       -- TODO synthesize meet?
       ⊢⋏_ : ∀ {Γ}
-        → (ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ))
+        → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
-
-    data _⊢s_⇒_ : (Γ : Ctx) (w : EdgeId) (τ : Typ) → Set where
-      ⊢⟨_,_⟩ :  ∀ {Γ τ}
-        → (w : EdgeId)
-        → (ě : Γ ⊢⇒ τ)
-        → Γ ⊢s w ⇒ τ
 
     data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
       MSuVar : ∀ {Γ x u τ}
@@ -225,21 +219,15 @@ module marking.mexp where
         → Markless⇒s {Γ} (⊢□^ w ^ p)
 
       MLSubSJust : ∀ {Γ w τ}
-        → {ė : Γ ⊢s w ⇒ τ}
-        → (less : Markless⇒s' ė)
-        → Markless⇒s {Γ} (⊢∶ ė)
+        → {ě : Γ ⊢⇒ τ}
+        → (less : Markless⇒ ě)
+        → Markless⇒s {Γ} (⊢∶ ⟨ w , ě ⟩)
 
       -- TODO maybe this is a mark?
       MLSubSConflict : ∀ {Γ}
-        → {ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ)}
-        → (less* : All (λ { ⟨ _ , ⟨ _ , ė ⟩ ⟩ → Markless⇒s' ė }) ė*)
+        → {ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)}
+        → (less* : All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) ė*)
         → Markless⇒s {Γ} (⊢⋏ ė*)
-
-    data Markless⇒s' : ∀ {Γ w τ} → (ě : Γ ⊢s w ⇒ τ) → Set where
-      MLSubS' : ∀ {Γ w τ}
-        → {ě : Γ ⊢⇒ τ}
-        → (less : Markless⇒ ě)
-        → Markless⇒s' {Γ} (⊢⟨ w , ě ⟩)
 
     data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
       MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
