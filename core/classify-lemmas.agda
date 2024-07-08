@@ -13,6 +13,7 @@ open import Data.Empty
 
 open import prelude
 open import core.finite
+open import core.list-logic
 open import core.graph
 open import core.classify
 

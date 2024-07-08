@@ -1,7 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module core.finite where
   
-open import core.logic
+open import prelude
 open import Data.List hiding (lookup)
 open import Data.Fin
 open import Data.Nat

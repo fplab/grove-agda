@@ -1,4 +1,4 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
 module core.classify-correct where
 
@@ -15,6 +15,7 @@ open import Data.Empty
 
 open import prelude
 open import core.finite
+open import core.list-logic
 open import core.graph
 open import core.classify
 open import core.classify-lemmas
@@ -130,7 +131,10 @@ mutual
   class-complete.InnerComplete (classify-complete _ G v ws oas) {U} w (not-top , (suc n , .v ∷ x ∷ ws1 , (refl , eq2 , cp)) , is-top) | TopCorrect is-top2 | _ | refl | PC-UP .x | _ | eq4 | refl | false | no neq | Inner .U w? | InnerCorrect w? (not-top2 , oa , is-top3) | refl , refl | true = ⊥-elim (not-top is-top2)
   class-complete.InnerComplete (classify-complete _ G v ws oas) {U} w (not-top , (suc n , .v ∷ x ∷ ws1 , (refl , eq2 , cp)) , is-top) | _ | _ | refl | PC-UP .x | _ | eq4 | refl | false | no neq | Inner .U w? | InnerCorrect w? (_ , oa , is-top2) | refl , refl | false = refl
 
-  edge-classify-correct : (fuel : ℕ) → (G : Graph) → (ε : Edge) → (X : X) → (w : Vertex) → (edge-classify fuel G ε ≡ EC X w) → edge-property X G ε w
-  edge-classify-correct fuel G (E (S v _) _ _) X w eq with classify fuel G v [] | eq | classify-correct fuel G v [] <>
-  ... | Top .X | refl | TopCorrect is-top = TopEdge is-top
-  ... | Inner .X .w | refl | InnerCorrect .w is-inner = InnerEdge is-inner
+  data edge-correct (G : Graph) (ε : Edge) : (edge-class G ε) → Set where 
+    EdgeCorrect : ∀{X w} → (edge X G ε w) → edge-correct G ε (EC X w) 
+
+  edge-classify-correct : (fuel : ℕ) → (G : Graph) → (ε : Edge) → edge-correct G ε (edge-classify fuel G ε)
+  edge-classify-correct fuel G (E (S v _) _ _) with classify fuel G v [] | classify-correct fuel G v [] <>
+  ... | Top X | TopCorrect is-top = EdgeCorrect (TopEdge is-top)
+  ... | Inner X w | InnerCorrect .w is-inner = EdgeCorrect (InnerEdge is-inner)

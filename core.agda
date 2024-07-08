@@ -1,2 +1,2 @@
 module core where
-  open import core.redecomp public
+  open import core.decomp-recomp public

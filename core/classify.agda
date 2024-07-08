@@ -15,6 +15,7 @@ open import Data.Empty
 
 open import prelude
 open import core.finite
+open import core.list-logic
 open import core.graph
 
 id-of-vertex : Vertex → Ident 
@@ -128,9 +129,9 @@ classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
 
-data edge-property : X → Graph → Edge → Vertex → Set where 
-  TopEdge : ∀{X G v u1 x u2} → (top X G v) → edge-property X G (E (S v u1) x u2) v
-  InnerEdge : ∀{X G v u1 x u2 w} → (inner X G v w) → edge-property X G (E (S v u1) x u2) w
+data edge : X → Graph → Edge → Vertex → Set where 
+  TopEdge : ∀{X G v u1 x u2} → (top X G v) → edge X G (E (S v u1) x u2) v
+  InnerEdge : ∀{X G v u1 x u2 w} → (inner X G v w) → edge X G (E (S v u1) x u2) w
 
 data edge-class : Graph → Edge → Set where 
   EC : ∀{G ε} → (X : X) → (w : Vertex) → edge-class G ε
