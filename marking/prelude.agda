@@ -145,6 +145,10 @@ module marking.prelude where
     []       ++ ys = ys
     (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
+    map : ∀ {A B : Set} → (A → B) → List A → List B
+    map f []        =  []
+    map f (x ∷ xs)  =  f x ∷ map f xs
+
     data All {A : Set} (P : A → Set) : List A → Set where
       []  : All P []
       _∷_ : ∀ {x : A} {xs : List A} → P x → All P xs → All P (x ∷ xs)
