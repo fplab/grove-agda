@@ -214,6 +214,12 @@ module marking.mexp where
         → (less₂ : Markless⇐s ě₂)
         → Markless⇒ {Γ} (⊢ ě₁ + ě₂ ^ u)
 
+      MLSMultiParent : ∀ {Γ u}
+        → Markless⇒ {Γ} (⊢⋎^ u)
+
+      MLSUnicycle : ∀ {Γ u}
+        → Markless⇒ {Γ} (⊢↻^ u)
+
     data Markless⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → Set where
       MLSubSHole : ∀ {Γ w p}
         → Markless⇒s {Γ} (⊢□^ w ^ p)
