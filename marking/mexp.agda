@@ -79,7 +79,7 @@ module marking.mexp where
       -- MSubSConflict
       -- TODO synthesize meet?
       ⊢⋏_ : ∀ {Γ}
-        → (ė* : List (∃[ τ ] Γ ⊢⇒ τ))
+        → (ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ))
         → Γ ⊢s⇒ unknown
 
     data _⊢s_⇒_ : (Γ : Ctx) (w : EdgeId) (τ : Typ) → Set where
@@ -170,46 +170,69 @@ module marking.mexp where
         → (τ~τ′ : τ ~ τ′)
         → Γ ⊢s⇐ τ
 
-  -- mutual
-    -- data Markless⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇒ τ) → Set where
-      -- MLSVar : ∀ {Γ x u τ}
-        -- → {∋x : Γ ∋ x ∶ τ}
-        -- → Markless⇒ {Γ} (⊢ ∋x ^ u)
+  mutual
+    data Markless⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇒ τ) → Set where
+      MLSVar : ∀ {Γ x u τ}
+        → {∋x : Γ ∋ x ∶ τ}
+        → Markless⇒ {Γ} (⊢ ∋x ^ u)
 
-      -- MLSLam : ∀ {Γ τ′ x τ u}
-        -- → {ě : Γ , x ∶ τ ⊢⇒ τ′}
-        -- → (less : Markless⇒ ě)
-        -- → Markless⇒ {Γ} (⊢λ x ∶ τ ∙ ě ^ u)
+      MLSLam : ∀ {Γ τ′ x τ u}
+        → {ě : Γ , x ∶ τ ⊢s⇒ τ′}
+        → (less : Markless⇒s ě)
+        → Markless⇒ {Γ} (⊢λ x ∶ τ ∙ ě ^ u)
 
-      -- MLSAp : ∀ {Γ τ τ₁ τ₂ u}
-        -- → {ě₁ : Γ ⊢⇒ τ}
-        -- → {ě₂ : Γ ⊢⇐ τ₁}
-        -- → {τ▸ : τ ▸ τ₁ -→ τ₂}
-        -- → (less₁ : Markless⇒ ě₁)
-        -- → (less₂ : Markless⇐ ě₂)
-        -- → Markless⇒ {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
+      MLSAp : ∀ {Γ τ τ₁ τ₂ u}
+        → {ě₁ : Γ ⊢s⇒ τ}
+        → {ě₂ : Γ ⊢s⇐ τ₁}
+        → {τ▸ : τ ▸ τ₁ -→ τ₂}
+        → (less₁ : Markless⇒s ě₁)
+        → (less₂ : Markless⇐s ě₂)
+        → Markless⇒ {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
 
-      -- MLSNum : ∀ {Γ n u}
-        -- → Markless⇒ {Γ} (⊢ℕ n ^ u)
+      MLSNum : ∀ {Γ n u}
+        → Markless⇒ {Γ} (⊢ℕ n ^ u)
 
-      -- MLSPlus : ∀ {Γ u}
-        -- → {ě₁ : Γ ⊢⇐ num}
-        -- → {ě₂ : Γ ⊢⇐ num}
-        -- → (less₁ : Markless⇐ ě₁)
-        -- → (less₂ : Markless⇐ ě₂)
-        -- → Markless⇒ {Γ} (⊢ ě₁ + ě₂ ^ u)
+      MLSPlus : ∀ {Γ u}
+        → {ě₁ : Γ ⊢s⇐ num}
+        → {ě₂ : Γ ⊢s⇐ num}
+        → (less₁ : Markless⇐s ě₁)
+        → (less₂ : Markless⇐s ě₂)
+        → Markless⇒ {Γ} (⊢ ě₁ + ě₂ ^ u)
 
-    -- data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
-      -- MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
-        -- → {ě : Γ , x ∶ τ ⊢⇐ τ₂}
-        -- → {τ₃▸ : τ₃ ▸ τ₁ -→ τ₂}
-        -- → {τ~τ₁ : τ ~ τ₁}
-        -- → (less : Markless⇐ ě)
-        -- → Markless⇐ {Γ} (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
+    data Markless⇒s : ∀ {Γ τ} → (ě : Γ ⊢s⇒ τ) → Set where
+      MLSubSHole : ∀ {Γ w p}
+        → Markless⇒s {Γ} (⊢□^ w ^ p)
 
-      -- MLASubsume : ∀ {Γ τ τ′ u}
-        -- → {ě : Γ ⊢⇒ τ′}
-        -- → {τ~τ′ : τ ~ τ′}
-        -- → {su : MSubsumable ě}
-        -- → (less : Markless⇒ ě)
-        -- → Markless⇐ {Γ} (⊢∙ ě [ τ~τ′ ∙ su ]^ u)
+      MLSubSJust : ∀ {Γ w τ}
+        → {ė : Γ ⊢s w ⇒ τ}
+        → (less : Markless⇒s′ ė)
+        → Markless⇒s {Γ} (⊢: ė)
+
+      -- TODO maybe this is a mark?
+      MLSubSConflict : ∀ {Γ}
+        → {ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ)}
+        → (less* : All (λ { ⟨ _ , ⟨ _ , ė ⟩ ⟩ → Markless⇒s′ ė }) ė*)
+        → Markless⇒s {Γ} (⊢⋏ ė*)
+
+    data Markless⇒s′ : ∀ {Γ w τ} → (ě : Γ ⊢s w ⇒ τ) → Set where
+      MLSubS′ : ∀ {Γ w τ}
+        → {ě : Γ ⊢⇒ τ}
+        → (less : Markless⇒ ě)
+        → Markless⇒s′ {Γ} (⊢⟨ w , ě ⟩)
+
+    data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
+      MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
+        → {ě : Γ , x ∶ τ ⊢s⇐ τ₂}
+        → {τ₃▸ : τ₃ ▸ τ₁ -→ τ₂}
+        → {τ~τ₁ : τ ~ τ₁}
+        → (less : Markless⇐s ě)
+        → Markless⇐ {Γ} (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
+
+      MLASubsume : ∀ {Γ τ τ′}
+        → {ě : Γ ⊢⇒ τ′}
+        → {τ~τ′ : τ ~ τ′}
+        → {su : MSubsumable ě}
+        → (less : Markless⇒ ě)
+        → Markless⇐ {Γ} (⊢∙ ě [ τ~τ′ ∙ su ])
+
+    data Markless⇐s : ∀ {Γ τ} → (ě : Γ ⊢s⇐ τ) → Set where
