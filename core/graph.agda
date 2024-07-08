@@ -4,7 +4,7 @@ open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_⊔_; _+_)
 open import Data.List
-open import Data.Fin
+open import Data.Fin hiding(_+_)
 open import Function.Equivalence hiding (_∘_)
 open import Function hiding (_⇔_)
 open import Function.Equality using (_⟨$⟩_)
@@ -29,6 +29,7 @@ postulate
   ≤𝕀-reflexive : (i : Ident) → (i ≤𝕀 i) 
   ≤𝕀-antisym : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₁) → (i₁ ≡ i₂)
   ≤𝕀-transitive : (i₁ i₂ i₃ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₃) → (i₁ ≤𝕀 i₃)
+  ≤𝕀-total : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) + (i₂ ≤𝕀 i₁)
 
 record Vertex : Set where
   constructor V
