@@ -10,11 +10,11 @@ module marking.theorems.totality where
     ↬⇒-totality Γ (- x)
       with Γ ∋?? x
     ...  | yes (Z {τ = τ})         = ⟨ τ       , ⟨ ⊢ Z           , MKSVar Z           ⟩ ⟩
-    ...  | yes (S {τ = τ} x≢x′ ∋x) = ⟨ τ       , ⟨ ⊢ (S x≢x′ ∋x) , MKSVar (S x≢x′ ∋x) ⟩ ⟩
+    ...  | yes (S {τ = τ} x≢x' ∋x) = ⟨ τ       , ⟨ ⊢ (S x≢x' ∋x) , MKSVar (S x≢x' ∋x) ⟩ ⟩
     ...  | no  ∌x                  = ⟨ unknown , ⟨ ⊢⟦ ∌x ⟧       , MKSFree ∌x         ⟩ ⟩
     ↬⇒-totality Γ (-λ x ∶ τ ∙ e)
-      with ⟨ τ′ , ⟨ ě , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality (Γ , x ∶ τ) e
-         = ⟨ τ -→ τ′ , ⟨ ⊢λ x ∶ τ ∙ ě , MKSLam e↬⇒ě ⟩ ⟩
+      with ⟨ τ' , ⟨ ě , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality (Γ , x ∶ τ) e
+         = ⟨ τ -→ τ' , ⟨ ⊢λ x ∶ τ ∙ ě , MKSLam e↬⇒ě ⟩ ⟩
     ↬⇒-totality Γ (- e₁ ∙ e₂)
       with ↬⇒-totality Γ e₁
     ...  | ⟨ τ , ⟨ ě₁ , e₁↬⇒ě₁ ⟩ ⟩
@@ -33,46 +33,46 @@ module marking.theorems.totality where
 
     ↬⇐-subsume : ∀ {Γ e τ}
                → (ě : Γ ⊢⇒ τ)
-               → (τ′ : Typ)
+               → (τ' : Typ)
                → (Γ ⊢ e ↬⇒ ě)
                → (s : USubsumable e)
-               → Σ[ ě ∈ Γ ⊢⇐ τ′ ] (Γ ⊢ e ↬⇐ ě)
-    ↬⇐-subsume {τ = τ} ě τ′ e↬⇒ě s with τ′ ~? τ
-    ...   | yes τ′~τ = ⟨ ⊢∙ ě  [ τ′~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ′~τ s ⟩
-    ...   | no  τ′~̸τ = ⟨ ⊢⸨ ě ⸩[ τ′~̸τ ∙ USu→MSu s e↬⇒ě ] , MKAInconsistentTypes e↬⇒ě τ′~̸τ s ⟩
+               → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
+    ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
+    ...   | yes τ'~τ = ⟨ ⊢∙ ě  [ τ'~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ'~τ s ⟩
+    ...   | no  τ'~̸τ = ⟨ ⊢⸨ ě ⸩[ τ'~̸τ ∙ USu→MSu s e↬⇒ě ] , MKAInconsistentTypes e↬⇒ě τ'~̸τ s ⟩
 
     ↬⇐-totality : (Γ : Ctx)
-                → (τ′ : Typ)
+                → (τ' : Typ)
                 → (e : UExp)
-                → Σ[ ě ∈ Γ ⊢⇐ τ′ ] (Γ ⊢ e ↬⇐ ě)
-    ↬⇐-totality Γ τ′ e@(-⦇-⦈^ u)
+                → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
+    ↬⇐-totality Γ τ' e@(-⦇-⦈^ u)
       with ⟨ .unknown , ⟨ ě@(⊢⦇-⦈^ _) , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ′ e↬⇒ě USuHole
-    ↬⇐-totality Γ τ′ e@(- x)
+         = ↬⇐-subsume ě τ' e↬⇒ě USuHole
+    ↬⇐-totality Γ τ' e@(- x)
       with ↬⇒-totality Γ e
-    ...  | ⟨ .unknown , ⟨ ě@(⊢⟦ ∌x ⟧) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ′ e↬⇒ě USuVar
-    ...  | ⟨ τ        , ⟨ ě@(⊢ ∋x) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ′ e↬⇒ě USuVar
-    ↬⇐-totality Γ τ′ e@(-λ x ∶ τ ∙ e′)
-      with τ′ ▸-→?
-    ...  | yes ⟨ τ₁ , ⟨ τ₂ , τ′▸ ⟩ ⟩
+    ...  | ⟨ .unknown , ⟨ ě@(⊢⟦ ∌x ⟧) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ' e↬⇒ě USuVar
+    ...  | ⟨ τ        , ⟨ ě@(⊢ ∋x) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ' e↬⇒ě USuVar
+    ↬⇐-totality Γ τ' e@(-λ x ∶ τ ∙ e')
+      with τ' ▸-→?
+    ...  | yes ⟨ τ₁ , ⟨ τ₂ , τ'▸ ⟩ ⟩
              with τ ~? τ₁
     ...         | yes τ~τ₁
-                    with ⟨ ě′ , e′↬⇐ě′ ⟩ ← ↬⇐-totality (Γ , x ∶ τ) τ₂ e′
-                       = ⟨ ⊢λ x ∶ τ ∙ ě′ [ τ′▸ ∙ τ~τ₁ ] , MKALam1 τ′▸ τ~τ₁ e′↬⇐ě′ ⟩
+                    with ⟨ ě' , e'↬⇐ě' ⟩ ← ↬⇐-totality (Γ , x ∶ τ) τ₂ e'
+                       = ⟨ ⊢λ x ∶ τ ∙ ě' [ τ'▸ ∙ τ~τ₁ ] , MKALam1 τ'▸ τ~τ₁ e'↬⇐ě' ⟩
     ...         | no  τ~̸τ₁
-                    with ⟨ ě′ , e′↬⇐ě′ ⟩ ← ↬⇐-totality (Γ , x ∶ τ) τ₂ e′
-                       = ⟨ ⊢λ x ∶⸨ τ ⸩∙ ě′ [ τ′▸ ∙ τ~̸τ₁ ] , MKALam3 τ′▸ τ~̸τ₁ e′↬⇐ě′ ⟩
-    ↬⇐-totality Γ τ′ e@(-λ x ∶ τ ∙ e′)
-         | no τ′!▸
-             with ⟨ ě′ , e′↬⇐ě′ ⟩ ← ↬⇐-totality (Γ , x ∶ τ) unknown e′
-                = ⟨ ⊢⸨λ x ∶ τ ∙ ě′ ⸩[ τ′!▸ ] , MKALam2 τ′!▸ e′↬⇐ě′ ⟩
-    ↬⇐-totality Γ τ′ e@(- _ ∙ _)
+                    with ⟨ ě' , e'↬⇐ě' ⟩ ← ↬⇐-totality (Γ , x ∶ τ) τ₂ e'
+                       = ⟨ ⊢λ x ∶⸨ τ ⸩∙ ě' [ τ'▸ ∙ τ~̸τ₁ ] , MKALam3 τ'▸ τ~̸τ₁ e'↬⇐ě' ⟩
+    ↬⇐-totality Γ τ' e@(-λ x ∶ τ ∙ e')
+         | no τ'!▸
+             with ⟨ ě' , e'↬⇐ě' ⟩ ← ↬⇐-totality (Γ , x ∶ τ) unknown e'
+                = ⟨ ⊢⸨λ x ∶ τ ∙ ě' ⸩[ τ'!▸ ] , MKALam2 τ'!▸ e'↬⇐ě' ⟩
+    ↬⇐-totality Γ τ' e@(- _ ∙ _)
       with ↬⇒-totality Γ e
-    ...  | ⟨ .unknown , ⟨ ě@(⊢⸨ _ ⸩∙ _ [ _ ]) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ′ e↬⇒ě USuAp
-    ...  | ⟨ _        , ⟨ ě@(⊢  _  ∙ _ [ _ ]) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ′ e↬⇒ě USuAp
-    ↬⇐-totality Γ τ′ e@(-ℕ _)
+    ...  | ⟨ .unknown , ⟨ ě@(⊢⸨ _ ⸩∙ _ [ _ ]) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ' e↬⇒ě USuAp
+    ...  | ⟨ _        , ⟨ ě@(⊢  _  ∙ _ [ _ ]) , e↬⇒ě ⟩ ⟩ = ↬⇐-subsume ě τ' e↬⇒ě USuAp
+    ↬⇐-totality Γ τ' e@(-ℕ _)
       with ⟨ _ , ⟨ ě@(⊢ℕ _) , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ′ e↬⇒ě USuNum
-    ↬⇐-totality Γ τ′ e@(- _ + _)
+         = ↬⇐-subsume ě τ' e↬⇒ě USuNum
+    ↬⇐-totality Γ τ' e@(- _ + _)
       with ⟨ _ , ⟨ ě@(⊢ _ + _) , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ′ e↬⇒ě USuPlus
+         = ↬⇐-subsume ě τ' e↬⇒ě USuPlus

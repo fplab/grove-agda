@@ -15,7 +15,7 @@ module marking.ctx where
   -- context membership
   data _∋_∶_ : (Γ : Ctx) (x : Var) (τ : Typ) → Set where
     Z : ∀ {Γ x τ}                            → Γ , x  ∶ τ  ∋ x ∶ τ
-    S : ∀ {Γ x x′ τ τ′} → x ≢ x′ → Γ ∋ x ∶ τ → Γ , x′ ∶ τ′ ∋ x ∶ τ
+    S : ∀ {Γ x x' τ τ'} → x ≢ x' → Γ ∋ x ∶ τ → Γ , x' ∶ τ' ∋ x ∶ τ
 
   _∌_ : (Γ : Ctx) → (x : Var) → Set
   Γ ∌ x = ¬ (∃[ τ ] Γ ∋ x ∶ τ)
@@ -27,13 +27,13 @@ module marking.ctx where
 
   _∋??_ : (Γ : Ctx) → (x : Var) → Γ ∋? x
   ∅            ∋?? x          = no (λ ())
-  (Γ , x′ ∶ τ) ∋?? x
-    with x ≡ℕ? x′
+  (Γ , x' ∶ τ) ∋?? x
+    with x ≡ℕ? x'
   ...  | yes refl             = yes Z
-  ...  | no  x≢x′ with Γ ∋?? x
-  ...                | yes ∋x = yes (S x≢x′ ∋x)
-  ...                | no ∌x  = no λ { ⟨ _ , Z ⟩ → x≢x′ refl
-                                     ; ⟨ τ′ , S _ ∋x₁ ⟩ → ∌x ⟨ τ′ , ∋x₁ ⟩ }
+  ...  | no  x≢x' with Γ ∋?? x
+  ...                | yes ∋x = yes (S x≢x' ∋x)
+  ...                | no ∌x  = no λ { ⟨ _ , Z ⟩ → x≢x' refl
+                                     ; ⟨ τ' , S _ ∋x₁ ⟩ → ∌x ⟨ τ' , ∋x₁ ⟩ }
 
   -- membership type equality
   ∋→τ-≡ : ∀ {Γ x τ₁ τ₂}
@@ -43,23 +43,23 @@ module marking.ctx where
   ∋→τ-≡ Z         Z         = refl
   ∋→τ-≡ Z         (S x≢x _) = ⊥-elim (x≢x refl)
   ∋→τ-≡ (S x≢x _) Z         = ⊥-elim (x≢x refl)
-  ∋→τ-≡ (S _ ∋x)  (S _ ∋x′) = ∋→τ-≡ ∋x ∋x′
+  ∋→τ-≡ (S _ ∋x)  (S _ ∋x') = ∋→τ-≡ ∋x ∋x'
 
   -- membership derivation equality
   ∋-≡ : ∀ {Γ x τ}
       → (∋x : Γ ∋ x ∶ τ)
-      → (∋x′ : Γ ∋ x ∶ τ)
-      → ∋x ≡ ∋x′
+      → (∋x' : Γ ∋ x ∶ τ)
+      → ∋x ≡ ∋x'
   ∋-≡ Z           Z         = refl
   ∋-≡ Z           (S x≢x _) = ⊥-elim (x≢x refl)
   ∋-≡ (S x≢x _)   Z         = ⊥-elim (x≢x refl)
-  ∋-≡ (S x≢x′ ∋x) (S x≢x′′ ∋x′)
-    rewrite ¬-≡ x≢x′ x≢x′′
-          | ∋-≡ ∋x ∋x′ = refl
+  ∋-≡ (S x≢x' ∋x) (S x≢x'' ∋x')
+    rewrite ¬-≡ x≢x' x≢x''
+          | ∋-≡ ∋x ∋x' = refl
 
   -- non-membership derivation equality
   ∌-≡ : ∀ {Γ y}
       → (∌y : Γ ∌ y)
-      → (∌y′ : Γ ∌ y)
-      → ∌y ≡ ∌y′
-  ∌-≡ ∌y ∌y′ = assimilation ∌y ∌y′
+      → (∌y' : Γ ∌ y)
+      → ∌y ≡ ∌y'
+  ∌-≡ ∌y ∌y' = assimilation ∌y ∌y'

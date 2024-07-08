@@ -32,9 +32,9 @@ module marking.theorems.wellformed where
       rewrite ↬⇐□ e↬⇐ě   = refl
     ↬⇐□ (MKALam3 τ₁▸ τ~̸τ₁ e↬⇐ě)
       rewrite ↬⇐□ e↬⇐ě   = refl
-    ↬⇐□ (MKAInconsistentTypes e↬⇒ě τ~̸τ′ s)
+    ↬⇐□ (MKAInconsistentTypes e↬⇒ě τ~̸τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
-    ↬⇐□ (MKASubsume e↬⇒ě τ~τ′ s)
+    ↬⇐□ (MKASubsume e↬⇒ě τ~τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
 
   mutual
@@ -59,26 +59,26 @@ module marking.theorems.wellformed where
            → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě
     ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e}   (UALam τ₃▸ τ~τ₁ e⇐τ₂)
       with ⟨ ě , e↬⇐ě ⟩ ← ⇐τ→↬⇐τ e⇐τ₂     = ⟨ ⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ] , MKALam1 τ₃▸ τ~τ₁ e↬⇐ě ⟩
-    ⇐τ→↬⇐τ {e = e}              (UASubsume e⇒τ′ τ~τ′ su)
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ′     = ⟨ ⊢∙ ě [ τ~τ′ ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ′ su ⟩
+    ⇐τ→↬⇐τ {e = e}              (UASubsume e⇒τ' τ~τ' su)
+      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ'     = ⟨ ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su ⟩
 
   -- marking synthesizes the same type as synthesis
-  ⇒-↬-≡ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {τ′ : Typ} {ě : Γ ⊢⇒ τ′}
+  ⇒-↬-≡ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {τ' : Typ} {ě : Γ ⊢⇒ τ'}
          → Γ ⊢ e ⇒ τ
          → Γ ⊢ e ↬⇒ ě
-         → τ ≡ τ′
+         → τ ≡ τ'
   ⇒-↬-≡ USHole MKSHole
        = refl
-  ⇒-↬-≡ (USVar ∋x) (MKSVar ∋x′)
-       = ∋→τ-≡ ∋x ∋x′
+  ⇒-↬-≡ (USVar ∋x) (MKSVar ∋x')
+       = ∋→τ-≡ ∋x ∋x'
   ⇒-↬-≡ (USVar {τ = τ} ∋x) (MKSFree ∌y)
        = ⊥-elim (∌y ⟨ τ , ∋x ⟩)
   ⇒-↬-≡ (USLam e⇒τ) (MKSLam e↬⇒ě)
     rewrite ⇒-↬-≡ e⇒τ e↬⇒ě
        = refl
-  ⇒-↬-≡ (USAp e⇒τ τ▸ e₁⇐τ₁) (MKSAp1 e↬⇒ě τ▸′ e₂↬⇐ě₂)
+  ⇒-↬-≡ (USAp e⇒τ τ▸ e₁⇐τ₁) (MKSAp1 e↬⇒ě τ▸' e₂↬⇐ě₂)
     with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě
-    with refl ← ▸-→-unicity τ▸ τ▸′
+    with refl ← ▸-→-unicity τ▸ τ▸'
        = refl
   ⇒-↬-≡ (USAp {τ₁ = τ₁} {τ₂ = τ₂} e⇒τ τ▸ e₁⇐τ₁) (MKSAp2 e↬⇒ě τ!▸ e₂↬⇐ě₂)
     with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě
@@ -96,19 +96,19 @@ module marking.theorems.wellformed where
                 → Markless⇒ ě
     ⇒τ→markless USHole MKSHole
          = MLSHole
-    ⇒τ→markless (USVar ∋x) (MKSVar ∋x′)
+    ⇒τ→markless (USVar ∋x) (MKSVar ∋x')
          = MLSVar
     ⇒τ→markless (USVar ∋x) (MKSFree ∌y)
          = ⊥-elim (∌y ⟨ unknown , ∋x ⟩)
     ⇒τ→markless (USLam e⇒τ) (MKSLam e↬⇒ě)
          = MLSLam (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒τ→markless (USAp e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp1 e₁↬⇒ě₁ τ▸′  e₂↬⇐ě₂)
+    ⇒τ→markless (USAp e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp1 e₁↬⇒ě₁ τ▸'  e₂↬⇐ě₂)
       with refl ← ⇒-↬-≡ e₁⇒τ e₁↬⇒ě₁
-      with refl ← ▸-→-unicity τ▸ τ▸′
+      with refl ← ▸-→-unicity τ▸ τ▸'
          = MLSAp (⇒τ→markless e₁⇒τ e₁↬⇒ě₁) (⇐τ→markless e₂⇐τ₁ e₂↬⇐ě₂)
-    ⇒τ→markless (USAp {τ₁ = τ₁} e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp2 e₁↬⇒ě₁ τ!▸′ e₂↬⇐ě₂)
+    ⇒τ→markless (USAp {τ₁ = τ₁} e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp2 e₁↬⇒ě₁ τ!▸' e₂↬⇐ě₂)
       with refl ← ⇒-↬-≡ e₁⇒τ e₁↬⇒ě₁
-         = ⊥-elim (τ!▸′ ⟨ τ₁ , ⟨ unknown , τ▸ ⟩ ⟩)
+         = ⊥-elim (τ!▸' ⟨ τ₁ , ⟨ unknown , τ▸ ⟩ ⟩)
     ⇒τ→markless USNum MKSNum
          = MLSNum
     ⇒τ→markless (USPlus e₁⇐num e₂⇐num) (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
@@ -118,20 +118,20 @@ module marking.theorems.wellformed where
                 → Γ ⊢ e ⇐ τ
                 → Γ ⊢ e ↬⇐ ě
                 → Markless⇐ ě
-    ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam1 τ₃▸′ τ~τ₁′ e↬⇐ě)
-      with refl ← ▸-→-unicity τ₃▸ τ₃▸′
+    ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam1 τ₃▸' τ~τ₁' e↬⇐ě)
+      with refl ← ▸-→-unicity τ₃▸ τ₃▸'
          = MLALam (⇐τ→markless e⇐τ e↬⇐ě)
     ⇐τ→markless (UALam {τ₁ = τ₁} {τ₂ = τ₂} τ₃▸ τ~τ₁ e⇐τ) (MKALam2 τ₃!▸ e↬⇐ě)
          = ⊥-elim (τ₃!▸ ⟨ τ₁ , ⟨ τ₂ , τ₃▸ ⟩ ⟩)
-    ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam3 τ₃▸′ τ~̸τ₁ e↬⇐ě)
-      with refl ← ▸-→-unicity τ₃▸ τ₃▸′
+    ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam3 τ₃▸' τ~̸τ₁ e↬⇐ě)
+      with refl ← ▸-→-unicity τ₃▸ τ₃▸'
          = ⊥-elim (τ~̸τ₁ τ~τ₁)
-    ⇐τ→markless (UASubsume e⇒τ′ τ~τ′ su) (MKAInconsistentTypes e↬⇒ě τ~̸τ′ su′)
-      with refl ← ⇒-↬-≡ e⇒τ′ e↬⇒ě
-         = ⊥-elim (τ~̸τ′ τ~τ′)
-    ⇐τ→markless (UASubsume e⇒τ′ τ~τ′ su) (MKASubsume e↬⇒ě τ~τ′′ su′)
-      with refl ← ⇒-↬-≡ e⇒τ′ e↬⇒ě
-         = MLASubsume (⇒τ→markless e⇒τ′ e↬⇒ě)
+    ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKAInconsistentTypes e↬⇒ě τ~̸τ' su')
+      with refl ← ⇒-↬-≡ e⇒τ' e↬⇒ě
+         = ⊥-elim (τ~̸τ' τ~τ')
+    ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKASubsume e↬⇒ě τ~τ'' su')
+      with refl ← ⇒-↬-≡ e⇒τ' e↬⇒ě
+         = MLASubsume (⇒τ→markless e⇒τ' e↬⇒ě)
 
   mutual
     -- synthetically marking an expression into a markless expression and a type implies the original synthesizes that type
@@ -162,20 +162,20 @@ module marking.theorems.wellformed where
     ↬⇐τ-markless→⇐τ (MKALam1 τ₃▸ τ~τ₁ e↬⇐ě) (MLALam less)
       with e⇐τ₂ ← ↬⇐τ-markless→⇐τ e↬⇐ě less
          = UALam τ₃▸ τ~τ₁ e⇐τ₂
-    ↬⇐τ-markless→⇐τ (MKASubsume e↬⇒ě τ~τ′ su) (MLASubsume less)
+    ↬⇐τ-markless→⇐τ (MKASubsume e↬⇒ě τ~τ' su) (MLASubsume less)
       with e⇒τ ← ↬⇒τ-markless→⇒τ e↬⇒ě less
-         = UASubsume e⇒τ τ~τ′ su
+         = UASubsume e⇒τ τ~τ' su
 
   mutual
     -- ill-typed expressions are marked into non-markless expressions
-    ¬⇒τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ′ : Typ} {ě : Γ ⊢⇒ τ′}
+    ¬⇒τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : Typ} {ě : Γ ⊢⇒ τ'}
                   → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇒ τ)
                   → Γ ⊢ e ↬⇒ ě
                   → ¬ (Markless⇒ ě)
-    ¬⇒τ→¬markless {τ′ = τ′} ¬e⇒τ e↬⇒ě less = ¬e⇒τ ⟨ τ′ , ↬⇒τ-markless→⇒τ e↬⇒ě less ⟩
+    ¬⇒τ→¬markless {τ' = τ'} ¬e⇒τ e↬⇒ě less = ¬e⇒τ ⟨ τ' , ↬⇒τ-markless→⇒τ e↬⇒ě less ⟩
 
-    ¬⇐τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ′ : Typ} {ě : Γ ⊢⇐ τ′}
+    ¬⇐τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : Typ} {ě : Γ ⊢⇐ τ'}
                   → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇐ τ)
                   → Γ ⊢ e ↬⇐ ě
                   → ¬ (Markless⇐ ě)
-    ¬⇐τ→¬markless {τ′ = τ′} ¬e⇐τ e↬⇐ě less = ¬e⇐τ ⟨ τ′ , ↬⇐τ-markless→⇐τ e↬⇐ě less ⟩
+    ¬⇐τ→¬markless {τ' = τ'} ¬e⇐τ e↬⇐ě less = ¬e⇐τ ⟨ τ' , ↬⇐τ-markless→⇐τ e↬⇐ě less ⟩
