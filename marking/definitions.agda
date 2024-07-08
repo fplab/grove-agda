@@ -1,5 +1,6 @@
 module marking.definitions where
   open import marking.hole public
+  open import marking.id public
   open import marking.var public
   open import marking.typ public
   open import marking.gtyp public

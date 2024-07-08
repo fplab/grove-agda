@@ -40,12 +40,23 @@ module marking.theorems.totality where
     ↬⇒s-totality Γ (-∶ ⟨ w , e ⟩)
       with ⟨ τ' , ⟨ ě , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
          = ⟨ τ' , ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩ ⟩
-    ↬⇒s-totality Γ (-⋏ ė*) = ⟨ unknown , {! ⟨ ⊢⋏ {! !} , MKSubSConflict {! !} ⟩ !} ⟩
+    ↬⇒s-totality Γ (-⋏ ė*)
+      with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
+         = ⟨ unknown , ⟨ ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě* ⟩ ⟩
+
+    ↬⇒s-totality* : (Γ : Ctx)
+                  → (ė* : List USubExp')
+                  → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
+    ↬⇒s-totality* Γ [] = []
+    ↬⇒s-totality* Γ (⟨ w , e ⟩ ∷ ė*)
+      with ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
+      with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
+         = ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*
 
     ↬⇐-subsume : ∀ {Γ e τ}
                → (ě : Γ ⊢⇒ τ)
                → (τ' : Typ)
-               → (Γ ⊢ e ↬⇒ ě)
+               → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
                → (s : USubsumable e)
                → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
     ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
@@ -55,8 +66,11 @@ module marking.theorems.totality where
     ↬⇐s-subsume : ∀ {Γ e τ}
                 → (ě : Γ ⊢⇒s τ)
                 → (τ' : Typ)
-                → (Γ ⊢s e ↬⇒ ě)
+                → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
                 → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
+    ↬⇐s-subsume {τ = τ} ě τ' e↬⇒ě  with τ' ~? τ
+    ...   | yes τ'~τ = ⟨ ⊢∙ ě  [ τ'~τ ] , MKSubASubsume e↬⇒ě τ'~τ ⟩
+    ...   | no  τ'~̸τ = ⟨ ⊢⸨ ě ⸩[ τ'~̸τ ] , MKSubAInconsistentTypes e↬⇒ě τ'~̸τ ⟩
 
     ↬⇐-totality : (Γ : Ctx)
                 → (τ' : Typ)

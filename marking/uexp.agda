@@ -91,7 +91,7 @@ module marking.uexp where
       -- TODO synthesize meet?
       -- TODO rename to USubSMultiChild?
       USubSConflict : ∀ {Γ ė*}
-        → (ė⇒* : All (λ (⟨ w , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+        → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ ė* ⇒ unknown
 
     -- analysis
