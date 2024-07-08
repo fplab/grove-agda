@@ -24,21 +24,21 @@ module marking.marking where
         → Γ ⊢ - y ^ u ↬⇒ ⊢⟦ ∌y ⟧^ u
 
       MKSLam : ∀ {Γ x τ e τ₁ u}
-        → {ě : Γ , x ∶ (τ △) ⊢s⇒ τ₁}
+        → {ě : Γ , x ∶ (τ △) ⊢⇒s τ₁}
         → (e↬⇒ě : Γ , x ∶ (τ △) ⊢s e ↬⇒ ě)
         → Γ ⊢ -λ x ∶ τ ∙ e ^ u ↬⇒ ⊢λ x ∶ τ ∙ ě ^ u
 
       MKSAp1 : ∀ {Γ e₁ e₂ τ τ₁ τ₂ u}
-        → {ě₁ : Γ ⊢s⇒ τ}
-        → {ě₂ : Γ ⊢s⇐ τ₁}
+        → {ě₁ : Γ ⊢⇒s τ}
+        → {ě₂ : Γ ⊢⇐s τ₁}
         → (e₁↬⇒ě₁ : Γ ⊢s e₁ ↬⇒ ě₁)
         → (τ▸ : τ ▸ τ₁ -→ τ₂)
         → (e₂↬⇐ě₂ : Γ ⊢s e₂ ↬⇐ ě₂)
         → Γ ⊢ - e₁ ∙ e₂ ^ u ↬⇒ ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u
 
       MKSAp2 : ∀ {Γ e₁ e₂ τ u}
-        → {ě₁ : Γ ⊢s⇒ τ}
-        → {ě₂ : Γ ⊢s⇐ unknown}
+        → {ě₁ : Γ ⊢⇒s τ}
+        → {ě₂ : Γ ⊢⇐s unknown}
         → (e₁↬⇒ě₁ : Γ ⊢s e₁ ↬⇒ ě₁)
         → (τ!▸ : τ !▸-→)
         → (e₂↬⇐ě₂ : Γ ⊢s e₂ ↬⇐ ě₂)
@@ -48,8 +48,8 @@ module marking.marking where
         → Γ ⊢ -ℕ n ^ u ↬⇒ ⊢ℕ n ^ u
 
       MKSPlus : ∀ {Γ e₁ e₂ u}
-        → {ě₁ : Γ ⊢s⇐ num}
-        → {ě₂ : Γ ⊢s⇐ num}
+        → {ě₁ : Γ ⊢⇐s num}
+        → {ě₂ : Γ ⊢⇐s num}
         → (e₁↬⇐ě₁ : Γ ⊢s e₁ ↬⇐ ě₁)
         → (e₂↬⇐ě₂ : Γ ⊢s e₂ ↬⇐ ě₂)
         → Γ ⊢ - e₁ + e₂ ^ u ↬⇒ ⊢ ě₁ + ě₂ ^ u
@@ -60,7 +60,7 @@ module marking.marking where
       MKSUnicycle : ∀ {Γ u}
         → Γ ⊢ -↻^ u ↬⇒ ⊢↻^ u
 
-    data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢s⇒ τ) → Set where
+    data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇒s τ) → Set where
       MKSubSHole : ∀ {Γ w p}
         → Γ ⊢s -□^ w ^ p ↬⇒ ⊢□^ w ^ p
 
@@ -86,20 +86,20 @@ module marking.marking where
     -- analysis
     data _⊢_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where
       MKALam1 : ∀ {Γ x τ e τ₁ τ₂ τ₃ u}
-        → {ě : Γ , x ∶ (τ △) ⊢s⇐ τ₂}
+        → {ě : Γ , x ∶ (τ △) ⊢⇐s τ₂}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~τ₁ : (τ △) ~ τ₁)
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
         → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
 
       MKALam2 : ∀ {Γ x τ e τ′ u}
-        → {ě : Γ , x ∶ (τ △) ⊢s⇐ unknown}
+        → {ě : Γ , x ∶ (τ △) ⊢⇐s unknown}
         → (τ′!▸ : τ′ !▸-→)
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
         → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢⸨λ x ∶ τ ∙ ě ⸩[ τ′!▸ ]^ u)
 
       MKALam3 : ∀ {Γ x τ e τ₁ τ₂ τ₃ u}
-        → {ě : Γ , x ∶ (τ △) ⊢s⇐ τ₂}
+        → {ě : Γ , x ∶ (τ △) ⊢⇐s τ₂}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~̸τ₁ : (τ △) ~̸ τ₁)
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
@@ -119,15 +119,15 @@ module marking.marking where
         → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ′ ∙ USu→MSu s e↬⇒ě ]
 
-    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢s⇐ τ) → Set where
+    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇐s τ) → Set where
       MKSubASubsume : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢s⇒ τ′}
+        → {ě : Γ ⊢⇒s τ′}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
         → (τ~τ′ : τ ~ τ′)
         → Γ ⊢s e ↬⇐ ⊢∙ ě [ τ~τ′ ]
 
       MKSubAInconsistentTypes : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢s⇒ τ′}
+        → {ě : Γ ⊢⇒s τ′}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
         → (τ~̸τ′ : τ ~̸ τ′)
         → Γ ⊢s e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ′ ]
