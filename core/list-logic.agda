@@ -34,10 +34,6 @@ list-forall-filter {C = C} {l = x ∷ l} {dec = dec} (p , fa) with dec x
 ... | yes p' = (p p') , (list-forall-filter fa)
 ... | no _ = list-forall-filter fa
 
-list-forall-general : {A : Set} → {P : A → Set} → {l : List A} → ((a : A) → P a) → list-forall P l
-list-forall-general {l = []} fa = <>
-list-forall-general {l = x ∷ l} fa = (fa x) , (list-forall-general fa)
-
 list-forall-implies : {A : Set} → {P1 P2 : A → Set} → {l : List A} → list-forall P1 l → ({a : A} → (P1 a) → (P2 a)) → list-forall P2 l
 list-forall-implies {l = []} f i = <>
 list-forall-implies {l = x ∷ l} (p , f) i = i p , list-forall-implies f i
@@ -57,6 +53,11 @@ data list-exists {ℓ₁ ℓ₂} : {A : Set ℓ₁} → (A → Set ℓ₂) → (
 data list-elem {A : Set} (a : A) : (List A) → Set where 
   ListElemHave : (l : List A) → list-elem a (a ∷ l) 
   ListElemSkip : {l : List A} → (b : A) → list-elem a l → list-elem a (b ∷ l)
+
+-- the converse is also true. we could have defined forall in terms of elem, perhaps
+list-forall-elem : {A : Set} → {P : A → Set} → {l : List A} → ((a : A) → (list-elem a l) → P a) → list-forall P l
+list-forall-elem {l = []} fa = <>
+list-forall-elem {l = x ∷ l} fa = (fa x (ListElemHave l)) , (list-forall-elem λ a elem → fa a (ListElemSkip x elem))
 
 list-elem-append-left : {A : Set} → {a : A} → {l1 l2 : List A} → list-elem a l1 → list-elem a (l1 ++ l2)
 list-elem-append-left {l1 = []} ()
