@@ -92,11 +92,11 @@ module marking.marking where
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
         → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
 
-      MKALam2 : ∀ {Γ x τ e τ′ u}
+      MKALam2 : ∀ {Γ x τ e τ' u}
         → {ě : Γ , x ∶ (τ △) ⊢⇐s unknown}
-        → (τ′!▸ : τ′ !▸-→)
+        → (τ'!▸ : τ' !▸-→)
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
-        → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢⸨λ x ∶ τ ∙ ě ⸩[ τ′!▸ ]^ u)
+        → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢⸨λ x ∶ τ ∙ ě ⸩[ τ'!▸ ]^ u)
 
       MKALam3 : ∀ {Γ x τ e τ₁ τ₂ τ₃ u}
         → {ě : Γ , x ∶ (τ △) ⊢⇐s τ₂}
@@ -105,29 +105,29 @@ module marking.marking where
         → Γ , x ∶ (τ △) ⊢s e ↬⇐ ě
         → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢λ x ∶⸨ τ ⸩∙ ě [ τ₃▸ ∙ τ~̸τ₁ ]^ u)
 
-      MKASubsume : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢⇒ τ′}
+      MKASubsume : ∀ {Γ e τ τ'}
+        → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
-        → (τ~τ′ : τ ~ τ′)
+        → (τ~τ' : τ ~ τ')
         → (s : USubsumable e)
-        → Γ ⊢ e ↬⇐ ⊢∙ ě [ τ~τ′ ∙ USu→MSu s e↬⇒ě ]
+        → Γ ⊢ e ↬⇐ ⊢∙ ě [ τ~τ' ∙ USu→MSu s e↬⇒ě ]
 
-      MKAInconsistentTypes : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢⇒ τ′}
+      MKAInconsistentTypes : ∀ {Γ e τ τ'}
+        → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
-        → (τ~̸τ′ : τ ~̸ τ′)
+        → (τ~̸τ' : τ ~̸ τ')
         → (s : USubsumable e)
-        → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ′ ∙ USu→MSu s e↬⇒ě ]
+        → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
     data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇐s τ) → Set where
-      MKSubASubsume : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢⇒s τ′}
+      MKSubASubsume : ∀ {Γ e τ τ'}
+        → {ě : Γ ⊢⇒s τ'}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
-        → (τ~τ′ : τ ~ τ′)
-        → Γ ⊢s e ↬⇐ ⊢∙ ě [ τ~τ′ ]
+        → (τ~τ' : τ ~ τ')
+        → Γ ⊢s e ↬⇐ ⊢∙ ě [ τ~τ' ]
 
-      MKSubAInconsistentTypes : ∀ {Γ e τ τ′}
-        → {ě : Γ ⊢⇒s τ′}
+      MKSubAInconsistentTypes : ∀ {Γ e τ τ'}
+        → {ě : Γ ⊢⇒s τ'}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
-        → (τ~̸τ′ : τ ~̸ τ′)
-        → Γ ⊢s e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ′ ]
+        → (τ~̸τ' : τ ~̸ τ')
+        → Γ ⊢s e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ]

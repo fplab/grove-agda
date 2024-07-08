@@ -23,12 +23,12 @@ module marking.mexp where
         → Γ ⊢⇒ τ
 
       -- MSLam
-      ⊢λ_∶_∙_^_ : ∀ {Γ τ′}
+      ⊢λ_∶_∙_^_ : ∀ {Γ τ'}
         → (x : Var)
         → (τ : GTyp)
-        → (ě : Γ , x ∶ (τ △) ⊢⇒s τ′)
+        → (ě : Γ , x ∶ (τ △) ⊢⇒s τ')
         → (u : VertexId)
-        → Γ ⊢⇒ (τ △) -→ τ′
+        → Γ ⊢⇒ (τ △) -→ τ'
 
       -- MSAp1
       ⊢_∙_[_]^_ : ∀ {Γ τ τ₁ τ₂}
@@ -146,13 +146,13 @@ module marking.mexp where
         → Γ ⊢⇐ τ₃
 
       -- MALam2
-      ⊢⸨λ_∶_∙_⸩[_]^_ : ∀ {Γ τ′}
+      ⊢⸨λ_∶_∙_⸩[_]^_ : ∀ {Γ τ'}
         → (x : Var)
         → (τ : GTyp)
         → (ě : Γ , x ∶ (τ △) ⊢⇐s unknown)
-        → (τ′!▸ : τ′ !▸-→)
+        → (τ'!▸ : τ' !▸-→)
         → (u : VertexId)
-        → Γ ⊢⇐ τ′
+        → Γ ⊢⇐ τ'
 
       -- MALam3
       ⊢λ_∶⸨_⸩∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
@@ -165,30 +165,30 @@ module marking.mexp where
         → Γ ⊢⇐ τ₃
 
       -- MAInconsistentTypes
-      ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ′}
-        → (ě : Γ ⊢⇒ τ′)
-        → (τ~̸τ′ : τ ~̸ τ′)
+      ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ'}
+        → (ě : Γ ⊢⇒ τ')
+        → (τ~̸τ' : τ ~̸ τ')
         → (su : MSubsumable ě)
         → Γ ⊢⇐ τ
 
       -- MASubsume
-      ⊢∙_[_∙_] : ∀ {Γ τ τ′}
-        → (ě : Γ ⊢⇒ τ′)
-        → (τ~τ′ : τ ~ τ′)
+      ⊢∙_[_∙_] : ∀ {Γ τ τ'}
+        → (ě : Γ ⊢⇒ τ')
+        → (τ~τ' : τ ~ τ')
         → (su : MSubsumable ě)
         → Γ ⊢⇐ τ
 
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MSubASubsume
-      ⊢∙_[_] : ∀ {Γ τ τ′}
-        → (ě : Γ ⊢⇒s τ′)
-        → (τ~τ′ : τ ~ τ′)
+      ⊢∙_[_] : ∀ {Γ τ τ'}
+        → (ě : Γ ⊢⇒s τ')
+        → (τ~τ' : τ ~ τ')
         → Γ ⊢⇐s τ
 
       -- MSubAInconsistentTypes
-      ⊢⸨_⸩[_] : ∀ {Γ τ τ′}
-        → (ě : Γ ⊢⇒s τ′)
-        → (τ~̸τ′ : τ ~̸ τ′)
+      ⊢⸨_⸩[_] : ∀ {Γ τ τ'}
+        → (ě : Γ ⊢⇒s τ')
+        → (τ~̸τ' : τ ~̸ τ')
         → Γ ⊢⇐s τ
 
   mutual
@@ -197,8 +197,8 @@ module marking.mexp where
         → {∋x : Γ ∋ x ∶ τ}
         → Markless⇒ {Γ} (⊢ ∋x ^ u)
 
-      MLSLam : ∀ {Γ τ′ x τ u}
-        → {ě : Γ , x ∶ (τ △) ⊢⇒s τ′}
+      MLSLam : ∀ {Γ τ' x τ u}
+        → {ě : Γ , x ∶ (τ △) ⊢⇒s τ'}
         → (less : Markless⇒s ě)
         → Markless⇒ {Γ} (⊢λ x ∶ τ ∙ ě ^ u)
 
@@ -226,20 +226,20 @@ module marking.mexp where
 
       MLSubSJust : ∀ {Γ w τ}
         → {ė : Γ ⊢s w ⇒ τ}
-        → (less : Markless⇒s′ ė)
+        → (less : Markless⇒s' ė)
         → Markless⇒s {Γ} (⊢∶ ė)
 
       -- TODO maybe this is a mark?
       MLSubSConflict : ∀ {Γ}
         → {ė* : List (∃[ w ] ∃[ τ ] Γ ⊢s w ⇒ τ)}
-        → (less* : All (λ { ⟨ _ , ⟨ _ , ė ⟩ ⟩ → Markless⇒s′ ė }) ė*)
+        → (less* : All (λ { ⟨ _ , ⟨ _ , ė ⟩ ⟩ → Markless⇒s' ė }) ė*)
         → Markless⇒s {Γ} (⊢⋏ ė*)
 
-    data Markless⇒s′ : ∀ {Γ w τ} → (ě : Γ ⊢s w ⇒ τ) → Set where
-      MLSubS′ : ∀ {Γ w τ}
+    data Markless⇒s' : ∀ {Γ w τ} → (ě : Γ ⊢s w ⇒ τ) → Set where
+      MLSubS' : ∀ {Γ w τ}
         → {ě : Γ ⊢⇒ τ}
         → (less : Markless⇒ ě)
-        → Markless⇒s′ {Γ} (⊢⟨ w , ě ⟩)
+        → Markless⇒s' {Γ} (⊢⟨ w , ě ⟩)
 
     data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
       MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
@@ -249,16 +249,16 @@ module marking.mexp where
         → (less : Markless⇐s ě)
         → Markless⇐ {Γ} (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
 
-      MLASubsume : ∀ {Γ τ τ′}
-        → {ě : Γ ⊢⇒ τ′}
-        → {τ~τ′ : τ ~ τ′}
+      MLASubsume : ∀ {Γ τ τ'}
+        → {ě : Γ ⊢⇒ τ'}
+        → {τ~τ' : τ ~ τ'}
         → {su : MSubsumable ě}
         → (less : Markless⇒ ě)
-        → Markless⇐ {Γ} (⊢∙ ě [ τ~τ′ ∙ su ])
+        → Markless⇐ {Γ} (⊢∙ ě [ τ~τ' ∙ su ])
 
     data Markless⇐s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → Set where
-      MLSubASubsume : ∀ {Γ τ τ′}
-        → {ě : Γ ⊢⇒s τ′}
-        → {τ~τ′ : τ ~ τ′}
+      MLSubASubsume : ∀ {Γ τ τ'}
+        → {ě : Γ ⊢⇒s τ'}
+        → {τ~τ' : τ ~ τ'}
         → (less : Markless⇒s ě)
-        → Markless⇐s {Γ} (⊢∙ ě [ τ~τ′ ])
+        → Markless⇐s {Γ} (⊢∙ ě [ τ~τ' ])

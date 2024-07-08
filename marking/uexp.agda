@@ -56,9 +56,9 @@ module marking.uexp where
         → (∋x : Γ ∋ x ∶ τ)
         → Γ ⊢ - x ^ u ⇒ τ
 
-      USLam : ∀ {Γ x σ e u τ′}
-        → (e⇒τ′ : Γ , x ∶ (σ △) ⊢s e ⇒ τ′)
-        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ △) -→ τ′
+      USLam : ∀ {Γ x σ e u τ'}
+        → (e⇒τ' : Γ , x ∶ (σ △) ⊢s e ⇒ τ')
+        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ △) -→ τ'
 
       USAp : ∀ {Γ e₁ e₂ u τ τ₁ τ₂}
         → (e₁⇒τ : Γ ⊢s e₁ ⇒ τ)
@@ -102,16 +102,16 @@ module marking.uexp where
         → (e⇐τ₂ : Γ , x ∶ (σ △) ⊢s e ⇐ τ₂)
         → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇐ τ₃
 
-      UASubsume : ∀ {Γ e τ τ′}
-        → (e⇒τ′ : Γ ⊢ e ⇒ τ′)
-        → (τ~τ′ : τ ~ τ′)
+      UASubsume : ∀ {Γ e τ τ'}
+        → (e⇒τ' : Γ ⊢ e ⇒ τ')
+        → (τ~τ' : τ ~ τ')
         → (su : USubsumable e)
         → Γ ⊢ e ⇐ τ
 
     data _⊢s_⇐_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
-      USubASubsume : ∀ {Γ e τ τ′} 
-        → (e⇒τ′ : Γ ⊢s e ⇒ τ′)
-        → (τ~τ′ : τ ~ τ′)
+      USubASubsume : ∀ {Γ e τ τ'} 
+        → (e⇒τ' : Γ ⊢s e ⇒ τ')
+        → (τ~τ' : τ ~ τ')
         → Γ ⊢s e ⇐ τ
 
   -- synthesis unicity
@@ -120,14 +120,14 @@ module marking.uexp where
               → Γ ⊢ e ⇒ τ₁
               → Γ ⊢ e ⇒ τ₂
               → τ₁ ≡ τ₂
-    ⇒-unicity (USVar ∋x)             (USVar ∋x′)              = ∋→τ-≡ ∋x ∋x′
+    ⇒-unicity (USVar ∋x)             (USVar ∋x')              = ∋→τ-≡ ∋x ∋x'
     ⇒-unicity (USLam e⇒τ₁)           (USLam e⇒τ₂)
       rewrite ⇒s-unicity e⇒τ₁ e⇒τ₂                            = refl
-    ⇒-unicity (USAp e₁⇒τ₁ τ▸ e₂⇐τ₂)  (USAp e₁⇒τ₁′ τ▸′ e₂⇐τ₂′)
-      rewrite ⇒s-unicity e₁⇒τ₁ e₁⇒τ₁′
-      with refl ← ▸-→-unicity τ▸ τ▸′                          = refl
+    ⇒-unicity (USAp e₁⇒τ₁ τ▸ e₂⇐τ₂)  (USAp e₁⇒τ₁' τ▸' e₂⇐τ₂')
+      rewrite ⇒s-unicity e₁⇒τ₁ e₁⇒τ₁'
+      with refl ← ▸-→-unicity τ▸ τ▸'                          = refl
     ⇒-unicity USNum                  USNum                    = refl
-    ⇒-unicity (USPlus e₁⇐num e₂⇐num) (USPlus e₁⇐num′ e₂⇐num′) = refl
+    ⇒-unicity (USPlus e₁⇐num e₂⇐num) (USPlus e₁⇐num' e₂⇐num') = refl
     ⇒-unicity USMultiParent          USMultiParent            = refl
     ⇒-unicity USUnicycle             USUnicycle               = refl
 
@@ -136,6 +136,6 @@ module marking.uexp where
                → Γ ⊢s e ⇒ τ₂
                → τ₁ ≡ τ₂
     ⇒s-unicity USubSHole           USubSHole            = refl
-    ⇒s-unicity (USubSJust e⇒τ)     (USubSJust e⇒τ′)
-      rewrite ⇒-unicity e⇒τ e⇒τ′                        = refl
-    ⇒s-unicity (USubSConflict ė⇒*) (USubSConflict ė⇒*′) = refl
+    ⇒s-unicity (USubSJust e⇒τ)     (USubSJust e⇒τ')
+      rewrite ⇒-unicity e⇒τ e⇒τ'                        = refl
+    ⇒s-unicity (USubSConflict ė⇒*) (USubSConflict ė⇒*') = refl
