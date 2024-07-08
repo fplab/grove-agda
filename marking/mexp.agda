@@ -1,8 +1,9 @@
 open import marking.prelude
 
-open import marking.typ
 open import marking.id
 open import marking.var
+open import marking.typ
+open import marking.gtyp
 open import marking.ctx
 
 -- instrinsically typed marked expressions
@@ -24,10 +25,10 @@ module marking.mexp where
       -- MSLam
       ⊢λ_∶_∙_^_ : ∀ {Γ τ′}
         → (x : Var)
-        → (τ : Typ)
-        → (ě : Γ , x ∶ τ ⊢s⇒ τ′)
+        → (τ : GTyp)
+        → (ě : Γ , x ∶ (τ △) ⊢s⇒ τ′)
         → (u : VertexId)
-        → Γ ⊢⇒ τ -→ τ′
+        → Γ ⊢⇒ (τ △) -→ τ′
 
       -- MSAp1
       ⊢_∙_[_]^_ : ∀ {Γ τ τ₁ τ₂}
@@ -123,18 +124,18 @@ module marking.mexp where
       -- MALam1
       ⊢λ_∶_∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : Typ)
-        → (ě : Γ , x ∶ τ ⊢s⇐ τ₂)
+        → (τ : GTyp)
+        → (ě : Γ , x ∶ (τ △) ⊢s⇐ τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
-        → (τ~τ₁ : τ ~ τ₁)
+        → (τ~τ₁ : (τ △) ~ τ₁)
         → (u : VertexId)
         → Γ ⊢⇐ τ₃
 
       -- MALam2
       ⊢⸨λ_∶_∙_⸩[_]^_ : ∀ {Γ τ′}
         → (x : Var)
-        → (τ : Typ)
-        → (ě : Γ , x ∶ τ ⊢s⇐ unknown)
+        → (τ : GTyp)
+        → (ě : Γ , x ∶ (τ △) ⊢s⇐ unknown)
         → (τ′!▸ : τ′ !▸-→)
         → (u : VertexId)
         → Γ ⊢⇐ τ′
@@ -142,10 +143,10 @@ module marking.mexp where
       -- MALam3
       ⊢λ_∶⸨_⸩∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : Typ)
-        → (ě : Γ , x ∶ τ ⊢s⇐ τ₂)
+        → (τ : GTyp)
+        → (ě : Γ , x ∶ (τ △) ⊢s⇐ τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
-        → (τ~̸τ₁ : τ ~̸ τ₁)
+        → (τ~̸τ₁ : (τ △) ~̸ τ₁)
         → (u : VertexId)
         → Γ ⊢⇐ τ₃
 
@@ -177,7 +178,7 @@ module marking.mexp where
         → Markless⇒ {Γ} (⊢ ∋x ^ u)
 
       MLSLam : ∀ {Γ τ′ x τ u}
-        → {ě : Γ , x ∶ τ ⊢s⇒ τ′}
+        → {ě : Γ , x ∶ (τ △) ⊢s⇒ τ′}
         → (less : Markless⇒s ě)
         → Markless⇒ {Γ} (⊢λ x ∶ τ ∙ ě ^ u)
 
@@ -222,9 +223,9 @@ module marking.mexp where
 
     data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
       MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
-        → {ě : Γ , x ∶ τ ⊢s⇐ τ₂}
+        → {ě : Γ , x ∶ (τ △) ⊢s⇐ τ₂}
         → {τ₃▸ : τ₃ ▸ τ₁ -→ τ₂}
-        → {τ~τ₁ : τ ~ τ₁}
+        → {τ~τ₁ : (τ △) ~ τ₁}
         → (less : Markless⇐s ě)
         → Markless⇐ {Γ} (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
 
@@ -236,3 +237,8 @@ module marking.mexp where
         → Markless⇐ {Γ} (⊢∙ ě [ τ~τ′ ∙ su ])
 
     data Markless⇐s : ∀ {Γ τ} → (ě : Γ ⊢s⇐ τ) → Set where
+      MLSubASubsume : ∀ {Γ τ τ′}
+        → {ě : Γ ⊢s⇒ τ′}
+        → {τ~τ′ : τ ~ τ′}
+        → (less : Markless⇒s ě)
+        → Markless⇐s {Γ} (⊢∙ ě [ τ~τ′ ])

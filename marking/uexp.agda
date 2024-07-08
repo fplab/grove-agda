@@ -1,8 +1,9 @@
 open import marking.prelude
 
-open import marking.typ
 open import marking.id
 open import marking.var
+open import marking.typ
+open import marking.gtyp
 open import marking.ctx
 
 -- unmarked expressions
@@ -13,34 +14,9 @@ module marking.uexp where
   infix  4 _⊢s_⇐_
 
   mutual
-    data UTyp : Set where
-      num^_  : (u : VertexId) → UTyp
-      _-→_^_ : (σ₁ : USubTyp) → (σ₂ : USubTyp) → (u : VertexId) → UTyp
-      ⋎^_    : (u : VertexId) → UTyp
-      ↻^_    : (u : VertexId) → UTyp
-
-    data USubTyp : Set where
-      □^_^_ : (u  : VertexId) → (p : Position) → USubTyp
-      ∶_    : (σ  : USubTyp') → USubTyp
-      ⋏_    : (σ* : List USubTyp') → USubTyp
-
-    USubTyp' = EdgeId × UTyp
-
-    _△ : UTyp → Typ
-    (num^ u)       △ = num
-    (σ₁ -→ σ₂ ^ u) △ = (σ₁ △s) -→ (σ₂ △s)
-    (⋎^ u)         △ = unknown
-    (↻^ u)         △ = unknown
-
-    _△s : USubTyp → Typ
-    (□^ u ^ p)    △s = unknown
-    (∶ ⟨ w , σ ⟩) △s = σ △
-    (⋏ σ*)        △s = unknown
-
-  mutual
     data UExp : Set where
       -_^_      : (x : Var) → (u : VertexId) → UExp
-      -λ_∶_∙_^_ : (x : Var) → (σ : UTyp) → (e : USubExp) → (u : VertexId) → UExp
+      -λ_∶_∙_^_ : (x : Var) → (σ : GTyp) → (e : USubExp) → (u : VertexId) → UExp
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
