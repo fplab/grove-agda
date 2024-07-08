@@ -44,8 +44,8 @@ module marking.uexp where
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
-      -⋎^_       : (u : VertexId) → UExp
-      -↻^_       : (u : VertexId) → UExp
+      -⋎^_      : (u : VertexId) → UExp
+      -↻^_      : (u : VertexId) → UExp
 
     data USubExp : Set where
       -□^_^_ : (w  : EdgeId) → (p : Position) → USubExp
