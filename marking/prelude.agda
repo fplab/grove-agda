@@ -153,6 +153,13 @@ module marking.prelude where
       []  : All P []
       _∷_ : ∀ {x : A} {xs : List A} → P x → All P xs → All P (x ∷ xs)
 
+    module all where
+      open product
+
+      toList : ∀ {A : Set} {P : A → Set} {xs : List A} → All P xs → List (Σ[ x ∈ A ] P x)
+      toList [] = []
+      toList (_∷_ {x} px pxs) = ⟨ x , px ⟩ ∷ (toList pxs)
+
   module iso where
     open eq using (_≡_)
 
