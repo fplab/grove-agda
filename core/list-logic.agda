@@ -3,14 +3,24 @@ module core.list-logic where
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
 open import Relation.Unary
 open import Relation.Nullary
+open import Relation.Binary.PropositionalEquality
 open import Data.List
 open import Data.Empty
+open import Data.Nat
+open import Data.Fin
+open import Data.Vec hiding (map;_++_;concat;filter)
+open import Function
 
 open import prelude
+open import core.finite
 
 private
   variable
     ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+
+map-compose : {A B C : Set} → {l : List A} → {f : B → C} → {g : A → B} → map f (map g l) ≡ map (f ∘ g) l 
+map-compose {l = []} {f = f} {g = g} = refl
+map-compose {l = x ∷ l} {f = f} {g = g} rewrite map-compose {l = l} {f = f} {g = g} = refl
 
 list-forall : ∀ {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → (Set (lmax ℓ₁ ℓ₂))
 list-forall P [] = ⊤
@@ -34,6 +44,10 @@ list-forall-filter {C = C} {l = x ∷ l} {dec = dec} (p , fa) with dec x
 ... | yes p' = (p p') , (list-forall-filter fa)
 ... | no _ = list-forall-filter fa
 
+list-forall-toList : {A : Set} → {n : ℕ} → {f : Fin n → A} → {P : A → Set} → (p : (i : Fin n) → (P (f i))) → list-forall P (toList (vec-of-map f)) 
+list-forall-toList {n = zero} p = <>
+list-forall-toList {n = suc n} p = p zero , list-forall-toList (λ i → p (suc i))
+
 list-forall-implies : {A : Set} → {P1 P2 : A → Set} → {l : List A} → list-forall P1 l → ({a : A} → (P1 a) → (P2 a)) → list-forall P2 l
 list-forall-implies {l = []} f i = <>
 list-forall-implies {l = x ∷ l} (p , f) i = i p , list-forall-implies f i
@@ -46,18 +60,19 @@ list-forall-× : {A : Set} → {P1 P2 : A → Set} → {l : List A} → (list-fo
 list-forall-× {l = []} <> <> = <>
 list-forall-× {l = x ∷ l} (p1 , f1) (p2 , f2) = (p1 , p2) , list-forall-× f1 f2
 
-data list-exists {ℓ₁ ℓ₂} : {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → Set (lmax (lsuc ℓ₁) (lsuc ℓ₂)) where 
-  ListExistsHave : {A : Set ℓ₁} → {P : A → Set ℓ₂} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
-  ListExistsSkip : {A : Set ℓ₁} → {P : A → Set ℓ₂} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
-
 data list-elem {A : Set} (a : A) : (List A) → Set where 
   ListElemHave : (l : List A) → list-elem a (a ∷ l) 
   ListElemSkip : {l : List A} → (b : A) → list-elem a l → list-elem a (b ∷ l)
 
--- the converse is also true. we could have defined forall in terms of elem, perhaps
+-- these two theorems are converses, and show that we could have instead defined forall in terms of elem
 list-forall-elem : {A : Set} → {P : A → Set} → {l : List A} → ((a : A) → (list-elem a l) → P a) → list-forall P l
 list-forall-elem {l = []} fa = <>
 list-forall-elem {l = x ∷ l} fa = (fa x (ListElemHave l)) , (list-forall-elem λ a elem → fa a (ListElemSkip x elem))
+
+list-elem-forall : {A : Set} → {P : A → Set} → {l : List A} → list-forall P l → ((a : A) → (list-elem a l) → P a)
+list-elem-forall {l = []} <> a ()
+list-elem-forall {l = x ∷ l} (p , fa) .x (ListElemHave .l) = p
+list-elem-forall {l = x ∷ l} (p , fa) a (ListElemSkip .x el) = list-elem-forall fa a el
 
 list-elem-append-left : {A : Set} → {a : A} → {l1 l2 : List A} → list-elem a l1 → list-elem a (l1 ++ l2)
 list-elem-append-left {l1 = []} ()
@@ -87,39 +102,42 @@ list-elem-filter {l = x ∷ l} {dec = dec} p (ListElemSkip .x el) with dec x
 list-elem-filter {l = x ∷ l} p (ListElemSkip .x el) | yes _ = ListElemSkip x (list-elem-filter p el)
 list-elem-filter {l = x ∷ l} p (ListElemSkip .x el) | no _ = list-elem-filter p el
 
--- This might be a better definition of equivalence
--- forall-elem-equiv : {A : Set} → {l1 l2 : List A} → list-forall (λ a → list-elem a l1) l2 → list-forall (λ a → list-elem a l2) l1 → list-equiv l1 l2
--- forall-elem-equiv {_} {l1} {l2} fa1 fa2 = {!   !}
+elem-equiv : {A : Set} → (l1 l2 : List A) → Set
+elem-equiv {A} l1 l2 = (a : A) → ((list-elem a l1) → (list-elem a l2)) × ((list-elem a l2) → (list-elem a l1))
 
-data list-equiv {ℓ} : {A : Set ℓ} → (l1 l2 : List A) → Set (lsuc ℓ) where 
-  -- congruence
-  ListEquivNil : {A : Set ℓ} → (list-equiv {ℓ} {A} [] [])
-  ListEquivCons : {A : Set ℓ} → {l1 l2 : List A} → (a : A) → (list-equiv l1 l2) → (list-equiv (a ∷ l1) (a ∷ l2))
-  -- symmetry
-  ListEquivSym : {A : Set ℓ} → {l1 l2 : List A} → (list-equiv l1 l2) → (list-equiv l2 l1)
-  -- transitvity
-  ListEquivTrans : {A : Set ℓ} → {l1 l2 l3 : List A} → (list-equiv l1 l2) → (list-equiv l2 l3) → (list-equiv l1 l3)
-  -- allow permutations
-  ListEquivSwap : {A : Set ℓ} → {l1 l2 : List A} → (a b : A) → (list-equiv l1 l2) → (list-equiv (a ∷ b ∷ l1) (b ∷ a ∷ l2))
-  -- todo? allow repeat entries
+-- data list-exists {ℓ₁ ℓ₂} : {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → Set (lmax (lsuc ℓ₁) (lsuc ℓ₂)) where 
+--   ListExistsHave : {A : Set ℓ₁} → {P : A → Set ℓ₂} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
+--   ListExistsSkip : {A : Set ℓ₁} → {P : A → Set ℓ₂} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
 
-ListEquivRefl : {A : Set} → (l : List A) → (list-equiv l l)
-ListEquivRefl [] = ListEquivNil
-ListEquivRefl (x ∷ l) = ListEquivCons x (ListEquivRefl l)
+-- data list-equiv {ℓ} : {A : Set ℓ} → (l1 l2 : List A) → Set (lsuc ℓ) where 
+--   -- congruence
+--   ListEquivNil : {A : Set ℓ} → (list-equiv {ℓ} {A} [] [])
+--   ListEquivCons : {A : Set ℓ} → {l1 l2 : List A} → (a : A) → (list-equiv l1 l2) → (list-equiv (a ∷ l1) (a ∷ l2))
+--   -- symmetry
+--   ListEquivSym : {A : Set ℓ} → {l1 l2 : List A} → (list-equiv l1 l2) → (list-equiv l2 l1)
+--   -- transitvity
+--   ListEquivTrans : {A : Set ℓ} → {l1 l2 l3 : List A} → (list-equiv l1 l2) → (list-equiv l2 l3) → (list-equiv l1 l3)
+--   -- allow permutations
+--   ListEquivSwap : {A : Set ℓ} → {l1 l2 : List A} → (a b : A) → (list-equiv l1 l2) → (list-equiv (a ∷ b ∷ l1) (b ∷ a ∷ l2))
+--   -- todo? allow repeat entries
 
-ListEquivApp : {A : Set} → {l1 l2 l3 l4 : List A} → (list-equiv l1 l2) → (list-equiv l3 l4) → (list-equiv (l1 ++ l3) (l2 ++ l4))
-ListEquivApp ListEquivNil eq = eq
-ListEquivApp (ListEquivCons a e) eq = ListEquivCons a (ListEquivApp e eq)
-ListEquivApp (ListEquivSym e) eq = ListEquivSym (ListEquivApp e (ListEquivSym eq))
-ListEquivApp (ListEquivTrans e e₁) eq = ListEquivTrans (ListEquivApp e eq) (ListEquivApp e₁ (ListEquivTrans (ListEquivSym eq) eq))
-ListEquivApp (ListEquivSwap a b e) eq = ListEquivSwap a b (ListEquivApp e eq)
+-- ListEquivRefl : {A : Set} → (l : List A) → (list-equiv l l)
+-- ListEquivRefl [] = ListEquivNil
+-- ListEquivRefl (x ∷ l) = ListEquivCons x (ListEquivRefl l)
 
-ListEquivAppCons : {A : Set} → (l1 l2 : List A) → (a : A) → (list-equiv (l1 ++ (a ∷ l2)) (a ∷ (l1 ++ l2)))
-ListEquivAppCons [] l2 a = ListEquivCons a (ListEquivRefl l2)
-ListEquivAppCons (x ∷ l1) l2 a = ListEquivTrans (ListEquivCons x (ListEquivAppCons l1 l2 a)) (ListEquivSwap x a (ListEquivRefl _)) 
+-- ListEquivApp : {A : Set} → {l1 l2 l3 l4 : List A} → (list-equiv l1 l2) → (list-equiv l3 l4) → (list-equiv (l1 ++ l3) (l2 ++ l4))
+-- ListEquivApp ListEquivNil eq = eq
+-- ListEquivApp (ListEquivCons a e) eq = ListEquivCons a (ListEquivApp e eq)
+-- ListEquivApp (ListEquivSym e) eq = ListEquivSym (ListEquivApp e (ListEquivSym eq))
+-- ListEquivApp (ListEquivTrans e e₁) eq = ListEquivTrans (ListEquivApp e eq) (ListEquivApp e₁ (ListEquivTrans (ListEquivSym eq) eq))
+-- ListEquivApp (ListEquivSwap a b e) eq = ListEquivSwap a b (ListEquivApp e eq)
 
-ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
-ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a         
-ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))
-   
--- list-equiv-extensional : {A : Set} → {l1 l2 : List A} → (a : A → (list-elem a l2 × list-elem a l2) + ...) → list-equiv l1 l2
+-- ListEquivAppCons : {A : Set} → (l1 l2 : List A) → (a : A) → (list-equiv (l1 ++ (a ∷ l2)) (a ∷ (l1 ++ l2)))
+-- ListEquivAppCons [] l2 a = ListEquivCons a (ListEquivRefl l2)
+-- ListEquivAppCons (x ∷ l1) l2 a = ListEquivTrans (ListEquivCons x (ListEquivAppCons l1 l2 a)) (ListEquivSwap x a (ListEquivRefl _)) 
+
+-- ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
+-- ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a         
+-- ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))
+     
+-- -- list-equiv-extensional : {A : Set} → {l1 l2 : List A} → (a : A → (list-elem a l2 × list-elem a l2) + ...) → list-equiv l1 l2
