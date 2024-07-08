@@ -28,9 +28,16 @@ module marking.theorems.wellformed where
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
     ↬⇒□s MKSubSHole = refl
-    ↬⇒□s (MKSubSJust e↬⇒ě)
-      rewrite ↬⇒□ e↬⇒ě   = refl
-    ↬⇒□s (MKSubSConflict ė↬⇒ě*) = {! !} -- :(
+    ↬⇒□s (MKSubSJust e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
+    ↬⇒□s (MKSubSConflict ė↬⇒ě*)
+      with eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv    = refl
+
+    ↬⇒□s* : ∀ {Γ ė*}
+          → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+          → ((MKSubSConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
+    ↬⇒□s* [] = refl
+    ↬⇒□s* (_∷_ {⟨ w , e ⟩} {ė*} ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ė↬⇒ě*)
+      with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
 
     ↬⇐□ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
         → Γ ⊢ e ↬⇐ ě
@@ -75,10 +82,10 @@ module marking.theorems.wellformed where
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□^ w ^ p} USubSHole       = ⟨ ⊢□^ w ^ p , MKSubSHole ⟩
+    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole          = ⟨ ⊢□^ w ^ p , MKSubSHole ⟩
     ⇒sτ→↬⇒sτ {e = -∶ ⟨ w , e ⟩} (USubSJust e⇒τ) 
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ         = ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩
-    ⇒sτ→↬⇒sτ {e = -⋏ ė*} (USubSConflict ė⇒*) = {! ⟨ ⊢⋏ {! !} , MKSubSConflict {! !} ⟩ !}
+      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ                = ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩
+    ⇒sτ→↬⇒sτ {e = -⋏ ė*}        (USubSConflict ė⇒*) = {! !}
 
     ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇐ τ
