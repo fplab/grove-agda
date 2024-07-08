@@ -127,3 +127,15 @@ classify (suc fuel) G v ws | PC-UP x | false | false | Inner MP w = Inner MP w -
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w with Dec.does (v ≟Vertex w)
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | true = Top U -- if its parent is Inner U rooted at itself, its Top U
 classify (suc fuel) G v ws | PC-UP x | false | false | Inner U w | false = Inner U w -- if its parent is Inner U with a different root, its the same
+
+data edge-property : X → Graph → Edge → Vertex → Set where 
+  TopEdge : ∀{X G v u1 x u2} → (top X G v) → edge-property X G (E (S v u1) x u2) v
+  InnerEdge : ∀{X G v u1 x u2 w} → (inner X G v w) → edge-property X G (E (S v u1) x u2) w
+
+data edge-class : Graph → Edge → Set where 
+  EC : ∀{G ε} → (X : X) → (w : Vertex) → edge-class G ε
+  
+edge-classify : (fuel : ℕ) → (G : Graph) → (ε : Edge) → edge-class G ε 
+edge-classify fuel G (E (S v _) _ _) with classify fuel G v []
+... | Top X = EC X v 
+... | Inner X w = EC X w

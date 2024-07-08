@@ -7,12 +7,12 @@ open import Data.List
 open import prelude
 open import core.finite
 open import core.graph
-open import core.term
-open import core.partition-graph
+open import core.grove
+open import core.classify
 
 mutual 
 
-  {-# TERMINATING #-}
+  -- {-# TERMINATING #-}
   decomp-sub : ℕ → Graph → (Ident × Vertex) → (Ident × Term)
   decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v')
 
@@ -29,18 +29,13 @@ mutual
   ... | Top MP = ⋎ v
   ... | Top U = ⤾ v
   ... | Inner X w = decomp-v fuel G v
-
-decomp-ε : ℕ → Graph → Edge → Term 
-decomp-ε fuel G (E (S v _) _ _) = decomp-v fuel G v
-
--- note: in the actual implementation, this would map over vertices in G directly
-decomp-εs : ℕ → Graph → List(Edge) → Grove 
-decomp-εs fuel G [] = γ [] [] []
-decomp-εs fuel G (E (S v _) _ _ ∷ εs) with classify fuel G v [] | decomp-εs fuel G εs
-... | Top NP | γ np mp u = γ (decomp-v fuel G v ∷ np) mp u
-... | Top MP | γ np mp u = γ np (decomp-v fuel G v ∷ mp) u
-... | Top U | γ np mp u = γ np mp (decomp-v fuel G v ∷ u)
-... | Inner X w | γ np mp u = γ np mp u
+  
+-- -- note: in the actual implementation, this would map over vertices in G directly
+decomp-εs : ℕ → Graph → (List Edge) → Grove 
+decomp-εs fuel G [] = []
+decomp-εs fuel G (E (S v _) _ _ ∷ εs) with classify fuel G v []
+... | Top X = (decomp-v fuel G v) ∷ (decomp-εs fuel G εs)
+... | Inner X w = decomp-εs fuel G εs
 
 decomp-G : ℕ → Graph → Grove 
-decomp-G fuel G = decomp-εs fuel G G
+decomp-G fuel G = decomp-εs fuel G G 

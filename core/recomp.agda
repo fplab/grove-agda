@@ -8,8 +8,8 @@ open import Data.Vec hiding(_++_; concat; map)
 open import prelude
 open import core.finite
 open import core.graph
-open import core.term
-open import core.partition-graph
+open import core.grove
+open import core.classify
 
 vertex-of-term : Term → Vertex 
 vertex-of-term (T u k _) = V k u
@@ -29,9 +29,5 @@ mutual
   recomp-t (⋎ x) = []
   recomp-t (⤾ x) = []
 
-recomp-ts : List(Term) → List(Edge)
-recomp-ts [] = []
-recomp-ts (t ∷ ts) = (recomp-t t) ++ (recomp-ts ts)
-  
 recomp-grove : Grove → Graph 
-recomp-grove (γ np mp u) = (recomp-ts np) ++ (recomp-ts mp) ++ (recomp-ts u)
+recomp-grove grove = concat (map recomp-t grove)

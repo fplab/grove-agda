@@ -1,4 +1,4 @@
-module core.term where
+module core.grove where
 
 open import Data.List
 
@@ -15,12 +15,5 @@ data Term : Set where
 
 -- todo: have two sorts so that holes store sources
 
-Θ : Set
-Θ = (List Term)
-
-record Grove : Set₁ where
-  constructor γ
-  field
-    NP : Θ
-    MP : Θ
-    U : Θ 
+Grove : Set
+Grove = (List Term)

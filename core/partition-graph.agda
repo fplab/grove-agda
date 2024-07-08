@@ -32,20 +32,6 @@ open import core.graph
 -- -- -- ... | PC-MP with≡ eq | ()
 -- -- -- ... | PC-UP x with≡ eq | _ rewrite eq = {!   !}
 
--- -- data edge-class : Graph → Edge → Set where 
--- --   NPE : ∀{G ε} → Vertex → edge-class G ε
--- --   MPE : ∀{G ε} → Vertex → edge-class G ε
--- --   UE : ∀{G ε} → Vertex → edge-class G ε
-  
--- -- edge-classify : (G : Graph) → (ε : Edge) → edge-class G ε 
--- -- edge-classify G (E (S v _) _ _) with classify G v []
--- -- ... | NPTop = NPE v 
--- -- ... | MPTop = MPE v
--- -- ... | UTop = UE v
--- -- ... | NPInner w = NPE w
--- -- ... | MPInner w = MPE w
--- -- ... | UInner w = UE w
-
 
 -- -- -- classify-np-top : (G : Graph) → (v : Vertex) → (eq : NP-top G v) → (classify G [] v <> ≡ NPTop eq)
 -- -- -- classify-np-top G v eq with inspect (classify-parents G v)
