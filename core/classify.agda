@@ -18,14 +18,6 @@ open import core.finite
 open import core.list-logic
 open import core.graph
 
-id-of-vertex : Vertex → Ident 
-id-of-vertex (V ctor ident) = ident
-
-id-min : Ident → Ident → Ident  
-id-min u1 u2 with Dec.does (u1 ≤?𝕀 u2)
-... | true = u1
-... | false = u2
-
 data parent : Graph → (v w : Vertex) → Set where 
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w
   ParentSkip : ∀{G v w ε} → parent G v w → parent (ε ∷ G) v w
@@ -37,7 +29,7 @@ parents ((E s v? _) ∷ G) v with Dec.does (v ≟Vertex v?)
 parents ((E (S w _) _ _) ∷ G) v | true = w ∷ (parents G v) 
 parents (_ ∷ G) v | false = parents G v
 
-children : Graph → Source → List(Ident × Vertex) 
+children : Graph → Source → List(EdgeId × Vertex) 
 children [] s = [] 
 children ((E s? _ _) ∷ G) s with Dec.does (s ≟Source s?)
 children ((E _ v u) ∷ G) s | true = (u , v) ∷ (children G s) 
@@ -70,11 +62,19 @@ is-only-ancestor G v w =
   Σ[ n ∈ ℕ ] 
   (nat-only-ancestor G v w n)
 
-min-id : {m : ℕ} → Vec Vertex m → Ident → Set
-min-id {zero} ws u = ⊤
-min-id {suc m} ws u = (i : Fin m) → u ≤𝕀 id-of-vertex (lookup ws (suc i))
+id-of-vertex : Vertex → VertexId 
+id-of-vertex (V ctor ident) = ident
 
-is-only-ancestor-min-id : Graph → (v w : Vertex) → (u : Ident) → Set 
+id-min : VertexId → VertexId → VertexId  
+id-min u1 u2 with Dec.does (u1 ≤?V𝕀 u2)
+... | true = u1
+... | false = u2
+
+min-id : {m : ℕ} → Vec Vertex m → VertexId → Set
+min-id {zero} ws u = ⊤
+min-id {suc m} ws u = (i : Fin m) → u ≤V𝕀 id-of-vertex (lookup ws (suc i))
+
+is-only-ancestor-min-id : Graph → (v w : Vertex) → (u : VertexId) → Set 
 is-only-ancestor-min-id G v w u = 
   Σ[ n ∈ ℕ ] 
   Σ[ ws ∈ (Vec Vertex (suc (suc n))) ] 
@@ -98,21 +98,21 @@ data class : Graph → Vertex → Set where
   Top : ∀{G v} → (X : X) → class G v
   Inner : ∀{G v} → (X : X) → (w : Vertex) → class G v
   
-only-descendants : Graph → Vertex → List(Vertex × Ident) → Set 
+only-descendants : Graph → Vertex → List(Vertex × VertexId) → Set 
 only-descendants G v ws = list-forall (λ (w , u) → is-only-ancestor-min-id G w v u) ws
 
 -- returns true if ( v , v.id ) appears in ws
-locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → Bool
+locate-U : (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → Bool
 locate-U G v [] = false
-locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v))
+locate-U G v ((v? , u) ∷ ws) with Dec.does (v ≟Vertex v?) | Dec.does (u ≟V𝕀 (id-of-vertex v))
 ... | true | true = true
 ... | true | false = locate-U G v ws
 ... | false | _ = locate-U G v ws
 
-update-ws : Vertex → List(Vertex × Ident) → Vertex → List(Vertex × Ident)
+update-ws : Vertex → List(Vertex × VertexId) → Vertex → List(Vertex × VertexId)
 update-ws v ws x = (v , (id-of-vertex x)) ∷ (Data.List.map (λ (w , u) → (w , id-min u (id-of-vertex x))) ws)
   
-classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (class G v)
+classify : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → (class G v)
 classify zero G v ws = {!   !}
 classify (suc fuel) G v ws with classify-parents G v
 classify (suc fuel) G v ws | PC-NP = Top NP -- if it has no parents, it is Top NP

@@ -17,19 +17,19 @@ open import core.list-logic
 open import core.graph
 open import core.classify
 
-id-min-leq : (u1 u2 : Ident) → id-min u1 u2 ≤𝕀 u1
-id-min-leq u1 u2 with (u1 ≤?𝕀 u2)
-... | yes leq = ≤𝕀-reflexive u1
-... | no nleq with ≤𝕀-total u1 u2 
+id-min-leq : (u1 u2 : VertexId) → id-min u1 u2 ≤V𝕀 u1
+id-min-leq u1 u2 with (u1 ≤?V𝕀 u2)
+... | yes leq = ≤V𝕀-reflexive u1
+... | no nleq with ≤V𝕀-total u1 u2 
 ... | Inl x = ⊥-elim (nleq x)
 ... | Inr x = x
 
-id-min-comm : (u1 u2 : Ident) → (id-min u1 u2) ≡ (id-min u2 u1)
-id-min-comm u1 u2 with u1 ≤?𝕀 u2 | u2 ≤?𝕀 u1
-id-min-comm u1 u2 | yes leq1 | yes leq2 = ≤𝕀-antisym u1 u2 leq1 leq2
+id-min-comm : (u1 u2 : VertexId) → (id-min u1 u2) ≡ (id-min u2 u1)
+id-min-comm u1 u2 with u1 ≤?V𝕀 u2 | u2 ≤?V𝕀 u1
+id-min-comm u1 u2 | yes leq1 | yes leq2 = ≤V𝕀-antisym u1 u2 leq1 leq2
 id-min-comm u1 u2 | no nleq | yes leq = refl
 id-min-comm u1 u2 | yes leq | no nleq = refl
-id-min-comm u1 u2 | no nleq1 | no nleq2 with ≤𝕀-total u1 u2 
+id-min-comm u1 u2 | no nleq1 | no nleq2 with ≤V𝕀-total u1 u2 
 ... | Inl x = ⊥-elim (nleq1 x)
 ... | Inr x = ⊥-elim (nleq2 x)
 
@@ -48,11 +48,11 @@ cp-snoc G x (_ ∷ y ∷ ws) eq cp zero = cp zero
 cp-snoc G x (_ ∷ y ∷ []) eq cp (suc zero) = eq
 cp-snoc G x (_ ∷ y ∷ z ∷ ws) eq cp (suc i) = cp-snoc G x (y ∷ z ∷ ws) eq (λ j → cp (suc j)) i
 
-min-snoc : {n : ℕ} → (G : Graph) → (u : Ident) → (x : Vertex) → (ws : Vec Vertex (suc n)) → 
-  ((i : Fin (suc n)) → u ≤𝕀 id-of-vertex (lookup ws i)) → 
-  ((i : Fin (suc (suc n))) → id-min u (id-of-vertex x) ≤𝕀 id-of-vertex (lookup (ws ∷ʳ x) i))
+min-snoc : {n : ℕ} → (G : Graph) → (u : VertexId) → (x : Vertex) → (ws : Vec Vertex (suc n)) → 
+  ((i : Fin (suc n)) → u ≤V𝕀 id-of-vertex (lookup ws i)) → 
+  ((i : Fin (suc (suc n))) → id-min u (id-of-vertex x) ≤V𝕀 id-of-vertex (lookup (ws ∷ʳ x) i))
 min-snoc G u x (_ ∷ []) min (suc zero) rewrite id-min-comm u (id-of-vertex x) = id-min-leq _ _
-min-snoc G u x (_ ∷ ws) min zero = ≤𝕀-transitive _ _ _ (id-min-leq _ _) (min zero)
+min-snoc G u x (_ ∷ ws) min zero = ≤V𝕀-transitive _ _ _ (id-min-leq _ _) (min zero)
 min-snoc G u x (_ ∷ x₁ ∷ ws) min (suc i) = min-snoc G u x (x₁ ∷ ws) (λ j → min (suc j)) i
 
 parent-implies-oa : (G : Graph) → (v w : Vertex) →
@@ -81,10 +81,10 @@ parent-implies-oami G v w eq = zero , v ∷ w ∷ [] , (refl , refl , cp) , min
   cp : (i : Fin 1) → classify-parents G (lookup (v ∷ w ∷ []) (cast-up i)) ≡ PC-UP (lookup (w ∷ []) i)
   cp zero = eq
 
-  min : (i : Fin 1) → id-of-vertex w ≤𝕀 id-of-vertex (lookup (w ∷ []) i)
-  min zero = ≤𝕀-reflexive _
+  min : (i : Fin 1) → id-of-vertex w ≤V𝕀 id-of-vertex (lookup (w ∷ []) i)
+  min zero = ≤V𝕀-reflexive _
 
-oami-implies-oa : (G : Graph) → (v w : Vertex) → (u : Ident) → 
+oami-implies-oa : (G : Graph) → (v w : Vertex) → (u : VertexId) → 
   is-only-ancestor-min-id G v w u → 
   is-only-ancestor G v w
 oami-implies-oa G v w u (a , b , c , d) = (a , b , c)
@@ -155,7 +155,7 @@ lem2 : (G : Graph) → (v w : Vertex) →
   is-only-ancestor G w v 
 lem2 G v w (n1 , oa1) (n2 , oa2) = lem2-termin G v w n1 n2 _ (≤-reflexive refl) oa1 oa2
 
-lem3 : (G : Graph) → (u : Ident) → (v v' : Vertex) → (n : ℕ) → (ws : Vec Vertex n) → 
+lem3 : (G : Graph) → (u : VertexId) → (v v' : Vertex) → (n : ℕ) → (ws : Vec Vertex n) → 
   (only-ancestor G v v n (v ∷ v' ∷ ws)) →
   (min-id (v ∷ v' ∷ ws) u) → 
   is-only-ancestor-min-id G v' v' u
@@ -165,7 +165,7 @@ lem3 G u v v' n ws (refl , eq , cp) min = (n , (v' ∷ ws) ∷ʳ v' , (refl , lo
   cycle-min : {n : ℕ} → (v v' : Vertex) → (ws : Vec Vertex n) → min-id (v ∷ v' ∷ ws) u → min-id (v' ∷ (ws ∷ʳ v')) u
   cycle-min v v' ws min i = min-helper (v ∷ ws) (λ j → min (suc j)) (min zero) i
     where 
-    min-helper : {n : ℕ} → (ws : Vec Vertex n) → min-id ws u → (u ≤𝕀 id-of-vertex v') → min-id (ws ∷ʳ v') u 
+    min-helper : {n : ℕ} → (ws : Vec Vertex n) → min-id ws u → (u ≤V𝕀 id-of-vertex v') → min-id (ws ∷ʳ v') u 
     min-helper (_ ∷ []) min lt zero = lt
     min-helper (_ ∷ x ∷ ws) min lt zero = min zero
     min-helper (_ ∷ x ∷ ws) min lt (suc i) = min-helper (x ∷ ws) (λ j → min (suc j)) lt i
@@ -189,10 +189,10 @@ lem3 G u v v' n ws (refl , eq , cp) min = (n , (v' ∷ ws) ∷ʳ v' , (refl , lo
     cp-helper x (x₁ ∷ ws) eq cp zero = cp zero
     cp-helper x (x₁ ∷ ws) eq cp (suc i) = cp-helper x₁ ws eq (λ j → cp (suc j)) i
 
-lem4-termin : (G : Graph) → (u : Ident) → (v w : Vertex) → (n : ℕ) →
+lem4-termin : (G : Graph) → (u : VertexId) → (v w : Vertex) → (n : ℕ) →
   is-only-ancestor-min-id G v v u → 
   nat-only-ancestor G v w n → 
-  (u ≤𝕀 id-of-vertex w)
+  (u ≤V𝕀 id-of-vertex w)
 lem4-termin G u v w zero (n1 , .v ∷ _ ∷ _ , (refl , _ , cp1) , min) (.v ∷ .w ∷ ws , refl , refl , cp2) with classify-parents G v | cp1 zero | cp2 zero 
 lem4-termin G u v w zero (n1 , .v ∷ _ ∷ _ , (refl , _ , cp1) , min) (.v ∷ .w ∷ ws , refl , refl , cp2) | .(PC-UP w) | refl | refl = min zero
 lem4-termin G u v w (suc n2) (zero , .v ∷ .v ∷ [] , (refl , refl , cp1) , min) (.v ∷ v? ∷ ws2 , refl , eq2 , cp2) with classify-parents G v | cp1 zero | cp2 zero
@@ -200,17 +200,17 @@ lem4-termin G u v w (suc n2) (zero , .v ∷ .v ∷ [] , (refl , refl , cp1) , mi
 lem4-termin G u v w (suc n2) (suc n1 , .v ∷ v' ∷ ws1 , (refl , eq1 , cp1) , min) (.v ∷ v'? ∷ ws2 , refl , eq2 , cp2) with classify-parents G v | cp1 zero | cp2 zero
 lem4-termin G u v w (suc n2) (suc n1 , .v ∷ v' ∷ ws1 , (refl , eq1 , cp1) , min) (.v ∷ v'? ∷ ws2 , refl , eq2 , cp2) | .(PC-UP v') | refl | refl = lem4-termin G u v' w n2 (lem3 G u v v' (suc n1) ws1 (refl , eq1 , cp1) min) ( v' ∷ ws2 , refl , eq2 , λ i → cp2 (suc i))
 
-lem4 : (G : Graph) → (u : Ident) →  (v w : Vertex) → 
+lem4 : (G : Graph) → (u : VertexId) →  (v w : Vertex) → 
   is-only-ancestor-min-id G v v u → 
   is-only-ancestor G v w → 
-  (u ≤𝕀 id-of-vertex w)
+  (u ≤V𝕀 id-of-vertex w)
 lem4 G u v w oami (n , oa) = lem4-termin G u v w n oami oa 
 
-lem5 : (G : Graph) → (v w : Vertex) → (top U G v) → is-only-ancestor G v w → (id-of-vertex v ≤𝕀 id-of-vertex w)
+lem5 : (G : Graph) → (v w : Vertex) → (top U G v) → is-only-ancestor G v w → (id-of-vertex v ≤V𝕀 id-of-vertex w)
 lem5 G v w top oa = lem4 G _ v w top oa
 
 lem6 : (G : Graph) → (v w : Vertex) → (top U G v) → (top U G w) → is-only-ancestor G v w → (v ≡ w)
-lem6 G v w top1 top2 oa1 = V-ident-uniq _ _ (≤𝕀-antisym _ _ (lem4 _ _ _ _ top1 oa1) (lem4 _ _ _ _ top2 oa2))
+lem6 G v w top1 top2 oa1 = VertexId-uniq _ _ (≤V𝕀-antisym _ _ (lem4 _ _ _ _ top1 oa1) (lem4 _ _ _ _ top2 oa2))
   where 
   oa2 : is-only-ancestor G w v 
   oa2 = lem2 G v w (oami-implies-oa _ _ _ _ top1) oa1
@@ -289,17 +289,17 @@ children-correct ((E s? _ _) ∷ G) v p with Dec.does ((S v p) ≟Source s?) | D
 children-correct ((E _ w u) ∷ G) v p | true | ofʸ refl = ParentHave , (list-forall-implies (children-correct G v p) (λ x → ParentSkip x))
 children-correct (_ ∷ G) v p | false | _ = list-forall-implies (children-correct G v p) (λ x → ParentSkip x)
 
-locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
+locate-U-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → (only-descendants G v ws) → (locate-U G v ws ≡ true) → (top U G v)
 locate-U-correct G v [] oas () 
-locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟𝕀 (id-of-vertex v))
+locate-U-correct G v ((v? , u) ∷ ws) (oa , oas) eq with Dec.does (v ≟Vertex v?) | Dec.does (u ≟V𝕀 (id-of-vertex v)) | Dec.proof (v ≟Vertex v?) | Dec.proof (u ≟V𝕀 (id-of-vertex v))
 ... | true | true | ofʸ refl | ofʸ refl = oa
 ... | true | false | _ | _ = locate-U-correct G v ws oas eq
 ... | false | _ | _ | _ = locate-U-correct G v ws oas eq
 
-update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
+update-ws-correct : (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → (x : Vertex) → (only-descendants G v ws) → (classify-parents G v ≡ PC-UP x) → (only-descendants G x (update-ws v ws x))
 update-ws-correct G v ws x oas eq = (parent-implies-oami G v x eq) , forall-map-implies oas step
   where   
-  step : {(w , u) : Vertex × Ident} →
+  step : {(w , u) : Vertex × VertexId} →
     is-only-ancestor-min-id G w v u →
     is-only-ancestor-min-id G w x (id-min u (id-of-vertex x))
   step {(w , u)} (n , (.w ∷ ws1) , (refl , eq2 , cp) , min) = 

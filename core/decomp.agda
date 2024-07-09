@@ -17,10 +17,10 @@ open import core.classify-correct
 mutual 
 
   -- {-# TERMINATING #-}
-  decomp-sub : ℕ → Graph → (Ident × Vertex) → (Ident × Term)
+  decomp-sub : ℕ → Graph → (EdgeId × Vertex) → (EdgeId × Term)
   decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v')
 
-  decomp-pos : ℕ → Graph → (k : Ctor) → Ident → (p : Fin (arity k)) → List (Ident × Term)
+  decomp-pos : ℕ → Graph → (k : Ctor) → VertexId → (p : Fin (arity k)) → List (EdgeId × Term)
   decomp-pos fuel G k u p = map (decomp-sub fuel G) (children G (S (V k u) p))
 
   decomp-v : ℕ → Graph → Vertex → Term
@@ -56,8 +56,5 @@ some-top-decidable fuel G v with classify fuel G v [] | inspect (classify fuel G
   not-top (X , is-top) rewrite eq with top-complete is-top 
   ... | ()
 
-decomp-G' : ℕ → Graph → Grove 
-decomp-G' fuel G = map (decomp-v fuel G) (filter {P = some-top G} (some-top-decidable fuel G) (vertices-of-G G))
-
 decomp-G : ℕ → Graph → Grove 
-decomp-G fuel G = decomp-εs fuel G G 
+decomp-G fuel G = map (decomp-v fuel G) (filter (some-top-decidable fuel G) (vertices-of-G G))

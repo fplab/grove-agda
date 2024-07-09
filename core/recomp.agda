@@ -17,10 +17,10 @@ vertex-of-term (⋎ v) = v
 vertex-of-term (⤾ v) = v
 
 mutual 
-  recomp-sub : Ident → (k : Ctor) → (p : Fin (arity k)) → (Ident × Term) → List Edge
+  recomp-sub : VertexId → (k : Ctor) → (p : Fin (arity k)) → (EdgeId × Term) → List Edge
   recomp-sub u k p (u' , t) = (E (S (V k u) p) (vertex-of-term t) u') ∷ (recomp-t t)
 
-  recomp-pos : Ident → (k : Ctor) → (p : Fin (arity k)) → (List (Ident × Term)) → (List Edge)
+  recomp-pos : VertexId → (k : Ctor) → (p : Fin (arity k)) → (List (EdgeId × Term)) → (List Edge)
   recomp-pos u k p ts = concat (map (recomp-sub u k p) ts)
 
   {-# TERMINATING #-}

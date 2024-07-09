@@ -66,11 +66,9 @@ unique-parent-in-G : (G : Graph) → (x w : Vertex) →
 unique-parent-in-G G x w eq with parents G x | parents-in-G G x | eq
 ... | .w ∷ [] | (elem , _) | refl = elem
 
--- classify-parent ((E (S v? p) .w u) ∷ G) w ≡ PC-UP
-
 edge-of-parent :  (G : Graph) → (w v : Vertex) →
     (classify-parents G w ≡ PC-UP v) → 
-    Σ[ p ∈ _ ] Σ[ u ∈ Ident ] (list-elem (E (S v p) w u) G)
+    Σ[ p ∈ _ ] Σ[ u ∈ EdgeId ] (list-elem (E (S v p) w u) G)
 edge-of-parent [] w v ()
 edge-of-parent ((E s w? _) ∷ G) w v eq with (w ≟Vertex w?) 
 edge-of-parent ((E (S v? _) .w _) ∷ G) w v eq | yes refl with (v ≟Vertex v?) 
@@ -112,37 +110,10 @@ vertex-of-decomp' (suc fuel) G (V k u) with classify (suc fuel) G (V k u) []
 ... | Top U = refl
 ... | Inner X w = refl
 
--- 
-
--- 
-
--- -- can't use because no rewrite under binders
--- ideal-decomp-recomp-form : (fuel : ℕ) → (G : Graph) → ((V k u) : Vertex) →
---   recomp-t (decomp-v (suc fuel) G (V k u))
---   ≡ concat (toList (vec-of-map (λ p → 
---     concat (map (λ (u' , v') → ((E (S (V k u) p) v' u') ∷ (recomp-t (decomp-v' fuel G v')))) 
---            (children G (S (V k u) p))))))
--- ideal-decomp-recomp-form = {!   !} -- wait until you're unwrapping the result, then use the helpers below
-
 decomp-recomp-form : (fuel : ℕ) → (G : Graph) → ((V k u) : Vertex) →
   recomp-t (decomp-v (suc fuel) G (V k u))
   ≡ concat (toList (vec-of-map (λ p → concat (map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))))))
 decomp-recomp-form fuel G (V k u) rewrite comprehend-vec-of-map (decomp-pos fuel G k u) (recomp-pos u k) = refl
-
--- decomp-recomp-inner-form : (fuel : ℕ) → (G : Graph) → ((V k u) : Vertex) → (p : Fin (arity k)) →
---   concat (map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p))))
---   ≡ concat (map (λ (u' , v') → (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') ∷ (recomp-t (decomp-v' fuel G v'))) (children G (S (V k u) p)))
--- decomp-recomp-inner-form fuel G (V k u) p rewrite map-compose {l = (children G (S (V k u) p))} {f = (recomp-sub u k p)} {g = (decomp-sub fuel G)} = refl 
-
--- decomp-recomp-inner-inner-form : (fuel : ℕ) → (G : Graph) → ((V k u) : Vertex) → (p : Fin (arity k)) → (u' : Ident) → (v' : Vertex) →
---   _≡_ {A = List Edge} 
---     ((E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') ∷ (recomp-t (decomp-v' fuel G v'))) 
---     ((E (S (V k u) p) v' u') ∷ (recomp-t (decomp-v' fuel G v')))
--- decomp-recomp-inner-inner-form fuel G (V k u) p u' v' rewrite vertex-of-decomp' fuel G v' = refl
-
---
-
---
 
 lemma5 : (G : Graph) → (v v' : Vertex) → (X : X) → 
   (list-elem v (parents G v')) → (top X G v) → ¬(top MP G v') → ¬(top U G v') → inner X G v' v 
@@ -174,45 +145,6 @@ lemma9 (suc fuel) G (E (S (V k u) p) w u') elem rewrite decomp-recomp-form fuel 
     where 
     elem1 : list-elem (E (S (V k u) p) w u') (recomp-sub u k p (decomp-sub fuel G (u' , w))) 
     elem1 rewrite vertex-of-decomp' fuel G w = ListElemHave _
-
--- I can't get this to work because case2's type gets rewritten beyond recognition.
--- forall-decomp-recomp : (fuel : ℕ) → (G : Graph) → (X : X) → (v : Vertex) → (P : Edge → Set) →
---       (case1 : ∀{p u' v'} → (list-elem (E (S v p) v' u') G) → (list-elem v (parents G v')) → P (E (S v p) v' u')) →
---       (case2 : ∀{v'} → (list-elem v (parents G v')) → list-forall P (recomp-t (decomp-v fuel G v'))) →
---   list-forall P (recomp-t (decomp-v fuel G v))
--- forall-decomp-recomp zero G X (V k u) P case1 case2 = {!   !}
--- forall-decomp-recomp (suc fuel) G X (V k u) P case1 case2 rewrite decomp-recomp-form fuel G (V k u) = 
---     list-forall-concat {ls = (toList (vec-of-map (λ p → concat (map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))))))} 
---     (list-forall-toList λ p → 
---     (list-forall-concat {ls = map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))} 
---     (list-forall-map {l = map (decomp-sub fuel G) (children G (S (V k u) p))} 
---     (list-forall-map {l = children G (S (V k u) p)}
---     (list-forall-implies (list-forall-× (children-edges-in-G G (V k u) p) (parents-of-children G (V k u) p)) (step2 p)))))) 
---     where
---     step2 : (p : Fin (arity k)) → {(u' , v') : Ident × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V k u) p) v' u') G) × (list-elem (V k u) (parents G v'))) → 
---               P (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') 
---               × list-forall P (recomp-t (decomp-v' fuel G v'))
---     step2 p {u' , v'} (edge-in-G , in-parents) rewrite vertex-of-decomp' fuel G v' = case1 edge-in-G in-parents , step3 in-parents {! case2 in-parents  !}
---       where 
---       step3 : (list-elem (V k u) (parents G v')) → (list-forall P (recomp-t (decomp-v fuel G v'))) →  list-forall P (recomp-t (decomp-v' fuel G v'))
---       step3 in-parents recurse with classify fuel G v' [] | inspect (classify fuel G v') [] | classify-correct fuel G v' [] <> | classify-complete fuel G v' [] <>
---       step3 in-parents recurse | Top NP | _ | TopCorrect is-top | _ with parents G v' | in-parents | is-top
---       step3 in-parents recurse | Top NP | _ | TopCorrect is-top | _ | [] | () | _
---       step3 in-parents recurse | Top NP | _ | TopCorrect is-top | _ | _ ∷ [] | _ | ()
---       step3 in-parents recurse | Top NP | _ | TopCorrect is-top | _ | _ ∷ _ ∷ _ | _ | ()
---       step3 in-parents recurse | Top MP | _ | _ | _ = <>
---       step3 in-parents recurse | Top U | _ | _ | _ = <> 
---       step3 in-parents recurse | Inner X? w? | [ eq ] | InnerCorrect .w? is-inner2 | Complete top-complete _ = recurse
-
--- unprime-rewrite : (fuel : ℕ) → (G : Graph) → (w v' : Vertex) → (P : Edge → Set) → (list-elem w (parents G v')) → list-forall P (recomp-t (decomp-v fuel G v')) → list-forall P (recomp-t (decomp-v' fuel G v'))
--- unprime-rewrite fuel G w v' P in-parents fa with classify fuel G v' [] | inspect (classify fuel G v') [] | classify-correct fuel G v' [] <> | classify-complete fuel G v' [] <>
--- unprime-rewrite fuel G w v' P in-parents fa | Top NP | _ | TopCorrect is-top | _ with parents G v' | in-parents | is-top
--- unprime-rewrite fuel G w v' P in-parents fa | Top NP | _ | TopCorrect is-top | _ | [] | () | _
--- unprime-rewrite fuel G w v' P in-parents fa | Top NP | _ | TopCorrect is-top | _ | _ ∷ [] | _ | ()
--- unprime-rewrite fuel G w v' P in-parents fa | Top NP | _ | TopCorrect is-top | _ | _ ∷ _ ∷ _ | _ | ()
--- unprime-rewrite fuel G w v' P in-parents fa | Top MP | _ | _ | _ = <>
--- unprime-rewrite fuel G w v' P in-parents fa | Top U | _ | _ | _ = <> 
--- unprime-rewrite fuel G w v' P in-parents fa | Inner X? w? | [ eq ] | InnerCorrect .w? is-inner2 | Complete top-complete _ = fa
 
 lemma8 : (fuel : ℕ) → (G : Graph) → (X : X) → (w v : Vertex) →
   inner X G w v → 
@@ -313,108 +245,6 @@ lemma8 (suc fuel) G X (V wk wu) (V vk vu) (not-top , (suc n , .(V wk wu) ∷ (V 
           list-elem ε (recomp-t (decomp-v (suc fuel) G (V vk vu)))
     fuel-change-ih = {!   !} -- should be equivalent to IH
 
--- lemma8 (suc fuel) G X (V wk wu) (V vk vu) is-inner rewrite decomp-recomp-form fuel G (V wk wu) =
---     list-forall-concat {ls = (toList (vec-of-map (λ p → concat (map (recomp-sub wu wk p) (map (decomp-sub fuel G) (children G (S (V wk wu) p)))))))} 
---     (list-forall-toList λ p → 
---     (list-forall-concat {ls = map (recomp-sub wu wk p) (map (decomp-sub fuel G) (children G (S (V wk wu) p)))} 
---     (list-forall-map {l = map (decomp-sub fuel G) (children G (S (V wk wu) p))} 
---     (list-forall-map {l = children G (S (V wk wu) p)} 
---     (list-forall-implies (list-forall-× (children-edges-in-G G (V wk wu) p) (parents-of-children G (V wk wu) p)) (step2 p)))))) 
---    where
---     step2 : (p : Fin (arity wk)) → {(u' , v') : Ident × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V wk wu) p) v' u') G) × (list-elem (V wk wu) (parents G v'))) → 
---               ( list-elem (E (S (V wk wu) p) (vertex-of-term (decomp-v' fuel G v')) u') (recomp-t (decomp-v (suc fuel) G (V vk vu))) 
---               × list-forall 
---                 (λ ε → list-elem ε (recomp-t (decomp-v (suc fuel) G (V vk vu))))              
---                 (recomp-t (decomp-v' fuel G v')) )
---     step2 p {u' , v'} (edge-in-G , in-parents) rewrite vertex-of-decomp' fuel G v' = {!   !} , step3 in-parents 
---       where 
---       base-case : list-elem (E (S (V wk wu) p) (vertex-of-term (decomp-v' fuel G v')) u') 
---                             (recomp-t (decomp-v (suc fuel) G (V vk vu)))  
---       base-case = {!   !}
---       step3 : (list-elem (V wk wu) (parents G v')) → list-forall (λ ε → list-elem ε (recomp-t (decomp-v (suc fuel) G (V vk vu)))) (recomp-t (decomp-v' fuel G v'))
---       step3 in-parents with classify fuel G v' [] | inspect (classify fuel G v') [] | classify-correct fuel G v' [] <> | classify-complete fuel G v' [] <>
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ with parents G v' | in-parents | is-top
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | [] | () | _
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ [] | _ | ()
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ _ ∷ _ | _ | ()
---       step3 in-parents | Top MP | _ | _ | _ = <>
---       step3 in-parents | Top U | _ | _ | _ = <> 
---       step3 in-parents | Inner X? w? | [ eq ] | InnerCorrect .w? is-inner2 | Complete top-complete _ = {!   !}
-
--- lemma8 (suc fuel) G X w v (not-top , (zero , .w ∷ .v ∷ [] , refl , refl , cp) , is-top) = {!   !}
--- lemma8 (suc fuel) G X w v (not-top , (suc n , ws , eq1 , eq2 , cp) , is-top) = {!   !}
-
--- lemma6 : (fuel : ℕ) → (G : Graph) → ((V k u) w : Vertex) → (X : X) → 
---   (inner X G (V k u) w) → list-forall (λ ε → edge X G ε w) (recomp-t (decomp-v fuel G (V k u)))
--- lemma6 zero G (V k u) w X is-inner = {!   !}
--- lemma6 (suc fuel) G (V k u) w X is-inner rewrite decomp-recomp-form fuel G (V k u) = 
---     list-forall-concat {ls = (toList (vec-of-map (λ p → concat (map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))))))} 
---     (list-forall-toList λ p → 
---     (list-forall-concat {ls = map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))} 
---     (list-forall-map {l = map (decomp-sub fuel G) (children G (S (V k u) p))} 
---     (list-forall-map {l = children G (S (V k u) p)} 
---     (list-forall-implies (parents-of-children G (V k u) p) (step2 p)))))) 
---     where
---     step2 : (p : Fin (arity k)) → {(u' , v') : Ident × Vertex} → (in-parents : list-elem (V k u) (parents G v')) → 
---               edge X G (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') w 
---               × list-forall (λ ε → edge X G ε w) (recomp-t (decomp-v' fuel G v'))
---     step2 p {u' , v'} in-parents rewrite vertex-of-decomp' fuel G v' = InnerEdge is-inner , step3 in-parents
---       where 
---       step3 : (list-elem (V k u) (parents G v')) →  list-forall (λ ε → edge X G ε w) (recomp-t (decomp-v' fuel G v'))
---       step3 in-parents with classify fuel G v' [] | inspect (classify fuel G v') [] | classify-correct fuel G v' [] <> | classify-complete fuel G v' [] <>
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ with parents G v' | in-parents | is-top
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | [] | () | _
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ [] | _ | ()
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ _ ∷ _ | _ | ()
---       step3 in-parents | Top MP | _ | _ | _ = <>
---       step3 in-parents | Top U | _ | _ | _ = <> --(_ , (n , ws , eq1 , eq2 , cps) , is-top)
---       step3 in-parents | Inner X? w? | [ eq ] | InnerCorrect .w? is-inner2 | Complete top-complete _ = lemma6 fuel G _ _ X (lemma7 G _ _ _ X in-parents is-inner not-mp not-u) 
---           where 
---           not-mp : ¬ (top MP G v')
---           not-mp is-top with (top-complete {X = MP} is-top)
---           ... | eq2 rewrite eq with eq2 
---           ... | ()
---           not-u : ¬ (top U G v')
---           not-u is-top with (top-complete {X = U} is-top)
---           ... | eq2 rewrite eq with eq2 
---           ... | ()
-          
--- decomp-recomp-v-sound : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (X : X) → 
---   (top X G v) → 
---   list-forall (λ ε → edge X G ε v) (recomp-t (decomp-v fuel G v))
--- decomp-recomp-v-sound zero G (V k u) X is-top = {!   !}
--- decomp-recomp-v-sound (suc fuel) G (V k u) X is-top rewrite decomp-recomp-form fuel G (V k u) =
---     list-forall-concat {ls = (toList (vec-of-map (λ p → concat (map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))))))} 
---     (list-forall-toList λ p → 
---     (list-forall-concat {ls = map (recomp-sub u k p) (map (decomp-sub fuel G) (children G (S (V k u) p)))} 
---     (list-forall-map {l = map (decomp-sub fuel G) (children G (S (V k u) p))} 
---     (list-forall-map {l = children G (S (V k u) p)} 
---     (list-forall-implies (parents-of-children G (V k u) p) (step2 p))))))
---     where
---     step2 : (p : Fin (arity k)) → {(u' , v') : Ident × Vertex} → (in-parents : list-elem (V k u) (parents G v')) → 
---               edge X G (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') (V k u)
---               × list-forall (λ ε → edge X G ε (V k u)) (recomp-t (decomp-v' fuel G v'))
---     step2 p {u' , v'} in-parents rewrite vertex-of-decomp' fuel G v' = TopEdge is-top , (step3 in-parents)
---       where 
---       step3 : (list-elem (V k u) (parents G v')) →  list-forall (λ ε → edge X G ε (V k u)) (recomp-t (decomp-v' fuel G v'))
---       step3 in-parents with classify fuel G v' [] | inspect (classify fuel G v') [] | classify-correct fuel G v' [] <> | classify-complete fuel G v' [] <>
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ with parents G v' | in-parents | is-top
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | [] | () | _
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ [] | _ | ()
---       step3 in-parents | Top NP | _ | TopCorrect is-top | _ | _ ∷ _ ∷ _ | _ | ()
---       step3 in-parents | Top MP | _ | _ | _ = <>
---       step3 in-parents | Top U | _ | _ | _ = <>
---       step3 in-parents | Inner X' w | [ eq ] | InnerCorrect .w is-inner | Complete top-complete _ = lemma6 fuel G v' (V k u) X (lemma5 G (V k u) v' X in-parents is-top not-mp not-u)
---         where 
---         not-mp : ¬ (top MP G v')
---         not-mp is-top with (top-complete {X = MP} is-top)
---         ... | eq2 rewrite eq with eq2 
---         ... | ()
---         not-u : ¬ (top U G v')
---         not-u is-top with (top-complete {X = U} is-top)
---         ... | eq2 rewrite eq with eq2 
---         ... | ()
-
 lemma6 : (fuel : ℕ) → (G : Graph) → ((V k u) w : Vertex) → (X : X) → 
   (inner X G (V k u) w) → list-forall (λ ε → list-elem ε G) (recomp-t (decomp-v fuel G (V k u)))
 lemma6 zero G (V k u) w X is-inner = {!   !} 
@@ -426,7 +256,7 @@ lemma6 (suc fuel) G (V k u) w X is-inner rewrite decomp-recomp-form fuel G (V k 
     (list-forall-map {l = children G (S (V k u) p)} 
     (list-forall-implies (list-forall-× (children-edges-in-G G (V k u) p) (parents-of-children G (V k u) p)) (step2 p)))))) 
     where
-    step2 : (p : Fin (arity k)) → {(u' , v') : Ident × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V k u) p) v' u') G) × (list-elem (V k u) (parents G v'))) → 
+    step2 : (p : Fin (arity k)) → {(u' , v') : EdgeId × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V k u) p) v' u') G) × (list-elem (V k u) (parents G v'))) → 
               list-elem (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') G 
               × list-forall (λ ε → list-elem ε G) (recomp-t (decomp-v' fuel G v'))
     step2 p {u' , v'} (edge-in-G , in-parents) rewrite vertex-of-decomp' fuel G v' = edge-in-G , step3 in-parents
@@ -462,7 +292,7 @@ decomp-recomp-v-in-G (suc fuel) G (V k u) X is-top rewrite decomp-recomp-form fu
     (list-forall-map {l = children G (S (V k u) p)}  --(children-edges-in-G G (V k u) p , ?) 
     (list-forall-implies (list-forall-× (children-edges-in-G G (V k u) p) (parents-of-children G (V k u) p)) (step2 p))))))
     where
-    step2 : (p : Fin (arity k)) → {(u' , v') : Ident × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V k u) p) v' u') G) × (list-elem (V k u) (parents G v'))) → 
+    step2 : (p : Fin (arity k)) → {(u' , v') : EdgeId × Vertex} → ((edge-in-G , in-parents) : (list-elem (E (S (V k u) p) v' u') G) × (list-elem (V k u) (parents G v'))) → 
               list-elem (E (S (V k u) p) (vertex-of-term (decomp-v' fuel G v')) u') G
               × list-forall (λ ε → list-elem ε G) (recomp-t (decomp-v' fuel G v'))
     step2 p {u' , v'} (edge-in-G , in-parents) rewrite vertex-of-decomp' fuel G v' = edge-in-G , (step3 in-parents)
@@ -494,9 +324,9 @@ decomp-recomp-v-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (X 
 decomp-recomp-v-complete fuel G v X (E (S .v _) _ _) elem is-top (TopEdge x) = lemma9 fuel G _ elem
 decomp-recomp-v-complete fuel G v X (E (S w p) w' u) elem is-top (InnerEdge x) = lemma8 fuel G _ _ _ x _ (lemma9 fuel G _ elem)
 
-decomp-recomp-sound : (fuel : ℕ) → (G : Graph) → list-forall (λ ε → list-elem ε G) (recomp-grove (decomp-G' fuel G))
-decomp-recomp-sound fuel G = list-forall-concat {ls = (map recomp-t (decomp-G' fuel G))} 
-                            (list-forall-map {l = (decomp-G' fuel G)}
+decomp-recomp-sound : (fuel : ℕ) → (G : Graph) → list-forall (λ ε → list-elem ε G) (recomp-grove (decomp-G fuel G))
+decomp-recomp-sound fuel G = list-forall-concat {ls = (map recomp-t (decomp-G fuel G))} 
+                            (list-forall-map {l = (decomp-G fuel G)}
                             (list-forall-map {l = (filter (some-top-decidable fuel G) (vertices-of-G G))} 
                             (list-forall-filter {l = vertices-of-G G} 
                             (list-forall-map {l = G} 
@@ -508,18 +338,18 @@ decomp-recomp-sound fuel G = list-forall-concat {ls = (map recomp-t (decomp-G' f
                 list-forall (λ ε → list-elem ε G) (recomp-t (decomp-v fuel G v))
   reg-forall (E (S v _) _ _ ) _ (X , is-top) = decomp-recomp-v-in-G fuel G v X is-top 
   
-decomp-recomp-complete : (fuel : ℕ) → (G : Graph) → list-forall (λ ε → list-elem ε (recomp-grove (decomp-G' fuel G))) G
+decomp-recomp-complete : (fuel : ℕ) → (G : Graph) → list-forall (λ ε → list-elem ε (recomp-grove (decomp-G fuel G))) G
 decomp-recomp-complete fuel G = list-forall-elem elem-forall
   where 
-  elem-forall : (ε : Edge) → list-elem ε G → list-elem ε (recomp-grove (decomp-G' fuel G))
+  elem-forall : (ε : Edge) → list-elem ε G → list-elem ε (recomp-grove (decomp-G fuel G))
   elem-forall ε elem with edge-classify fuel G ε | edge-classify-correct fuel G ε
   ... | EC X w | EdgeCorrect is-edge with lem12 G w X ε is-edge 
-  ... | is-top = list-elem-concat {ls = (map recomp-t (decomp-G' fuel G))} 
+  ... | is-top = list-elem-concat {ls = (map recomp-t (decomp-G fuel G))} 
                 (decomp-recomp-v-complete fuel G w X ε elem is-top is-edge) 
-                (list-elem-map {a = decomp-v fuel G w} {l = decomp-G' fuel G} {f = recomp-t}  
+                (list-elem-map {a = decomp-v fuel G w} {l = decomp-G fuel G} {f = recomp-t}  
                 (list-elem-map {a = w} {l = filter (some-top-decidable fuel G) (vertices-of-G G)} {f = decomp-v fuel G} 
                 (list-elem-filter {l = vertices-of-G G} {dec = some-top-decidable fuel G} (X , is-top) (edge-classify-in-G fuel G w X ε elem is-edge))))  
 
-decomp-recomp : (fuel : ℕ) → (G : Graph) → elem-equiv (recomp-grove (decomp-G' fuel G)) G     
+decomp-recomp : (fuel : ℕ) → (G : Graph) → elem-equiv (recomp-grove (decomp-G fuel G)) G     
 decomp-recomp fuel G ε = (λ elem → list-elem-forall (decomp-recomp-sound fuel G) ε elem) ,    
                          (λ elem → list-elem-forall (decomp-recomp-complete fuel G) ε elem)      

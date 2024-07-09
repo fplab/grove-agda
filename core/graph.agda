@@ -13,31 +13,37 @@ open import Relation.Nullary
 open import prelude
 open import core.finite
 
-module core.graph (Ctor : Set) (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)) (arity : Ctor → ℕ) where
+module core.graph where
 
 postulate
   
-  Ident : Set
-  _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
-  _≤𝕀_ : (i₁ i₂ : Ident) → Set 
-  _≤?𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≤𝕀 i₂) 
-
-  ≤𝕀-reflexive : (i : Ident) → (i ≤𝕀 i) 
-  ≤𝕀-antisym : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₁) → (i₁ ≡ i₂)
-  ≤𝕀-transitive : (i₁ i₂ i₃ : Ident) → (i₁ ≤𝕀 i₂) → (i₂ ≤𝕀 i₃) → (i₁ ≤𝕀 i₃)
-  ≤𝕀-total : (i₁ i₂ : Ident) → (i₁ ≤𝕀 i₂) + (i₂ ≤𝕀 i₁)
+  Ctor : Set
+  _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
+  arity : Ctor → ℕ
+  
+  VertexId : Set
+  _≟V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≡ i₂)
+  _≤V𝕀_ : (i₁ i₂ : VertexId) → Set 
+  _≤?V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≤V𝕀 i₂) 
+  ≤V𝕀-reflexive : (i : VertexId) → (i ≤V𝕀 i) 
+  ≤V𝕀-antisym : (i₁ i₂ : VertexId) → (i₁ ≤V𝕀 i₂) → (i₂ ≤V𝕀 i₁) → (i₁ ≡ i₂)
+  ≤V𝕀-transitive : (i₁ i₂ i₃ : VertexId) → (i₁ ≤V𝕀 i₂) → (i₂ ≤V𝕀 i₃) → (i₁ ≤V𝕀 i₃)
+  ≤V𝕀-total : (i₁ i₂ : VertexId) → (i₁ ≤V𝕀 i₂) + (i₂ ≤V𝕀 i₁)
+  
+  EdgeId : Set
+  _≟E𝕀_ : (i₁ i₂ : EdgeId) → Dec (i₁ ≡ i₂)
 
 record Vertex : Set where
   constructor V
   field
     ctor : Ctor
-    ident : Ident
+    ident : VertexId
 
 postulate 
-  V-ident-uniq : (v₁ v₂ : Vertex) → (Vertex.ident v₁) ≡ (Vertex.ident v₂) → v₁ ≡ v₂  
+  VertexId-uniq : (v₁ v₂ : Vertex) → (Vertex.ident v₁) ≡ (Vertex.ident v₂) → v₁ ≡ v₂  
 
 _≟Vertex_ : (v₁ v₂ : Vertex) → Dec (v₁ ≡ v₂)
-V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟𝕀 i₂
+V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟V𝕀 i₂
 ... | yes refl | yes refl = yes refl
 ... | _        | no p     = no (λ { refl → p refl })
 ... | no p     | _        = no (λ { refl → p refl })
@@ -63,18 +69,16 @@ record Edge : Set where
   field
     source : Source
     child : Vertex
-    ident : Ident
+    ident : EdgeId
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
 E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂
   with source₁ ≟Source source₂
      | child₁ ≟Vertex child₂
-     | ident₁ ≟𝕀 ident₂
+     | ident₁ ≟E𝕀 ident₂
 ... | yes refl | yes refl | yes refl = yes refl
 ... | no p     | _        | _        = no (λ { refl → p refl })
 ... | _        | no p     | _        = no (λ { refl → p refl })
 ... | _        | _        | no p     = no (λ { refl → p refl })
 
 Graph = List(Edge)
-
--- Much was removed that is still important - just not on this branch

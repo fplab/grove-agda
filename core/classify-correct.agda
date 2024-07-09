@@ -24,14 +24,14 @@ data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where
   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 
   InnerCorrect : ∀{X G v} → (w : Vertex) → (inner X G v w) → class-correct G v (Inner X w)
 
-record class-complete (fuel : ℕ) (G : Graph) (v : Vertex) (ws : List(Vertex × Ident)) : Set where 
+record class-complete (fuel : ℕ) (G : Graph) (v : Vertex) (ws : List(Vertex × VertexId)) : Set where 
   constructor Complete
   field 
     TopComplete : ∀{X} → (top X G v) → (classify fuel G v ws ≡ Top X)
     InnerComplete : ∀{X} → (w : Vertex) → (inner X G v w) → (classify fuel G v ws ≡ Inner X w)
 
 mutual 
-  classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
+  classify-correct : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → (only-descendants G v ws) → class-correct G v (classify fuel G v ws)
   classify-correct zero G v ws oas = {!   !}
   classify-correct (suc fuel) G v ws oas with classify-parents G v | inspect (classify-parents G) v
   classify-correct (suc fuel) G v ws oas | PC-NP | [ eq ] rewrite eq = TopCorrect eq
@@ -70,7 +70,7 @@ mutual
     not-top is-top' rewrite eq3 with if-top is-top' 
     ... | refl = neq' refl
 
-  classify-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × Ident)) → (only-descendants G v ws) → class-complete fuel G v ws
+  classify-complete : (fuel : ℕ) → (G : Graph) → (v : Vertex) → (ws : List(Vertex × VertexId)) → (only-descendants G v ws) → class-complete fuel G v ws
   classify-complete zero G v ws oas = {!   !}
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {NP} is-top with classify-parents G v
   class-complete.TopComplete (classify-complete (suc fuel) G v ws oas) {NP} refl | .PC-NP = refl

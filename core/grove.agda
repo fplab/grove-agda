@@ -7,10 +7,10 @@ open import Data.List
 open import Data.Vec
 open import Data.Nat
 
-module core.grove (Ctor : Set) (arity : Ctor → ℕ) where
+module core.grove where
 
 data Term : Set where
- T : Ident → (k : Ctor) → (Vec (List (Ident × Term)) (arity k)) → Term 
+ T : VertexId → (k : Ctor) → (Vec (List (EdgeId × Term)) (arity k)) → Term 
  ⋎ : Vertex → Term 
  ⤾ : Vertex → Term
 
