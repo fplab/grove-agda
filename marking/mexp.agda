@@ -5,6 +5,7 @@ open import marking.var
 open import marking.typ
 open import marking.gtyp
 open import marking.ctx
+open import marking.multiparents
 
 -- instrinsically typed marked expressions
 module marking.mexp where
@@ -256,3 +257,35 @@ module marking.mexp where
         → {τ~τ' : τ ~ τ'}
         → (less : Markless⇒s ě)
         → Markless⇐s {Γ} (⊢∙ ě [ τ~τ' ])
+
+  mutual
+    multiparents⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇒ τ) → MultiParents
+    multiparents⇒ (⊢ _ ^ _)              = []
+    multiparents⇒ (⊢λ _ ∶ _ ∙ ě ^ _)     = multiparents⇒s ě
+    multiparents⇒ (⊢ ě₁ ∙ ě₂ [ _ ]^ _)   = (multiparents⇒s ě₁) ++ (multiparents⇐s ě₂)
+    multiparents⇒ (⊢⸨ ě₁ ⸩∙ ě₂ [ _ ]^ _) = (multiparents⇒s ě₁) ++ (multiparents⇐s ě₂)
+    multiparents⇒ (⊢ℕ _ ^ _)             = []
+    multiparents⇒ (⊢ ě₁ + ě₂ ^ _)        = (multiparents⇐s ě₁) ++ (multiparents⇐s ě₂)
+    multiparents⇒ (⊢⟦ _ ⟧^ _)            = []
+    multiparents⇒ {Γ} (⊢⋎^ u)            = ∣[ ⟨ u , Γ , Syn ⟩ ]
+    multiparents⇒ {Γ} (⊢↻^ u)            = ∣[ ⟨ u , Γ , Syn ⟩ ]
+
+    multiparents⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → MultiParents
+    multiparents⇒s (⊢□^ _ ^ _)    = []
+    multiparents⇒s (⊢∶ ⟨ _ , ě ⟩) = multiparents⇒ ě
+    multiparents⇒s (⊢⋏ ė*)        = multiparents⇒s* ė*
+
+    multiparents⇒s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → MultiParents
+    multiparents⇒s* []                       = []
+    multiparents⇒s* (⟨ _ , ⟨ _ , ě ⟩ ⟩ ∷ ė*) = (multiparents⇒ ě) ++ multiparents⇒s* ė*
+
+    multiparents⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → MultiParents
+    multiparents⇐ (⊢λ _ ∶ _ ∙ ě [ _ ∙ _ ]^ _)   = multiparents⇐s ě
+    multiparents⇐ (⊢⸨λ _ ∶ _ ∙ ě ⸩[ _ ]^ _)     = multiparents⇐s ě
+    multiparents⇐ (⊢λ _ ∶⸨ _ ⸩∙ ě [ _ ∙ _ ]^ _) = multiparents⇐s ě
+    multiparents⇐ ⊢⸨ ě ⸩[ _ ∙ _ ]               = multiparents⇒ ě
+    multiparents⇐ ⊢∙ ě [ _ ∙ _ ]                = multiparents⇒ ě
+
+    multiparents⇐s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → MultiParents
+    multiparents⇐s ⊢∙ ě [ _ ]  = multiparents⇒s ě
+    multiparents⇐s ⊢⸨ ě ⸩[ _ ] = multiparents⇒s ě
