@@ -82,10 +82,17 @@ module marking.theorems.wellformed where
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole          = ⟨ ⊢□^ w ^ p , MKSubSHole ⟩
+    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole = ⟨ ⊢□^ w ^ p , MKSubSHole ⟩
     ⇒sτ→↬⇒sτ {e = -∶ ⟨ w , e ⟩} (USubSJust e⇒τ) 
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ                = ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩
-    ⇒sτ→↬⇒sτ {e = -⋏ ė*}        (USubSConflict ė⇒*) = {! !}
+      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ       = ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩
+    ⇒sτ→↬⇒sτ {e = -⋏ ė*}        (USubSConflict ė⇒*)
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*           = ⟨ ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě* ⟩
+
+    ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List USubExp'}
+              → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+              → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
+    ⇒sτ→↬⇒sτ* []                 = []
+    ⇒sτ→↬⇒sτ* (⟨ τ , e⇒ ⟩ ∷ ė⇒*) = ⟨ τ , ⇒τ→↬⇒τ e⇒ ⟩ ∷ ⇒sτ→↬⇒sτ* ė⇒*
 
     ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇐ τ
@@ -173,8 +180,17 @@ module marking.theorems.wellformed where
                  → Markless⇒s ě
     ⇒sτ→markless USubSHole MKSubSHole = MLSubSHole
     ⇒sτ→markless (USubSJust e⇒τ) (MKSubSJust e↬⇒ě)
-      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě = MLSubSJust (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒sτ→markless (USubSConflict ė⇒*) (MKSubSConflict ė↬⇒ě*) = MLSubSConflict {! !}
+      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSubSJust (⇒τ→markless e⇒τ e↬⇒ě)
+    ⇒sτ→markless (USubSConflict ė⇒*) (MKSubSConflict ė↬⇒ě*) = MLSubSConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
+
+    ⇒sτ→markless* : ∀ {Γ ė*}
+                  → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+                  → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                  → All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*)
+    ⇒sτ→markless* [] [] = []
+    ⇒sτ→markless* (⟨ _ , e⇒ ⟩ ∷ ė⇒*) (⟨ _ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*)
+      with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
+         = ⇒τ→markless e⇒ e↬⇒ě ∷ ⇒sτ→markless* ė⇒* ė↬⇒ě*
 
     ⇐τ→markless : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
                 → Γ ⊢ e ⇐ τ
@@ -232,10 +248,16 @@ module marking.theorems.wellformed where
                     → Γ ⊢s e ↬⇒ ě
                     → Markless⇒s ě
                     → Γ ⊢s e ⇒ τ
-    ↬⇒sτ-markless→⇒sτ MKSubSHole MLSubSHole = USubSHole
-    ↬⇒sτ-markless→⇒sτ (MKSubSJust e↬⇒ě) (MLSubSJust less)
-      with e⇒τ ← ↬⇒τ-markless→⇒τ e↬⇒ě less = USubSJust e⇒τ
-    ↬⇒sτ-markless→⇒sτ (MKSubSConflict ė↬⇒ě*) (MLSubSConflict less*) = USubSConflict {! !}
+    ↬⇒sτ-markless→⇒sτ MKSubSHole             MLSubSHole             = USubSHole
+    ↬⇒sτ-markless→⇒sτ (MKSubSJust e↬⇒ě)      (MLSubSJust less)      = USubSJust (↬⇒τ-markless→⇒τ e↬⇒ě less)
+    ↬⇒sτ-markless→⇒sτ (MKSubSConflict ė↬⇒ě*) (MLSubSConflict less*) = USubSConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
+
+    ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
+                       → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                       → (less* : All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*))
+                       → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
+    ↬⇒sτ-markless→⇒sτ* []                             []             = []
+    ↬⇒sτ-markless→⇒sτ* (⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*) (less ∷ less*) = ⟨ τ , ↬⇒τ-markless→⇒τ e↬⇒ě less ⟩ ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
 
     -- analytically marking an expression into a markless expression against a type implies the original analyzes against type
     ↬⇐τ-markless→⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}

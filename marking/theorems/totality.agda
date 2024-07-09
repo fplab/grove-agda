@@ -47,11 +47,8 @@ module marking.theorems.totality where
     ↬⇒s-totality* : (Γ : Ctx)
                   → (ė* : List USubExp')
                   → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
-    ↬⇒s-totality* Γ [] = []
-    ↬⇒s-totality* Γ (⟨ w , e ⟩ ∷ ė*)
-      with ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ← ↬⇒-totality Γ e
-      with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
-         = ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*
+    ↬⇒s-totality* Γ []               = []
+    ↬⇒s-totality* Γ (⟨ w , e ⟩ ∷ ė*) = ↬⇒-totality Γ e ∷ ↬⇒s-totality* Γ ė*
 
     ↬⇐-subsume : ∀ {Γ e τ}
                → (ě : Γ ⊢⇒ τ)
