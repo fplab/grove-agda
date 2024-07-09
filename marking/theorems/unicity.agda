@@ -73,10 +73,22 @@ module marking.theorems.unicity where
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → ě₁ ≡ ě₂
-    ↬⇒s-ě-unicity MKSubSHole             MKSubSHole              = refl
+    ↬⇒s-ě-unicity MKSubSHole             MKSubSHole = refl
     ↬⇒s-ě-unicity (MKSubSJust e↬⇒ě)      (MKSubSJust e↬⇒ě')
-      rewrite ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'                            = refl
-    ↬⇒s-ě-unicity (MKSubSConflict ė↬⇒ě*) (MKSubSConflict ė↬⇒ě*') = {! !}
+      rewrite ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'               = refl
+    ↬⇒s-ě-unicity (MKSubSConflict ė↬⇒ě*) (MKSubSConflict ė↬⇒ě*')
+      rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'           = refl
+
+    ↬⇒s-ě-unicity* : ∀ {Γ} {ė* : List USubExp'}
+                   → (ė↬⇒ě*  : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                   → (ė↬⇒ě*' : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                   → MKSubSConflictChildren ė↬⇒ě* ≡ MKSubSConflictChildren ė↬⇒ě*'
+    ↬⇒s-ě-unicity* [] [] = refl
+    ↬⇒s-ě-unicity* (⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*) (⟨ τ' , ⟨ ě' , e↬⇒ě' ⟩ ⟩ ∷ ė↬⇒ě*')
+      with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
+      with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
+      rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'
+           = refl
 
     USu→MSu-unicity : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ}
                       → (s : USubsumable e)
