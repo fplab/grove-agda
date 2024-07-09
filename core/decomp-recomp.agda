@@ -1,5 +1,8 @@
 module core.decomp-recomp where
 
+open import Data.Unit renaming (tt to <>)
+open import Data.Product hiding (map)
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
@@ -10,7 +13,6 @@ open import Data.Empty
 open import Data.Vec hiding (concat;map;filter)
 open import Function
 
-open import prelude
 open import core.finite
 open import core.list-logic
 open import core.graph

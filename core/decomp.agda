@@ -6,8 +6,10 @@ open import Data.List
 open import Relation.Nullary
 open import Relation.Unary
 open import Relation.Binary.PropositionalEquality
+open import Data.Unit renaming (tt to <>)
+open import Data.Product hiding (map)
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import prelude
 open import core.finite
 open import core.graph
 open import core.grove
@@ -52,7 +54,7 @@ some-top-decidable fuel G v with classify fuel G v [] | inspect (classify fuel G
 ... | Top X | _ | TopCorrect is-top | _ = yes (X , is-top)
 ... | Inner X w | [ eq ] | _ | Complete top-complete inner-complete = no not-top
   where 
-  not-top : ¬ Σ[ X ∈ _ ] top X G v
+  not-top : ¬(Σ[ X ∈ _ ] top X G v)
   not-top (X , is-top) rewrite eq with top-complete is-top 
   ... | ()
 

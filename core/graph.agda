@@ -1,4 +1,6 @@
 open import Axiom.Extensionality.Propositional
+open import Data.Product 
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_⊔_; _+_)
 open import Data.List
@@ -10,7 +12,6 @@ open import Level using (Level)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
-open import prelude
 open import core.finite
 
 module core.graph where

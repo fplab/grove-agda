@@ -11,18 +11,21 @@ open import Data.Fin
 open import Data.Vec hiding (map;_++_;concat;filter)
 open import Function
 
-open import prelude
+open import Data.Unit renaming (tt to <>)
+open import Data.Product hiding (map)
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
+
 open import core.finite
 
 private
   variable
-    ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+    ℓ : Level
 
 map-compose : {A B C : Set} → {l : List A} → {f : B → C} → {g : A → B} → map f (map g l) ≡ map (f ∘ g) l 
 map-compose {l = []} {f = f} {g = g} = refl
 map-compose {l = x ∷ l} {f = f} {g = g} rewrite map-compose {l = l} {f = f} {g = g} = refl
 
-list-forall : ∀ {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → (Set (lmax ℓ₁ ℓ₂))
+list-forall : ∀ {A : Set} → (A → Set) → (List A) → Set
 list-forall P [] = ⊤
 list-forall P (a ∷ l) = (P a) × (list-forall P l)
 
@@ -34,11 +37,11 @@ list-forall-concat : {A : Set} → {P : A → Set} → {ls : List (List A)} → 
 list-forall-concat {ls = []} f = <>
 list-forall-concat {ls = l ∷ ls} (p , f) = list-forall-append p (list-forall-concat f)
 
-list-forall-map : ∀ {A : Set ℓ₁} → {B : Set ℓ₂} → {P : B → Set ℓ₃} → {l : List A} → {f : A → B} → (list-forall (λ a → P (f a)) l) → list-forall P (map f l)
+list-forall-map : ∀ {A : Set} → {B : Set} → {P : B → Set} → {l : List A} → {f : A → B} → (list-forall (λ a → P (f a)) l) → list-forall P (map f l)
 list-forall-map {l = []} fa = <>
 list-forall-map {l = x ∷ l} (p , fa) = p , list-forall-map fa
 
-list-forall-filter : ∀ {A : Set ℓ₁} → {C : Pred A ℓ₂} → {P : A → Set ℓ₃} → {l : List A} → {dec : Decidable C} → (list-forall (λ a → C a → P a) l) → list-forall P (filter {P = C} dec l)
+list-forall-filter : ∀ {A : Set} → {C : A → Set} → {P : A → Set} → {l : List A} → {dec : Decidable C} → (list-forall (λ a → C a → P a) l) → list-forall P (filter {P = C} dec l)
 list-forall-filter {l = []} <> = <>
 list-forall-filter {C = C} {l = x ∷ l} {dec = dec} (p , fa) with dec x 
 ... | yes p' = (p p') , (list-forall-filter fa)
@@ -109,9 +112,9 @@ list-elem-toList {n = suc n} {f = f} (suc i) = ListElemSkip (f zero) (list-elem-
 elem-equiv : {A : Set} → (l1 l2 : List A) → Set
 elem-equiv {A} l1 l2 = (a : A) → ((list-elem a l1) → (list-elem a l2)) × ((list-elem a l2) → (list-elem a l1))
 
--- data list-exists {ℓ₁ ℓ₂} : {A : Set ℓ₁} → (A → Set ℓ₂) → (List A) → Set (lmax (lsuc ℓ₁) (lsuc ℓ₂)) where 
---   ListExistsHave : {A : Set ℓ₁} → {P : A → Set ℓ₂} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
---   ListExistsSkip : {A : Set ℓ₁} → {P : A → Set ℓ₂} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
+-- data list-exists {ℓ₁} : {A : Set} → (A → Set) → (List A) → Set (lmax (lsuc) (lsuc)) where 
+--   ListExistsHave : {A : Set} → {P : A → Set} → (a : A) → (p : P a) → (l : List A) → list-exists P (a ∷ l) 
+--   ListExistsSkip : {A : Set} → {P : A → Set} → {l : List A} → (a : A) → list-exists P l → list-exists P (a ∷ l)
 
 -- data list-equiv {ℓ} : {A : Set ℓ} → (l1 l2 : List A) → Set (lsuc ℓ) where 
 --   -- congruence

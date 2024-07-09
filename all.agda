@@ -1,2 +1,2 @@
 module all where
-  import core
+  open import core.decomp-recomp public

@@ -12,8 +12,10 @@ open import Data.Maybe hiding(map)
 open import Data.Nat hiding (_+_)
 open import Data.Nat.Properties
 open import Data.Empty
+open import Data.Unit renaming (tt to <>)
+open import Data.Product hiding (map)
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import prelude
 open import core.finite
 open import core.list-logic
 open import core.graph

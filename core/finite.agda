@@ -1,7 +1,8 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 module core.finite where
-  
-open import prelude
+
+open import Data.Product 
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
 open import Data.List hiding (lookup)
 open import Data.Fin
 open import Data.Nat
@@ -45,4 +46,4 @@ comprehend-vec-of-map {n = suc n} f1 f2 rewrite comprehend-vec-of-map (λ z → 
 
 -- append-exist : {A : Set} → (P : A → Set) → (l1 l2 : List A) → (a : A) → list-exists P l2 → list-exists P (l1 ++ l2)
 -- append-exist P [] l2 a ex = ex 
--- append-exist P (x ∷ l1) l2 a ex = ListExistsSkip x (append-exist P l1 l2 a ex)
+-- append-exist P (x ∷ l1) l2 a ex = ListExistsSkip x (append-exist P l1 l2 a ex) 

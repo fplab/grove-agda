@@ -4,8 +4,10 @@ open import Data.Nat
 open import Data.List hiding(lookup)
 open import Data.Fin
 open import Data.Vec hiding(_++_; concat; map)
+open import Data.Unit renaming (tt to <>)
+open import Data.Product hiding (map)
+open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import prelude
 open import core.finite
 open import core.graph
 open import core.grove
