@@ -149,6 +149,13 @@ module marking.prelude where
     map f []        =  []
     map f (x ∷ xs)  =  f x ∷ map f xs
 
+    foldr : ∀ {A B : Set} → (A → B → B) → B → List A → B
+    foldr c n []       = n
+    foldr c n (x ∷ xs) = c x (foldr c n xs)
+
+    concat : ∀ {A : Set} → List (List A) → List A
+    concat = foldr _++_ []
+
     data All {A : Set} (P : A → Set) : List A → Set where
       []  : All P []
       _∷_ : ∀ {x : A} {xs : List A} → P x → All P xs → All P (x ∷ xs)
