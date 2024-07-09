@@ -1,4 +1,5 @@
 open import Axiom.Extensionality.Propositional
+open import Data.Unit 
 open import Data.Product 
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
 open import Data.Bool hiding (_<_; _≟_)
@@ -13,6 +14,7 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
 open import core.finite
+open import core.list-logic
 
 module core.graph where
 
@@ -39,9 +41,6 @@ record Vertex : Set where
   field
     ctor : Ctor
     ident : VertexId
-
-postulate 
-  VertexId-uniq : (v₁ v₂ : Vertex) → (Vertex.ident v₁) ≡ (Vertex.ident v₂) → v₁ ≡ v₂  
 
 _≟Vertex_ : (v₁ v₂ : Vertex) → Dec (v₁ ≡ v₂)
 V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟V𝕀 i₂
@@ -83,3 +82,10 @@ E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂
 ... | _        | _        | no p     = no (λ { refl → p refl })
 
 Graph = List(Edge)
+
+data v-in-G : Vertex → Graph → Set where 
+  VSource : ∀{G} → (ε : Edge) → (list-elem ε G) → v-in-G (Source.v (Edge.source ε)) G
+  VChild : ∀{G} → (ε : Edge) → (list-elem ε G) → v-in-G (Edge.child ε) G
+
+has-uniq-ids : Graph → Set 
+has-uniq-ids G = (v₁ v₂ : Vertex) → (v-in-G v₁ G) → (v-in-G v₂ G) → (Vertex.ident v₁) ≡ (Vertex.ident v₂) → v₁ ≡ v₂  

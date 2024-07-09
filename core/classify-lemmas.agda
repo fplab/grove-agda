@@ -91,6 +91,26 @@ oami-implies-oa : (G : Graph) → (v w : Vertex) → (u : VertexId) →
   is-only-ancestor G v w
 oami-implies-oa G v w u (a , b , c , d) = (a , b , c)
 
+edge-of-parent :  (G : Graph) → (w v : Vertex) →
+    (classify-parents G w ≡ PC-UP v) → 
+    Σ[ p ∈ _ ] Σ[ u ∈ EdgeId ] (list-elem (E (S v p) w u) G)
+edge-of-parent [] w v ()
+edge-of-parent ((E s w? _) ∷ G) w v eq with (w ≟Vertex w?) 
+edge-of-parent ((E (S v? _) .w _) ∷ G) w v eq | yes refl with (v ≟Vertex v?) 
+edge-of-parent ((E (S v? p) .w u) ∷ G) w v eq | yes refl | yes refl = p , u , ListElemHave G
+edge-of-parent ((E (S v? _) .w _) ∷ G) w v eq | yes refl | no neq with parents G w | inspect (parents G) w
+edge-of-parent ((E (S v? _) .w _) ∷ G) w v refl | yes refl | no neq | [] | _ = ⊥-elim (neq refl)
+edge-of-parent ((E (S v? _) .w _) ∷ G) w v () | yes refl | no neq | _ ∷ [] | _ 
+edge-of-parent ((E (S v? _) .w _) ∷ G) w v () | yes refl | no neq | _ ∷ _ ∷ _ | _
+edge-of-parent ((E (S v? p) w? u) ∷ G) w v eq | no neq with parents G w | inspect (parents G) w
+edge-of-parent ((E (S v? p) w? u) ∷ G) w v () | no neq | [] | _
+edge-of-parent ((E (S v? p) w? u) ∷ G) w v refl | no neq | .v ∷ [] | [ eq ] rewrite eq with edge-of-parent G w v (helper eq) 
+  where 
+  helper : parents G w ≡ v ∷ [] → classify-parents G w ≡ PC-UP v
+  helper eq rewrite eq = refl
+edge-of-parent ((E (S v? _) w? _) ∷ G) w v refl | no neq | .v ∷ [] | _ | p , u , elem = p , u , ListElemSkip _ elem
+edge-of-parent ((E (S v? p) w? u) ∷ G) w v () | no neq | _ ∷ _ ∷ _ | _
+
 -- BEGIN: this arithmetic is to jelp manifest termination for lem2
 
 natminus : ℕ → ℕ → ℕ 
@@ -211,22 +231,36 @@ lem4 G u v w oami (n , oa) = lem4-termin G u v w n oami oa
 lem5 : (G : Graph) → (v w : Vertex) → (top U G v) → is-only-ancestor G v w → (id-of-vertex v ≤V𝕀 id-of-vertex w)
 lem5 G v w top oa = lem4 G _ v w top oa
 
-lem6 : (G : Graph) → (v w : Vertex) → (top U G v) → (top U G w) → is-only-ancestor G v w → (v ≡ w)
-lem6 G v w top1 top2 oa1 = VertexId-uniq _ _ (≤V𝕀-antisym _ _ (lem4 _ _ _ _ top1 oa1) (lem4 _ _ _ _ top2 oa2))
+lem6 : (G : Graph) → (has-uniq-ids G) → (v w : Vertex) → (top U G v) → (top U G w) → is-only-ancestor G v w → (v ≡ w)
+lem6 G uniq-ids v w top1 top2 oa1 = uniq-ids _ _ (v-is-in-G oa1) (w-is-in-G oa1) (≤V𝕀-antisym _ _ (lem4 _ _ _ _ top1 oa1) (lem4 _ _ _ _ top2 oa2))
   where 
+  v-is-in-G : is-only-ancestor G v w → v-in-G v G
+  v-is-in-G (n , ws , eq1 , eq2 , cp) with edge-of-parent G v _ (eq3 eq1)
+    where 
+    eq3 : (lookup ws zero ≡ v) → classify-parents G v ≡ PC-UP (lookup ws (suc zero))
+    eq3 eq1' rewrite (sym eq1) = cp zero
+  ... | p , u , elem rewrite eq1 = VChild _ elem
+
+  w-is-in-G : is-only-ancestor G v w → v-in-G w G
+  w-is-in-G (n , ws , eq1 , eq2 , cp) with edge-of-parent G _ w eq3
+    where 
+    eq3 : classify-parents G (lookup ws (cast-up (fromℕ n))) ≡ PC-UP w
+    eq3 rewrite (sym eq2) = cp (fromℕ n)
+  ... | p , u , elem rewrite eq1 = VSource _ elem
+  
   oa2 : is-only-ancestor G w v 
   oa2 = lem2 G v w (oami-implies-oa _ _ _ _ top1) oa1
 
-lem7 : (G : Graph) → (v w : Vertex) → (top U G w) → is-only-ancestor G v w → ((v ≡ w) + (inner U G v w))
-lem7 G v w top oa with (v ≟Vertex w)
+lem7 : (G : Graph) → (has-uniq-ids G) → (v w : Vertex) → (top U G w) → is-only-ancestor G v w → ((v ≡ w) + (inner U G v w))
+lem7 G uniq-ids v w top oa with (v ≟Vertex w)
 ... | yes refl = Inl refl 
-... | no neq = Inr ((λ top' → neq (lem6 _ _ _ top' top oa)) , oa , top)
+... | no neq = Inr ((λ top' → neq (lem6 G uniq-ids _ _ top' top oa)) , oa , top)
 
-lem8 : (G : Graph) → (v w : Vertex) → (top U G w) → is-only-ancestor G w v → ((v ≡ w) + (inner U G v w))
-lem8 G v w top oa = lem7 G v w top (lem2 _ _ _ (oami-implies-oa _ _ _ _ top) oa)
+lem8 : (G : Graph) → (has-uniq-ids G) → (v w : Vertex) → (top U G w) → is-only-ancestor G w v → ((v ≡ w) + (inner U G v w))
+lem8 G uniq-ids v w top oa = lem7 G uniq-ids v w top (lem2 _ _ _ (oami-implies-oa _ _ _ _ top) oa)
 
-lem9 : (G : Graph) → (v w : Vertex) → (top U G w) → (classify-parents G w ≡ PC-UP v) → ((v ≡ w) + (inner U G v w))
-lem9 G v w top cp = lem8 G v w top (parent-implies-oa _ _ _ cp)
+lem9 : (G : Graph) → (has-uniq-ids G) → (v w : Vertex) → (top U G w) → (classify-parents G w ≡ PC-UP v) → ((v ≡ w) + (inner U G v w))
+lem9 G uniq-ids v w top cp = lem8 G uniq-ids v w top (parent-implies-oa _ _ _ cp)
 
 lem10 : (G : Graph) → (X Y : X) → (w : Vertex) → 
   (top X G w) → 
@@ -248,36 +282,36 @@ lem10 G U MP w (_ , .w ∷ _ , (refl , _ , cp) , _) top2 with classify-parents G
 lem10 G U MP w (_ , .w ∷ _ , (refl , _ , cp) , _) top2 | _ | refl | ()
 lem10 G U U w top1 top2 = refl
 
-lem11 : (G : Graph) → (X Y : X) → (x w1 w2 : Vertex) → 
+lem11 : (G : Graph) → (has-uniq-ids G) → (X Y : X) → (x w1 w2 : Vertex) → 
   is-only-ancestor G x w1 → 
   is-only-ancestor G x w2 → 
   (top X G w1) → 
   (top Y G w2) → 
   (X ≡ Y) × (w1 ≡ w2)
-lem11 G X Y x w1 w2 oa1 oa2 top1 top2 with lem1 G x w1 w2 oa1 oa2
-lem11 G X Y x w1 w1 oa1 oa2 top1 top2 | Inl refl = lem10 G X Y w1 top1 top2 , refl
-lem11 G NP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) with classify-parents G w1 | top1 | cp zero
-lem11 G NP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) | _ | refl | ()
-lem11 G MP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) with classify-parents G w1 | top1 | cp zero
-lem11 G MP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) | _ | refl | ()
-lem11 G U Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) with lem8 G w2 w1 top1 oa3
-lem11 G U Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inl refl = lem10 G U Y w1 top1 top2 , refl 
-lem11 G U NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w2 | cp zero | top2
-lem11 G U NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
-lem11 G U MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w2 | cp zero | top2
-lem11 G U MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
-lem11 G U U x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , _ , _) = ⊥-elim (not-top top2)
-lem11 G X NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) with classify-parents G w2 | top2 | cp zero
-lem11 G X NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) | _ | refl | ()
-lem11 G X MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) with classify-parents G w2 | top2 | cp zero
-lem11 G X MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) | _ | refl | ()
-lem11 G X U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) with lem8 G w1 w2 top2 oa3
-lem11 G X U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inl refl = lem10 G X U w2 top1 top2 , refl 
-lem11 G NP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w1 | cp zero | top1
-lem11 G NP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
-lem11 G MP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w1 | cp zero | top1
-lem11 G MP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
-lem11 G U U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , _ , _) = ⊥-elim (not-top top1)
+lem11 G uniq-ids X Y x w1 w2 oa1 oa2 top1 top2 with lem1 G x w1 w2 oa1 oa2
+lem11 G uniq-ids X Y x w1 w1 oa1 oa2 top1 top2 | Inl refl = lem10 G X Y w1 top1 top2 , refl
+lem11 G uniq-ids NP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) with classify-parents G w1 | top1 | cp zero
+lem11 G uniq-ids NP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) | _ | refl | ()
+lem11 G uniq-ids MP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) with classify-parents G w1 | top1 | cp zero
+lem11 G uniq-ids MP Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl (_ , .w1 ∷ ws , (refl , _ , cp))) | _ | refl | ()
+lem11 G uniq-ids U Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) with lem8 G uniq-ids w2 w1 top1 oa3
+lem11 G uniq-ids U Y x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inl refl = lem10 G U Y w1 top1 top2 , refl 
+lem11 G uniq-ids U NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w2 | cp zero | top2
+lem11 G uniq-ids U NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
+lem11 G uniq-ids U MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w2 | cp zero | top2
+lem11 G uniq-ids U MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , (_ , .w2 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
+lem11 G uniq-ids U U x w1 w2 oa1 oa2 top1 top2 | Inr (Inl oa3) | Inr (not-top , _ , _) = ⊥-elim (not-top top2)
+lem11 G uniq-ids X NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) with classify-parents G w2 | top2 | cp zero
+lem11 G uniq-ids X NP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) | _ | refl | ()
+lem11 G uniq-ids X MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) with classify-parents G w2 | top2 | cp zero
+lem11 G uniq-ids X MP x w1 w2 oa1 oa2 top1 top2 | Inr (Inr (_ , .w2 ∷ ws , (refl , _ , cp))) | _ | refl | ()
+lem11 G uniq-ids X U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) with lem8 G uniq-ids w1 w2 top2 oa3
+lem11 G uniq-ids X U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inl refl = lem10 G X U w2 top1 top2 , refl 
+lem11 G uniq-ids NP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w1 | cp zero | top1
+lem11 G uniq-ids NP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
+lem11 G uniq-ids MP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) with classify-parents G w1 | cp zero | top1
+lem11 G uniq-ids MP U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , (_ , .w1 ∷ _ , (refl , _ , cp)) , _) | _ | refl | ()
+lem11 G uniq-ids U U x w1 w2 oa1 oa2 top1 top2 | Inr (Inr oa3) | Inr (not-top , _ , _) = ⊥-elim (not-top top1)
 
 parents-correct : (G : Graph) → (v : Vertex) → list-forall (λ w → parent G w v) (parents G v) 
 parents-correct [] v = <>
@@ -308,4 +342,4 @@ update-ws-correct G v ws x oas eq = (parent-implies-oami G v x eq) , forall-map-
       (suc n , (w ∷ ws1) ∷ʳ x , (refl , lookup-snoc x ws1 , cp-snoc G x (w ∷ ws1) (equation eq2 eq) cp) , min-snoc G u x ws1 min)
     where 
     equation : lookup ws1 (fromℕ n) ≡ v → classify-parents G v ≡ PC-UP x → classify-parents G (lookup ws1 (fromℕ n)) ≡ PC-UP x
-    equation eq1 eq2 rewrite eq1 rewrite eq2 = refl
+    equation eq1 eq2 rewrite eq1 rewrite eq2 = refl 

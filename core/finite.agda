@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module core.finite where
 
 open import Data.Product 
