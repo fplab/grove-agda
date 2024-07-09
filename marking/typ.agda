@@ -144,46 +144,6 @@ module marking.typ where
     ...                           | _          | no ¬τ₂~τ₂' = no λ { (TCBase ()) ; (TCArr _ τ₂~τ₂') → ¬τ₂~τ₂' τ₂~τ₂' }
     ...                           | no ¬τ₁~τ₁' | _          = no λ { (TCBase ()) ; (TCArr τ₁~τ₁' _) → ¬τ₁~τ₁' τ₁~τ₁' }
 
-    module formalism where
-      data _~'_ : (τ₁ τ₂ : Typ) → Set where
-        TCUnknown1 : {τ : Typ} → unknown ~' τ
-        TCUnknown2 : {τ : Typ} → τ ~' unknown
-        TCRefl     : {τ : Typ} → τ ~' τ
-        TCArr      : {τ₁ τ₁' τ₂ τ₂' : Typ}
-                   → (τ₁~τ₁' : τ₁ ~' τ₁')
-                   → (τ₂~τ₂' : τ₂ ~' τ₂')
-                   → τ₁ -→ τ₂ ~' τ₁' -→ τ₂'
-
-      ~→~' : ∀ {τ₁ τ₂ : Typ} → τ₁ ~ τ₂ → τ₁ ~' τ₂
-      ~→~' TCUnknown               = TCRefl
-      ~→~' (TCBase TBNum)          = TCRefl
-      ~→~' (TCUnknownBase b)       = TCUnknown1
-      ~→~' (TCBaseUnknown b)       = TCUnknown2
-      ~→~' (TCArr τ₁~τ₁' τ₂~τ₂')
-        with τ₁~τ₁'' ← ~→~' τ₁~τ₁'
-           | τ₂~τ₂'' ← ~→~' τ₂~τ₂' = TCArr τ₁~τ₁'' τ₂~τ₂''
-      ~→~' TCUnknownArr            = TCUnknown1
-      ~→~' TCArrUnknown            = TCUnknown2
-
-      ~'→~ : ∀ {τ₁ τ₂ : Typ} → τ₁ ~' τ₂ → τ₁ ~ τ₂
-      ~'→~ {τ₂ = num}     TCUnknown1 = TCUnknownBase TBNum
-      ~'→~ {τ₂ = unknown} TCUnknown1 = TCUnknown
-      ~'→~ {τ₂ = _ -→ _}  TCUnknown1 = TCUnknownArr
-      ~'→~ {τ₁ = num}     TCUnknown2 = TCBaseUnknown TBNum
-      ~'→~ {τ₁ = unknown} TCUnknown2 = TCUnknown
-      ~'→~ {τ₁ = _ -→ _}  TCUnknown2 = TCArrUnknown
-      ~'→~ {τ₁ = num}     TCRefl     = TCBase TBNum
-      ~'→~ {τ₁ = unknown} TCRefl     = TCUnknown
-      ~'→~ {τ₁ = _ -→ _}  TCRefl     = TCArr (~'→~ TCRefl) (~'→~ TCRefl)
-      ~'→~ (TCArr τ₁~τ₁' τ₂~τ₂')     = TCArr (~'→~ τ₁~τ₁') (~'→~ τ₂~τ₂')
-
-      ~⇔~' : ∀ {τ₁ τ₂ : Typ} → (τ₁ ~ τ₂) ⇔ (τ₁ ~' τ₂)
-      ~⇔~' =
-        record
-          { to   = ~→~'
-          ; from = ~'→~
-          }
-      
   module matched where
     open equality
     open consistency
