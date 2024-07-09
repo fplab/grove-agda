@@ -1,5 +1,3 @@
-module core.graph where
-
 open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_⊔_; _+_)
@@ -15,12 +13,10 @@ open import Relation.Nullary
 open import prelude
 open import core.finite
 
+module core.graph (Ctor : Set) (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)) (arity : Ctor → ℕ) where
+
 postulate
-  Ctor : Set 
-  _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
-
-  arity : Ctor → ℕ
-
+  
   Ident : Set
   _≟𝕀_ : (i₁ i₂ : Ident) → Dec (i₁ ≡ i₂)
   _≤𝕀_ : (i₁ i₂ : Ident) → Set 
