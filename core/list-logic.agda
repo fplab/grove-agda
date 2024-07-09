@@ -102,6 +102,10 @@ list-elem-filter {l = x ∷ l} {dec = dec} p (ListElemSkip .x el) with dec x
 list-elem-filter {l = x ∷ l} p (ListElemSkip .x el) | yes _ = ListElemSkip x (list-elem-filter p el)
 list-elem-filter {l = x ∷ l} p (ListElemSkip .x el) | no _ = list-elem-filter p el
 
+list-elem-toList : {A : Set} → {n : ℕ} → {f : Fin n → A} → (i : Fin n) → list-elem (f i) (toList (vec-of-map f)) 
+list-elem-toList {n = suc n} {f = f} zero = ListElemHave (toList (vec-of-map (λ z → f (suc z))))
+list-elem-toList {n = suc n} {f = f} (suc i) = ListElemSkip (f zero) (list-elem-toList i)
+
 elem-equiv : {A : Set} → (l1 l2 : List A) → Set
 elem-equiv {A} l1 l2 = (a : A) → ((list-elem a l1) → (list-elem a l2)) × ((list-elem a l2) → (list-elem a l1))
 
@@ -139,5 +143,5 @@ elem-equiv {A} l1 l2 = (a : A) → ((list-elem a l1) → (list-elem a l2)) × ((
 -- ListEquivAppAppCons : {A : Set} → (l1 l2 l3 : List A) → (a : A) → (list-equiv (l1 ++ l2 ++ (a ∷ l3)) (a ∷ (l1 ++ l2 ++ l3)))
 -- ListEquivAppAppCons [] l2 l3 a = ListEquivAppCons l2 l3 a         
 -- ListEquivAppAppCons (x ∷ l1) l2 l3 a = ListEquivTrans (ListEquivCons x (ListEquivAppAppCons l1 l2 l3 a)) ((ListEquivSwap x a (ListEquivRefl _)))
-     
+      
 -- -- list-equiv-extensional : {A : Set} → {l1 l2 : List A} → (a : A → (list-elem a l2 × list-elem a l2) + ...) → list-equiv l1 l2
