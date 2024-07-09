@@ -5,9 +5,9 @@ open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (¬_)
 
-open import marking.definitions
+open import Grove.Marking.Definitions
 
-module marking.theorems.wellformed where
+module Grove.Marking.Properties.WellFormed where
   mutual
     -- marking preserves syntactic structure
     ↬⇒□ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇒ τ}

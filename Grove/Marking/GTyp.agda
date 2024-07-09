@@ -1,11 +1,11 @@
 open import Data.List using (List)
 open import Data.Product using (_×_; _,_)
 
-open import marking.id
-open import marking.typ
+open import Grove.Marking.Id
+open import Grove.Marking.Typ
 
 -- graph types
-module marking.gtyp where
+module Grove.Marking.GTyp where
   mutual
     data GTyp : Set where
       num^_  : (u : VertexId) → GTyp

@@ -6,11 +6,10 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 
 open import Grove.Prelude
+open import Grove.Marking.Typ
+open import Grove.Marking.Var
 
-open import marking.typ
-open import marking.var
-
-module marking.ctx where
+module Grove.Marking.Ctx where
   infix  4 _∋_∶_
   infixl 5 _,_∶_
 

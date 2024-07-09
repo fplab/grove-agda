@@ -1,4 +1,4 @@
-module marking.id where
+module Grove.Marking.Id where
   postulate
     VertexId : Set
     EdgeId   : Set

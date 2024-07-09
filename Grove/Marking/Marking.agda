@@ -2,14 +2,14 @@ open import Data.List using (List; []; _∷_)
 open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 
-open import marking.id
-open import marking.typ
-open import marking.gtyp
-open import marking.ctx
-open import marking.uexp
-open import marking.mexp
+open import Grove.Marking.Id
+open import Grove.Marking.Typ
+open import Grove.Marking.GTyp
+open import Grove.Marking.Ctx
+open import Grove.Marking.UExp
+open import Grove.Marking.MExp
 
-module marking.marking where
+module Grove.Marking.Marking where
   infix 4 _⊢_↬⇒_
   infix 4 _⊢_↬⇐_
   infix 4 _⊢s_↬⇒_

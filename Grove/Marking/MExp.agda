@@ -3,15 +3,15 @@ open import Data.List using (List; []; _∷_; _++_; [_])
 open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 
-open import marking.id
-open import marking.var
-open import marking.typ
-open import marking.gtyp
-open import marking.ctx
-open import marking.multiparents
+open import Grove.Marking.Id
+open import Grove.Marking.Var
+open import Grove.Marking.Typ
+open import Grove.Marking.GTyp
+open import Grove.Marking.Ctx
+open import Grove.Marking.MultiParents
 
 -- instrinsically typed marked expressions
-module marking.mexp where
+module Grove.Marking.MExp where
   infix  4 _⊢⇒_
   infix  4 _⊢⇐_
   infix  4 _⊢⇒s_

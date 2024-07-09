@@ -1,6 +1,6 @@
 open import Data.Nat
 
-module marking.var where
+module Grove.Marking.Var where
   -- variables
   Var : Set
   Var = ℕ

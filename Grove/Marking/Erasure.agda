@@ -3,13 +3,13 @@ open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (yes; no)
 
-open import marking.id
-open import marking.typ
-open import marking.gtyp
-open import marking.uexp
-open import marking.mexp
+open import Grove.Marking.Id
+open import Grove.Marking.Typ
+open import Grove.Marking.GTyp
+open import Grove.Marking.UExp
+open import Grove.Marking.MExp
 
-module marking.erasure where
+module Grove.Marking.Erasure where
   mutual
     _⇒□ : ∀ {Γ τ} → (ě : Γ ⊢⇒ τ) → UExp
     (⊢_^_ {x = x} ∋x u)      ⇒□ = - x ^ u

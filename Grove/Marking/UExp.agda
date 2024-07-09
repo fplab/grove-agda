@@ -4,14 +4,14 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
-open import marking.id
-open import marking.var
-open import marking.typ
-open import marking.gtyp
-open import marking.ctx
+open import Grove.Marking.Id
+open import Grove.Marking.Var
+open import Grove.Marking.Typ
+open import Grove.Marking.GTyp
+open import Grove.Marking.Ctx
 
 -- unmarked expressions
-module marking.uexp where
+module Grove.Marking.UExp where
   infix  4 _⊢_⇒_
   infix  4 _⊢_⇐_
   infix  4 _⊢s_⇒_

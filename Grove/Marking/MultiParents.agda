@@ -1,10 +1,10 @@
 open import Data.List using (List)
 
-open import marking.id
-open import marking.typ
-open import marking.ctx
+open import Grove.Marking.Id
+open import Grove.Marking.Typ
+open import Grove.Marking.Ctx
 
-module marking.multiparents where
+module Grove.Marking.MultiParents where
   data Mode : Set where
     Syn : Mode
     Ana : (τ : Typ) → Mode

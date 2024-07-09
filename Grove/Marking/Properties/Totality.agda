@@ -4,9 +4,9 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Nullary using (Dec; yes; no)
 
-open import marking.definitions
+open import Grove.Marking.Definitions
 
-module marking.theorems.totality where
+module Grove.Marking.Properties.Totality where
   mutual
     -- TODO make context implicit
     ↬⇒-totality : (Γ : Ctx)

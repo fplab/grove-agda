@@ -5,10 +5,9 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Product using (_×_; _,_; proj₂; ∃-syntax; Σ-syntax)
 
 open import Grove.Prelude
+open import Grove.Marking.Definitions
 
-open import marking.definitions
-
-module marking.theorems.unicity where
+module Grove.Marking.Properties.Unicity where
   mutual
     ↬⇒-τ-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
                  → Γ ⊢ e ↬⇒ ě₁

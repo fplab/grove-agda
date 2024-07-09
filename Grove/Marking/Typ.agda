@@ -5,7 +5,7 @@ open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Grove.Prelude
 
 -- types
-module marking.typ where
+module Grove.Marking.Typ where
   data Typ : Set where
     num     : Typ
     unknown : Typ
