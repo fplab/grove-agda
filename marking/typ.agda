@@ -1,4 +1,8 @@
-open import marking.prelude
+open import Data.Product using (_×_; _,_; ∃-syntax)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
+open import Relation.Nullary using (¬_; Dec; yes; no)
+
+open import Grove.Prelude
 
 -- types
 module marking.typ where
@@ -9,36 +13,35 @@ module marking.typ where
 
   infixr 25  _-→_
 
-  module equality where
-    -- arrow type equality
-    -→-≡ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ ≡ τ₁') → (τ₂ ≡ τ₂') → τ₁ -→ τ₂ ≡ τ₁' -→ τ₂'
-    -→-≡ refl refl = refl
+  -- arrow type equality
+  -→-≡ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ ≡ τ₁') → (τ₂ ≡ τ₂') → τ₁ -→ τ₂ ≡ τ₁' -→ τ₂'
+  -→-≡ refl refl = refl
 
-    -- inverted arrow type equality
-    -→-inj : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ -→ τ₂ ≡ τ₁' -→ τ₂') → τ₁ ≡ τ₁' × τ₂ ≡ τ₂'
-    -→-inj refl = ⟨ refl , refl ⟩
+  -- inverted arrow type equality
+  -→-inj : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ -→ τ₂ ≡ τ₁' -→ τ₂') → (τ₁ ≡ τ₁') × (τ₂ ≡ τ₂')
+  -→-inj refl = refl , refl
 
-    -- arrow type inequalities
-    -→-≢₁ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ ≢ τ₁') → τ₁ -→ τ₂ ≢ τ₁' -→ τ₂'
-    -→-≢₁ τ₁≢τ₁' refl = τ₁≢τ₁' refl
+  -- arrow type inequalities
+  -→-≢₁ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₁ ≢ τ₁') → τ₁ -→ τ₂ ≢ τ₁' -→ τ₂'
+  -→-≢₁ τ₁≢τ₁' refl = τ₁≢τ₁' refl
 
-    -→-≢₂ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₂ ≢ τ₂') → τ₁ -→ τ₂ ≢ τ₁' -→ τ₂'
-    -→-≢₂ τ₂≢τ₂' refl = τ₂≢τ₂' refl
+  -→-≢₂ : ∀ {τ₁ τ₂ τ₁' τ₂'} → (τ₂ ≢ τ₂') → τ₁ -→ τ₂ ≢ τ₁' -→ τ₂'
+  -→-≢₂ τ₂≢τ₂' refl = τ₂≢τ₂' refl
 
-    -- decidable equality
-    _≡τ?_ : (τ : Typ) → (τ' : Typ) → Dec (τ ≡ τ')
-    num        ≡τ? num      = yes refl
-    num        ≡τ? unknown  = no (λ ())
-    num        ≡τ? (_ -→ _) = no (λ ())
-    unknown    ≡τ? num      = no (λ ())
-    unknown    ≡τ? unknown  = yes refl
-    unknown    ≡τ? (_ -→ _) = no (λ ())
-    (_ -→ _)   ≡τ? num      = no (λ ())
-    (_ -→ _)   ≡τ? unknown  = no (λ ())
-    (τ₁ -→ τ₂) ≡τ? (τ₁' -→ τ₂') with τ₁ ≡τ? τ₁' | τ₂ ≡τ? τ₂'
-    ...                           | yes refl    | yes refl  = yes refl
-    ...                           | _           | no τ₂≢τ₂' = no  (-→-≢₂ τ₂≢τ₂')
-    ...                           | no τ₁≢τ₁'   | _         = no  (-→-≢₁ τ₁≢τ₁')
+  -- decidable equality
+  _≡τ?_ : (τ : Typ) → (τ' : Typ) → Dec (τ ≡ τ')
+  num        ≡τ? num      = yes refl
+  num        ≡τ? unknown  = no (λ ())
+  num        ≡τ? (_ -→ _) = no (λ ())
+  unknown    ≡τ? num      = no (λ ())
+  unknown    ≡τ? unknown  = yes refl
+  unknown    ≡τ? (_ -→ _) = no (λ ())
+  (_ -→ _)   ≡τ? num      = no (λ ())
+  (_ -→ _)   ≡τ? unknown  = no (λ ())
+  (τ₁ -→ τ₂) ≡τ? (τ₁' -→ τ₂') with τ₁ ≡τ? τ₁' | τ₂ ≡τ? τ₂'
+  ...                           | yes refl    | yes refl  = yes refl
+  ...                           | _           | no τ₂≢τ₂' = no  (-→-≢₂ τ₂≢τ₂')
+  ...                           | no τ₁≢τ₁'   | _         = no  (-→-≢₁ τ₁≢τ₁')
 
   module base where
     -- base types
@@ -145,7 +148,6 @@ module marking.typ where
     ...                           | no ¬τ₁~τ₁' | _          = no λ { (TCBase ()) ; (TCArr τ₁~τ₁' _) → ¬τ₁~τ₁' τ₁~τ₁' }
 
   module matched where
-    open equality
     open consistency
 
     -- matched arrow
@@ -160,8 +162,8 @@ module marking.typ where
     -- decidable matched arrow
     _▸-→? : (τ : Typ) → Dec (∃[ τ₁ ] ∃[ τ₂ ] τ ▸ τ₁ -→ τ₂)
     num        ▸-→? = no (λ ())
-    unknown    ▸-→? = yes ⟨ unknown , ⟨ unknown , TMAUnknown ⟩ ⟩
-    (τ₁ -→ τ₂) ▸-→? = yes ⟨ τ₁      , ⟨ τ₂      , TMAArr     ⟩ ⟩
+    unknown    ▸-→? = yes (unknown , unknown , TMAUnknown)
+    (τ₁ -→ τ₂) ▸-→? = yes (τ₁      , τ₂      , TMAArr)
 
     -- matched arrow derivation equality
     ▸-→-≡ : ∀ {τ τ₁ τ₂} → (τ▸ : τ ▸ τ₁ -→ τ₂) → (τ▸' : τ ▸ τ₁ -→ τ₂) → τ▸ ≡ τ▸'
@@ -192,8 +194,8 @@ module marking.typ where
 
     -- consistency with an arrow type implies existence of a matched arrow type
     ~→▸-→ : ∀ {τ τ₁ τ₂} → τ ~ τ₁ -→ τ₂ → ∃[ τ₁' ] ∃[ τ₂' ] τ ▸ τ₁' -→ τ₂'
-    ~→▸-→ (TCArr {τ₁ = τ₁} {τ₂ = τ₂} τ₁~ τ₂~) = ⟨ τ₁      , ⟨ τ₂      , TMAArr ⟩ ⟩
-    ~→▸-→ TCUnknownArr                        = ⟨ unknown , ⟨ unknown , TMAUnknown ⟩ ⟩
+    ~→▸-→ (TCArr {τ₁ = τ₁} {τ₂ = τ₂} τ₁~ τ₂~) = τ₁      , τ₂      , TMAArr
+    ~→▸-→ TCUnknownArr                        = unknown , unknown , TMAUnknown
 
     ~-▸-→→~ : ∀ {τ τ₁ τ₂ τ₁' τ₂'} → τ ~ τ₁ -→ τ₂ → τ ▸ τ₁' -→ τ₂' → τ₁ -→ τ₂ ~ τ₁' -→ τ₂'
     ~-▸-→→~ (TCArr τ₁~ τ₂~) TMAArr     = TCArr (~-sym τ₁~) (~-sym τ₂~)
@@ -201,7 +203,6 @@ module marking.typ where
 
   module meet where
     open base
-    open equality
     open consistency
 
     -- greatest lower bound (where the unknown type is the top of the imprecision partial order)
@@ -221,19 +222,19 @@ module marking.typ where
 
     -- decidable meet
     _⊓?_ : (τ₁ : Typ) → (τ₂ : Typ) → Dec (∃[ τ ] τ₁ ⊓ τ₂ ⇒ τ)
-    num        ⊓? num          = yes ⟨ num , TJBase TBNum ⟩
-    num        ⊓? unknown      = yes ⟨ num , TJBaseUnknown TBNum ⟩
+    num        ⊓? num          = yes (num , TJBase TBNum)
+    num        ⊓? unknown      = yes (num , TJBaseUnknown TBNum)
     num        ⊓? (_ -→ _)     = no λ()
-    unknown    ⊓? num          = yes ⟨ num      , TJUnknownBase TBNum ⟩
-    unknown    ⊓? unknown      = yes ⟨ unknown  , TJUnknown ⟩
-    unknown    ⊓? (τ₁ -→ τ₂)   = yes ⟨ τ₁ -→ τ₂ , TJUnknownArr ⟩
+    unknown    ⊓? num          = yes (num      , TJUnknownBase TBNum)
+    unknown    ⊓? unknown      = yes (unknown  , TJUnknown)
+    unknown    ⊓? (τ₁ -→ τ₂)   = yes (τ₁ -→ τ₂ , TJUnknownArr)
     (τ₁ -→ τ₂) ⊓? num          = no λ()
-    (τ₁ -→ τ₂) ⊓? unknown      = yes ⟨ τ₁ -→ τ₂ , TJArrUnknown ⟩
+    (τ₁ -→ τ₂) ⊓? unknown      = yes (τ₁ -→ τ₂ , TJArrUnknown)
     (τ₁ -→ τ₂) ⊓? (τ₁' -→ τ₂')
       with τ₁ ⊓? τ₁'          | τ₂ ⊓? τ₂'
-    ...  | yes ⟨ τ , τ₁⊓τ₁' ⟩ | yes ⟨ τ' , τ₂⊓τ₂'' ⟩ = yes ⟨ τ -→ τ' , TJArr τ₁⊓τ₁' τ₂⊓τ₂'' ⟩
-    ...  | _                  | no ¬τ₂⊓τ₂'           = no λ { ⟨ .(_ -→ _) , TJArr {τ₂″ = τ₂″} τ₁⊓τ₁'″ τ₂⊓τ₂'″ ⟩ → ¬τ₂⊓τ₂' ⟨ τ₂″ , τ₂⊓τ₂'″ ⟩ }
-    ...  | no ¬τ₁⊓τ₁'         | _                    = no λ { ⟨ .(_ -→ _) , TJArr {τ₁″ = τ₁″} τ₁⊓τ₁'″ τ₂⊓τ₂'″ ⟩ → ¬τ₁⊓τ₁' ⟨ τ₁″ , τ₁⊓τ₁'″ ⟩ }
+    ...  | yes (τ , τ₁⊓τ₁') | yes (τ' , τ₂⊓τ₂'') = yes (τ -→ τ' , TJArr τ₁⊓τ₁' τ₂⊓τ₂'')
+    ...  | _                | no ¬τ₂⊓τ₂'         = no λ { (.(_ -→ _) , TJArr {τ₂″ = τ₂″} τ₁⊓τ₁'″ τ₂⊓τ₂'″) → ¬τ₂⊓τ₂' (τ₂″ , τ₂⊓τ₂'″) }
+    ...  | no (¬τ₁⊓τ₁')     | _                  = no λ { (.(_ -→ _) , TJArr {τ₁″ = τ₁″} τ₁⊓τ₁'″ τ₂⊓τ₂'″) → ¬τ₁⊓τ₁' (τ₁″ , τ₁⊓τ₁'″) }
 
     -- meet of same type
     ⊓-refl : ∀ {τ} → τ ⊓ τ ⇒ τ
@@ -303,16 +304,16 @@ module marking.typ where
 
     -- consistent types have a meet
     ~→⊓ : ∀ {τ₁ τ₂} → τ₁ ~ τ₂ → ∃[ τ ] τ₁ ⊓ τ₂ ⇒ τ
-    ~→⊓           TCUnknown         = ⟨ unknown , TJUnknown       ⟩
-    ~→⊓ {τ₁ = τ } (TCBase b)        = ⟨ τ       , TJBase b        ⟩
-    ~→⊓ {τ₂ = τ₂} (TCUnknownBase b) = ⟨ τ₂      , TJUnknownBase b ⟩
-    ~→⊓ {τ₁ = τ₁} (TCBaseUnknown b) = ⟨ τ₁      , TJBaseUnknown b ⟩
-    ~→⊓ {τ₂ = τ₂} TCUnknownArr      = ⟨ τ₂      , TJUnknownArr    ⟩
-    ~→⊓ {τ₁ = τ₁} TCArrUnknown      = ⟨ τ₁      , TJArrUnknown    ⟩
+    ~→⊓           TCUnknown         = unknown , TJUnknown
+    ~→⊓ {τ₁ = τ } (TCBase b)        = τ       , TJBase b
+    ~→⊓ {τ₂ = τ₂} (TCUnknownBase b) = τ₂      , TJUnknownBase b
+    ~→⊓ {τ₁ = τ₁} (TCBaseUnknown b) = τ₁      , TJBaseUnknown b
+    ~→⊓ {τ₂ = τ₂} TCUnknownArr      = τ₂      , TJUnknownArr
+    ~→⊓ {τ₁ = τ₁} TCArrUnknown      = τ₁      , TJArrUnknown
     ~→⊓     (TCArr τ₁~τ₁' τ₂~τ₂')
-      with ⟨ τ₁″ , ⊓⇒τ₁″ ⟩ ← ~→⊓ τ₁~τ₁'
-         | ⟨ τ₂″ , ⊓⇒τ₂″ ⟩ ← ~→⊓ τ₂~τ₂'
-         = ⟨ τ₁″ -→ τ₂″ , TJArr ⊓⇒τ₁″ ⊓⇒τ₂″ ⟩
+      with τ₁″ , ⊓⇒τ₁″ ← ~→⊓ τ₁~τ₁'
+         | τ₂″ , ⊓⇒τ₂″ ← ~→⊓ τ₂~τ₂'
+         = τ₁″ -→ τ₂″ , TJArr ⊓⇒τ₁″ ⊓⇒τ₂″
 
     -- meet nonexistence means types are inconsistent
     ¬⊓→~̸ : ∀ {τ₁ τ₂} → ¬ (∃[ τ ] τ₁ ⊓ τ₂ ⇒ τ) → τ₁ ~̸ τ₂
@@ -320,39 +321,38 @@ module marking.typ where
 
     -- inconsistent types have no meet
     ~̸→¬⊓ : ∀ {τ₁ τ₂} → τ₁ ~̸ τ₂ → ¬ (∃[ τ ] τ₁ ⊓ τ₂ ⇒ τ)
-    ~̸→¬⊓ τ₁~̸τ₂ = λ { ⟨ τ , τ₁⊓τ₂ ⟩ → τ₁~̸τ₂ (⊓→~ τ₁⊓τ₂) }
+    ~̸→¬⊓ τ₁~̸τ₂ = λ { (τ , τ₁⊓τ₂) → τ₁~̸τ₂ (⊓→~ τ₁⊓τ₂) }
 
     -- types are consistent with their meet
     ⊓⇒→~ : ∀ {τ₁ τ₂ τ} → τ₁ ⊓ τ₂ ⇒ τ → τ₁ ~ τ × τ₂ ~ τ
-    ⊓⇒→~ (TJBase b) = ⟨ TCBase b , TCBase b ⟩
-    ⊓⇒→~ TJUnknown = ⟨ TCUnknown , TCUnknown ⟩
-    ⊓⇒→~ (TJUnknownBase b) = ⟨ TCUnknownBase b , TCBase b ⟩
-    ⊓⇒→~ (TJBaseUnknown b) = ⟨ TCBase b , TCUnknownBase b ⟩
+    ⊓⇒→~ (TJBase b) = TCBase b , TCBase b
+    ⊓⇒→~ TJUnknown = TCUnknown , TCUnknown
+    ⊓⇒→~ (TJUnknownBase b) = TCUnknownBase b , TCBase b
+    ⊓⇒→~ (TJBaseUnknown b) = TCBase b , TCUnknownBase b
     ⊓⇒→~ (TJArr τ₁⊓τ₁' τ₂⊓τ₂')
-      with ⟨ τ₁~ , τ₁'~ ⟩ ← ⊓⇒→~ τ₁⊓τ₁'
-         | ⟨ τ₂~ , τ₂'~ ⟩ ← ⊓⇒→~ τ₂⊓τ₂'
-         = ⟨ TCArr τ₁~ τ₂~ , TCArr τ₁'~ τ₂'~ ⟩
-    ⊓⇒→~ TJUnknownArr = ⟨ TCUnknownArr , TCArr ~-refl ~-refl ⟩
-    ⊓⇒→~ TJArrUnknown = ⟨ TCArr ~-refl ~-refl , TCUnknownArr ⟩
+      with τ₁~ , τ₁'~ ← ⊓⇒→~ τ₁⊓τ₁'
+         | τ₂~ , τ₂'~ ← ⊓⇒→~ τ₂⊓τ₂'
+         = TCArr τ₁~ τ₂~ , TCArr τ₁'~ τ₂'~
+    ⊓⇒→~ TJUnknownArr = TCUnknownArr , TCArr ~-refl ~-refl
+    ⊓⇒→~ TJArrUnknown = TCArr ~-refl ~-refl , TCUnknownArr
 
     -- types are consistent with types consistent to their meet
     ⊓⇒-~→~ : ∀ {τ₁ τ₂ τ τ'} → τ₁ ⊓ τ₂ ⇒ τ → τ ~ τ' → τ₁ ~ τ' × τ₂ ~ τ'
-    ⊓⇒-~→~ (TJBase b)        τ~τ' = ⟨ τ~τ' , τ~τ' ⟩
-    ⊓⇒-~→~ TJUnknown         τ~τ' = ⟨ τ~τ' , τ~τ' ⟩
-    ⊓⇒-~→~ (TJUnknownBase b) τ~τ' = ⟨ ~-unknown₁ , τ~τ' ⟩
-    ⊓⇒-~→~ (TJBaseUnknown b) τ~τ' = ⟨ τ~τ' , ~-unknown₁ ⟩
+    ⊓⇒-~→~ (TJBase b)        τ~τ' = τ~τ' , τ~τ'
+    ⊓⇒-~→~ TJUnknown         τ~τ' = τ~τ' , τ~τ'
+    ⊓⇒-~→~ (TJUnknownBase b) τ~τ' = ~-unknown₁ , τ~τ'
+    ⊓⇒-~→~ (TJBaseUnknown b) τ~τ' = τ~τ' , ~-unknown₁
     ⊓⇒-~→~ {τ = .(_ -→ _)} {unknown} (TJArr τ₁⊓τ₁' τ₂⊓τ₂') τ~τ'
-         = ⟨ TCArrUnknown , TCArrUnknown ⟩
+         = TCArrUnknown , TCArrUnknown
     ⊓⇒-~→~ {τ = .(_ -→ _)} {τ₁″ -→ τ₂″} (TJArr τ₁⊓τ₁' τ₂⊓τ₂') (TCArr τ₁″~τ₁‴ τ₂″~τ₂‴)
-      with ⟨ τ₁~τ₁″ , τ₁'~τ₁″ ⟩ ← ⊓⇒-~→~ τ₁⊓τ₁' τ₁″~τ₁‴
-      with ⟨ τ₂~τ₂″ , τ₂'~τ₂″ ⟩ ← ⊓⇒-~→~ τ₂⊓τ₂' τ₂″~τ₂‴
-         = ⟨ TCArr τ₁~τ₁″ τ₂~τ₂″ , TCArr τ₁'~τ₁″ τ₂'~τ₂″ ⟩
+      with τ₁~τ₁″ , τ₁'~τ₁″ ← ⊓⇒-~→~ τ₁⊓τ₁' τ₁″~τ₁‴
+      with τ₂~τ₂″ , τ₂'~τ₂″ ← ⊓⇒-~→~ τ₂⊓τ₂' τ₂″~τ₂‴
+         = TCArr τ₁~τ₁″ τ₂~τ₂″ , TCArr τ₁'~τ₁″ τ₂'~τ₂″
     ⊓⇒-~→~ {τ = .(_ -→ _)} TJUnknownArr τ~τ'
-         = ⟨ ~-unknown₁ , τ~τ' ⟩
+         = ~-unknown₁ , τ~τ'
     ⊓⇒-~→~ {τ = .(_ -→ _)} TJArrUnknown τ~τ'
-         = ⟨ τ~τ' , ~-unknown₁ ⟩
+         = τ~τ' , ~-unknown₁
 
-  open equality public
   open base public
   open consistency public
   open matched public

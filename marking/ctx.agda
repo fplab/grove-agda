@@ -1,4 +1,11 @@
-open import marking.prelude
+open import Data.Empty using (⊥-elim)
+open import Data.Nat.Properties using (_≟_)
+open import Data.Product using (_,_; ∃-syntax)
+open import Relation.Binary using (Decidable)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
+open import Relation.Nullary using (¬_; Dec; yes; no)
+
+open import Grove.Prelude
 
 open import marking.typ
 open import marking.var
@@ -21,19 +28,15 @@ module marking.ctx where
   Γ ∌ x = ¬ (∃[ τ ] Γ ∋ x ∶ τ)
 
   -- decidable context membership
-  data _∋?_ : (Γ : Ctx) (x : Var) → Set where
-    yes : ∀ {Γ x τ} → Γ ∋ x ∶ τ → Γ ∋? x
-    no  : ∀ {Γ x}   → Γ ∌ x     → Γ ∋? x
-
-  _∋??_ : (Γ : Ctx) → (x : Var) → Γ ∋? x
-  ∅            ∋?? x          = no (λ ())
-  (Γ , x' ∶ τ) ∋?? x
-    with x ≡ℕ? x'
-  ...  | yes refl             = yes Z
-  ...  | no  x≢x' with Γ ∋?? x
-  ...                | yes ∋x = yes (S x≢x' ∋x)
-  ...                | no ∌x  = no λ { ⟨ _ , Z ⟩ → x≢x' refl
-                                     ; ⟨ τ' , S _ ∋x₁ ⟩ → ∌x ⟨ τ' , ∋x₁ ⟩ }
+  _∋?_ : Decidable (λ Γ x → ∃[ τ ] Γ ∋ x ∶ τ)
+  ∅            ∋? x          = no (λ ())
+  (Γ , x' ∶ τ) ∋? x
+    with x ≟ x'
+  ...  | yes refl            = yes (_ , Z)
+  ...  | no  x≢x' with Γ ∋? x
+  ...                | yes (_ , ∋x) = yes (_ , S x≢x' ∋x)
+  ...                | no ∌x        = no λ { (_ , Z) → x≢x' refl
+                                           ; (τ' , S _ ∋x₁) → ∌x (τ' , ∋x₁) }
 
   -- membership type equality
   ∋→τ-≡ : ∀ {Γ x τ₁ τ₂}

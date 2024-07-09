@@ -1,4 +1,8 @@
-open import marking.prelude
+open import Data.Nat using (ℕ)
+open import Data.List using (List)
+open import Data.List.Relation.Unary.All using (All)
+open import Data.Product using (_×_; _,_; ∃-syntax)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
 open import marking.id
 open import marking.var
@@ -86,12 +90,12 @@ module marking.uexp where
 
       USubSJust : ∀ {Γ w e τ}
         → (e⇒τ : Γ ⊢ e ⇒ τ)
-        → Γ ⊢s -∶ ⟨ w , e ⟩ ⇒ τ
+        → Γ ⊢s -∶ (w , e) ⇒ τ
 
       -- TODO synthesize meet?
       -- TODO rename to USubSMultiChild?
       USubSConflict : ∀ {Γ ė*}
-        → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+        → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ ė* ⇒ unknown
 
     -- analysis

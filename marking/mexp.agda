@@ -1,4 +1,7 @@
-open import marking.prelude
+open import Data.Nat using (ℕ)
+open import Data.List using (List; []; _∷_; _++_; [_])
+open import Data.List.Relation.Unary.All using (All)
+open import Data.Product using (_×_; _,_; ∃-syntax)
 
 open import marking.id
 open import marking.var
@@ -228,12 +231,12 @@ module marking.mexp where
       MLSubSJust : ∀ {Γ w τ}
         → {ě : Γ ⊢⇒ τ}
         → (less : Markless⇒ ě)
-        → Markless⇒s {Γ} (⊢∶ ⟨ w , ě ⟩)
+        → Markless⇒s {Γ} (⊢∶ (w , ě))
 
       -- TODO maybe this is a mark?
       MLSubSConflict : ∀ {Γ}
         → {ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)}
-        → (less* : All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) ė*)
+        → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) ė*)
         → Markless⇒s {Γ} (⊢⋏ ė*)
 
     data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
@@ -267,17 +270,17 @@ module marking.mexp where
     multiparents⇒ (⊢ℕ _ ^ _)             = []
     multiparents⇒ (⊢ ě₁ + ě₂ ^ _)        = (multiparents⇐s ě₁) ++ (multiparents⇐s ě₂)
     multiparents⇒ (⊢⟦ _ ⟧^ _)            = []
-    multiparents⇒ {Γ} (⊢⋎^ u)            = ∣[ ⟨ u , Γ , Syn ⟩ ]
-    multiparents⇒ {Γ} (⊢↻^ u)            = ∣[ ⟨ u , Γ , Syn ⟩ ]
+    multiparents⇒ {Γ} (⊢⋎^ u)            = [ ⟨ u , Γ , Syn ⟩ ]
+    multiparents⇒ {Γ} (⊢↻^ u)            = [ ⟨ u , Γ , Syn ⟩ ]
 
     multiparents⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → MultiParents
-    multiparents⇒s (⊢□^ _ ^ _)    = []
-    multiparents⇒s (⊢∶ ⟨ _ , ě ⟩) = multiparents⇒ ě
-    multiparents⇒s (⊢⋏ ė*)        = multiparents⇒s* ė*
+    multiparents⇒s (⊢□^ _ ^ _)  = []
+    multiparents⇒s (⊢∶ (_ , ě)) = multiparents⇒ ě
+    multiparents⇒s (⊢⋏ ė*)      = multiparents⇒s* ė*
 
     multiparents⇒s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → MultiParents
-    multiparents⇒s* []                       = []
-    multiparents⇒s* (⟨ _ , ⟨ _ , ě ⟩ ⟩ ∷ ė*) = (multiparents⇒ ě) ++ multiparents⇒s* ė*
+    multiparents⇒s* []                 = []
+    multiparents⇒s* ((_ , _ , ě) ∷ ė*) = (multiparents⇒ ě) ++ multiparents⇒s* ė*
 
     multiparents⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → MultiParents
     multiparents⇐ (⊢λ _ ∶ _ ∙ ě [ _ ∙ _ ]^ _)   = multiparents⇐s ě

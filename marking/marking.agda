@@ -1,4 +1,7 @@
-open import marking.prelude
+open import Data.List using (List; []; _∷_)
+open import Data.List.Relation.Unary.All using (All)
+open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
+
 open import marking.id
 open import marking.typ
 open import marking.gtyp
@@ -62,10 +65,10 @@ module marking.marking where
         → Γ ⊢ -↻^ u ↬⇒ ⊢↻^ u
 
     MKSubSConflictChildren : ∀ {Γ} {ė* : List USubExp'}
-      → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+      → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
       → List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)
-    MKSubSConflictChildren [] = []
-    MKSubSConflictChildren (_∷_ {⟨ w , _ ⟩} ⟨ τ , ⟨ ě , _ ⟩ ⟩ ė↬⇒ě*) = ⟨ w , ⟨ τ , ě ⟩ ⟩ ∷ (MKSubSConflictChildren ė↬⇒ě*)
+    MKSubSConflictChildren All.[]                              = []
+    MKSubSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSubSConflictChildren ė↬⇒ě*)
 
     data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇒s τ) → Set where
       MKSubSHole : ∀ {Γ w p}
@@ -74,10 +77,10 @@ module marking.marking where
       MKSubSJust : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇒ τ} 
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
-        → Γ ⊢s -∶ ⟨ w , e ⟩ ↬⇒ ⊢∶ ⟨ w , ě ⟩
+        → Γ ⊢s -∶ (w , e) ↬⇒ ⊢∶ (w , ě)
 
       MKSubSConflict : ∀ {Γ ė*}
-        → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+        → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
         → Γ ⊢s -⋏ ė* ↬⇒ ⊢⋏ (MKSubSConflictChildren ė↬⇒ě*)
 
     USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě

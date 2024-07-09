@@ -1,4 +1,10 @@
-open import marking.prelude
+open import Data.Empty using (⊥-elim)
+open import Data.List using (List)
+open import Data.List.Relation.Unary.All using (All; []; _∷_)
+open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_)
+open import Relation.Nullary using (¬_)
+
 open import marking.definitions
 
 module marking.theorems.wellformed where
@@ -33,10 +39,10 @@ module marking.theorems.wellformed where
       with eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv    = refl
 
     ↬⇒□s* : ∀ {Γ ė*}
-          → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+          → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
           → ((MKSubSConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
-    ↬⇒□s* [] = refl
-    ↬⇒□s* (_∷_ {⟨ w , e ⟩} {ė*} ⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ė↬⇒ě*)
+    ↬⇒□s* All.[] = refl
+    ↬⇒□s* (All._∷_ {w , e} {ė*} (τ , ě , e↬⇒ě) ė↬⇒ě*)
       with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
 
     ↬⇐□ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
@@ -66,47 +72,47 @@ module marking.theorems.wellformed where
     ⇒τ→↬⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇒ τ
            → Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě
-    ⇒τ→↬⇒τ {e = - x ^ u}            (USVar ∋x)    = ⟨ ⊢ ∋x ^ u , MKSVar ∋x ⟩
+    ⇒τ→↬⇒τ {e = - x ^ u}            (USVar ∋x)    = ⊢ ∋x ^ u , MKSVar ∋x
     ⇒τ→↬⇒τ {e = -λ x ∶ τ ∙ e ^ u}   (USLam e⇒τ)
-      with ⟨ ě  , e↬⇒ě   ⟩ ← ⇒sτ→↬⇒sτ e⇒τ         = ⟨ ⊢λ x ∶ τ ∙ ě ^ u , MKSLam e↬⇒ě ⟩
+      with ě  , e↬⇒ě   ← ⇒sτ→↬⇒sτ e⇒τ             = ⊢λ x ∶ τ ∙ ě ^ u , MKSLam e↬⇒ě
     ⇒τ→↬⇒τ {e = - e₁ ∙ e₂ ^ u} (USAp e₁⇒τ τ▸ e₂⇐τ₂)
-      with ⟨ ě₁ , e₁↬⇒ě₁ ⟩ ← ⇒sτ→↬⇒sτ e₁⇒τ
-         | ⟨ ě₂ , e₂↬⇐ě₂ ⟩ ← ⇐sτ→↬⇐sτ e₂⇐τ₂       = ⟨ ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u , MKSAp1 e₁↬⇒ě₁ τ▸ e₂↬⇐ě₂ ⟩
-    ⇒τ→↬⇒τ {e = -ℕ n ^ u}           USNum         = ⟨ ⊢ℕ n ^ u , MKSNum ⟩
+      with ě₁ , e₁↬⇒ě₁ ← ⇒sτ→↬⇒sτ e₁⇒τ
+         | ě₂ , e₂↬⇐ě₂ ← ⇐sτ→↬⇐sτ e₂⇐τ₂           = ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u , MKSAp1 e₁↬⇒ě₁ τ▸ e₂↬⇐ě₂
+    ⇒τ→↬⇒τ {e = -ℕ n ^ u}           USNum         = ⊢ℕ n ^ u , MKSNum
     ⇒τ→↬⇒τ {e = - e₁ + e₂ ^ u}      (USPlus e₁⇐num e₂⇐num)
-      with ⟨ ě₁ , e₁↬⇐ě₁ ⟩ ← ⇐sτ→↬⇐sτ e₁⇐num
-         | ⟨ ě₂ , e₂↬⇐ě₂ ⟩ ← ⇐sτ→↬⇐sτ e₂⇐num      = ⟨ ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂ ⟩
-    ⇒τ→↬⇒τ {e = -⋎^ u}              USMultiParent = ⟨ ⊢⋎^ u , MKSMultiParent ⟩
-    ⇒τ→↬⇒τ {e = -↻^ u}              USUnicycle    = ⟨ ⊢↻^ u , MKSUnicycle ⟩
+      with ě₁ , e₁↬⇐ě₁ ← ⇐sτ→↬⇐sτ e₁⇐num
+         | ě₂ , e₂↬⇐ě₂ ← ⇐sτ→↬⇐sτ e₂⇐num          = ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂
+    ⇒τ→↬⇒τ {e = -⋎^ u}              USMultiParent = ⊢⋎^ u , MKSMultiParent
+    ⇒τ→↬⇒τ {e = -↻^ u}              USUnicycle    = ⊢↻^ u , MKSUnicycle
 
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole = ⟨ ⊢□^ w ^ p , MKSubSHole ⟩
-    ⇒sτ→↬⇒sτ {e = -∶ ⟨ w , e ⟩} (USubSJust e⇒τ) 
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ       = ⟨ ⊢∶ ⟨ w , ě ⟩ , MKSubSJust e↬⇒ě ⟩
+    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole = ⊢□^ w ^ p , MKSubSHole
+    ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (USubSJust e⇒τ) 
+      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ           = ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
     ⇒sτ→↬⇒sτ {e = -⋏ ė*}        (USubSConflict ė⇒*)
-      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*           = ⟨ ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě* ⟩
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*           = ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě*
 
     ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List USubExp'}
-              → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
-              → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
-    ⇒sτ→↬⇒sτ* []                 = []
-    ⇒sτ→↬⇒sτ* (⟨ τ , e⇒ ⟩ ∷ ė⇒*) = ⟨ τ , ⇒τ→↬⇒τ e⇒ ⟩ ∷ ⇒sτ→↬⇒sτ* ė⇒*
+              → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+              → All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
+    ⇒sτ→↬⇒sτ* []             = []
+    ⇒sτ→↬⇒sτ* ((τ , e⇒) ∷ ė⇒*) = (τ , ⇒τ→↬⇒τ e⇒) ∷ ⇒sτ→↬⇒sτ* ė⇒*
 
     ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
            → Γ ⊢ e ⇐ τ
            → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě
-    ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e ^ u}   (UALam τ₃▸ τ~τ₁ e⇐τ₂)
-      with ⟨ ě , e↬⇐ě ⟩ ← ⇐sτ→↬⇐sτ e⇐τ₂ = ⟨ ⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u , MKALam1 τ₃▸ τ~τ₁ e↬⇐ě ⟩
-    ⇐τ→↬⇐τ {e = e}              (UASubsume e⇒τ' τ~τ' su)
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒τ→↬⇒τ e⇒τ'   = ⟨ ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su ⟩
+    ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e ^ u} (UALam τ₃▸ τ~τ₁ e⇐τ₂)
+      with ě , e↬⇐ě ← ⇐sτ→↬⇐sτ e⇐τ₂ = ⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u , MKALam1 τ₃▸ τ~τ₁ e↬⇐ě
+    ⇐τ→↬⇐τ {e = e}                (UASubsume e⇒τ' τ~τ' su)
+      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ'   = ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su
 
     ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
              → Γ ⊢s e ⇐ τ
              → Σ[ ě ∈ Γ ⊢⇐s τ ] Γ ⊢s e ↬⇐ ě
     ⇐sτ→↬⇐sτ (USubASubsume e⇒τ' τ~τ')
-      with ⟨ ě , e↬⇒ě ⟩ ← ⇒sτ→↬⇒sτ e⇒τ' = ⟨ ⊢∙ ě [ τ~τ' ] , MKSubASubsume e↬⇒ě τ~τ' ⟩
+      with ě , e↬⇒ě ← ⇒sτ→↬⇒sτ e⇒τ' = ⊢∙ ě [ τ~τ' ] , MKSubASubsume e↬⇒ě τ~τ'
 
   mutual
     -- marking synthesizes the same type as synthesis
@@ -117,7 +123,7 @@ module marking.theorems.wellformed where
     ⇒-↬-≡ (USVar ∋x) (MKSVar ∋x')
          = ∋→τ-≡ ∋x ∋x'
     ⇒-↬-≡ (USVar {τ = τ} ∋x) (MKSFree ∌y)
-         = ⊥-elim (∌y ⟨ τ , ∋x ⟩)
+         = ⊥-elim (∌y (τ , ∋x))
     ⇒-↬-≡ (USLam e⇒τ) (MKSLam e↬⇒ě)
       rewrite ⇒s-↬s-≡ e⇒τ e↬⇒ě
          = refl
@@ -127,7 +133,7 @@ module marking.theorems.wellformed where
          = refl
     ⇒-↬-≡ (USAp {τ₁ = τ₁} {τ₂ = τ₂} e⇒τ τ▸ e₁⇐τ₁) (MKSAp2 e↬⇒ě τ!▸ e₂↬⇐ě₂)
       with refl ← ⇒s-↬s-≡ e⇒τ e↬⇒ě
-         = ⊥-elim (τ!▸ ⟨ τ₁ , ⟨ τ₂ , τ▸ ⟩ ⟩)
+         = ⊥-elim (τ!▸ (τ₁ , τ₂ , τ▸))
     ⇒-↬-≡ USNum MKSNum
          = refl
     ⇒-↬-≡ (USPlus e₁⇐num e₂⇐num) (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
@@ -155,7 +161,7 @@ module marking.theorems.wellformed where
     ⇒τ→markless (USVar ∋x) (MKSVar ∋x')
          = MLSVar
     ⇒τ→markless (USVar ∋x) (MKSFree ∌y)
-         = ⊥-elim (∌y ⟨ unknown , ∋x ⟩)
+         = ⊥-elim (∌y (unknown , ∋x))
     ⇒τ→markless (USLam e⇒τ) (MKSLam e↬⇒ě)
          = MLSLam (⇒sτ→markless e⇒τ e↬⇒ě)
     ⇒τ→markless (USAp e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp1 e₁↬⇒ě₁ τ▸'  e₂↬⇐ě₂)
@@ -164,7 +170,7 @@ module marking.theorems.wellformed where
          = MLSAp (⇒sτ→markless e₁⇒τ e₁↬⇒ě₁) (⇐sτ→markless e₂⇐τ₁ e₂↬⇐ě₂)
     ⇒τ→markless (USAp {τ₁ = τ₁} e₁⇒τ τ▸ e₂⇐τ₁) (MKSAp2 e₁↬⇒ě₁ τ!▸' e₂↬⇐ě₂)
       with refl ← ⇒s-↬s-≡ e₁⇒τ e₁↬⇒ě₁
-         = ⊥-elim (τ!▸' ⟨ τ₁ , ⟨ unknown , τ▸ ⟩ ⟩)
+         = ⊥-elim (τ!▸' (τ₁ , unknown , τ▸))
     ⇒τ→markless USNum MKSNum
          = MLSNum
     ⇒τ→markless (USPlus e₁⇐num e₂⇐num) (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
@@ -184,11 +190,11 @@ module marking.theorems.wellformed where
     ⇒sτ→markless (USubSConflict ė⇒*) (MKSubSConflict ė↬⇒ě*) = MLSubSConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
 
     ⇒sτ→markless* : ∀ {Γ ė*}
-                  → (ė⇒* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
-                  → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                  → All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*)
+                  → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
+                  → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*)
     ⇒sτ→markless* [] [] = []
-    ⇒sτ→markless* (⟨ _ , e⇒ ⟩ ∷ ė⇒*) (⟨ _ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*)
+    ⇒sτ→markless* ((_ , e⇒) ∷ ė⇒*) ((_ , ě , e↬⇒ě) ∷ ė↬⇒ě*)
       with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
          = ⇒τ→markless e⇒ e↬⇒ě ∷ ⇒sτ→markless* ė⇒* ė↬⇒ě*
 
@@ -200,7 +206,7 @@ module marking.theorems.wellformed where
       with refl ← ▸-→-unicity τ₃▸ τ₃▸'
          = MLALam (⇐sτ→markless e⇐τ e↬⇐ě)
     ⇐τ→markless (UALam {τ₁ = τ₁} {τ₂ = τ₂} τ₃▸ τ~τ₁ e⇐τ) (MKALam2 τ₃!▸ e↬⇐ě)
-         = ⊥-elim (τ₃!▸ ⟨ τ₁ , ⟨ τ₂ , τ₃▸ ⟩ ⟩)
+         = ⊥-elim (τ₃!▸ (τ₁ , τ₂ , τ₃▸))
     ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam3 τ₃▸' τ~̸τ₁ e↬⇐ě)
       with refl ← ▸-→-unicity τ₃▸ τ₃▸'
          = ⊥-elim (τ~̸τ₁ τ~τ₁)
@@ -253,11 +259,11 @@ module marking.theorems.wellformed where
     ↬⇒sτ-markless→⇒sτ (MKSubSConflict ė↬⇒ě*) (MLSubSConflict less*) = USubSConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
 
     ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
-                       → (ė↬⇒ě* : All (λ (⟨ _ , e ⟩) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                       → (less* : All (λ { ⟨ _ , ⟨ _ , ě ⟩ ⟩ → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*))
-                       → All (λ (⟨ _ , e ⟩) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
-    ↬⇒sτ-markless→⇒sτ* []                             []             = []
-    ↬⇒sτ-markless→⇒sτ* (⟨ τ , ⟨ ě , e↬⇒ě ⟩ ⟩ ∷ ė↬⇒ě*) (less ∷ less*) = ⟨ τ , ↬⇒τ-markless→⇒τ e↬⇒ě less ⟩ ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
+                       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
+                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*))
+                       → All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
+    ↬⇒sτ-markless→⇒sτ* []                       []             = []
+    ↬⇒sτ-markless→⇒sτ* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) (less ∷ less*) = (τ , ↬⇒τ-markless→⇒τ e↬⇒ě less) ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
 
     -- analytically marking an expression into a markless expression against a type implies the original analyzes against type
     ↬⇐τ-markless→⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
@@ -284,10 +290,10 @@ module marking.theorems.wellformed where
                   → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇒ τ)
                   → Γ ⊢ e ↬⇒ ě
                   → ¬ (Markless⇒ ě)
-    ¬⇒τ→¬markless {τ' = τ'} ¬e⇒τ e↬⇒ě less = ¬e⇒τ ⟨ τ' , ↬⇒τ-markless→⇒τ e↬⇒ě less ⟩
+    ¬⇒τ→¬markless {τ' = τ'} ¬e⇒τ e↬⇒ě less = ¬e⇒τ (τ' , ↬⇒τ-markless→⇒τ e↬⇒ě less)
 
     ¬⇐τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : Typ} {ě : Γ ⊢⇐ τ'}
                   → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇐ τ)
                   → Γ ⊢ e ↬⇐ ě
                   → ¬ (Markless⇐ ě)
-    ¬⇐τ→¬markless {τ' = τ'} ¬e⇐τ e↬⇐ě less = ¬e⇐τ ⟨ τ' , ↬⇐τ-markless→⇐τ e↬⇐ě less ⟩
+    ¬⇐τ→¬markless {τ' = τ'} ¬e⇐τ e↬⇐ě less = ¬e⇐τ (τ' , ↬⇐τ-markless→⇐τ e↬⇐ě less)

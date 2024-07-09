@@ -1,4 +1,6 @@
-open import marking.prelude
+open import Data.List using (List)
+open import Data.Product using (_×_; _,_)
+
 open import marking.id
 open import marking.typ
 
@@ -25,6 +27,6 @@ module marking.gtyp where
     (↻^ u)         △ = unknown
 
     _△s : GSubTyp → Typ
-    (□^ u ^ p)    △s = unknown
-    (∶ ⟨ w , τ ⟩) △s = τ △
-    (⋏ τ*)        △s = unknown
+    (□^ u ^ p)  △s = unknown
+    (∶ (w , τ)) △s = τ △
+    (⋏ τ*)      △s = unknown

@@ -1,4 +1,4 @@
-open import marking.prelude
+open import Data.List using (List)
 
 open import marking.id
 open import marking.typ

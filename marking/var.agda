@@ -1,4 +1,4 @@
-open import marking.prelude
+open import Data.Nat
 
 module marking.var where
   -- variables
