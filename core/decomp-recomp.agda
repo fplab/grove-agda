@@ -1,5 +1,3 @@
-module core.decomp-recomp where
-
 open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
@@ -16,13 +14,27 @@ open import Function
 
 open import core.finite
 open import core.list-logic
-open import core.graph
-open import core.grove
-open import core.classify
-open import core.classify-lemmas
-open import core.classify-correct
-open import core.decomp
-open import core.recomp
+
+module core.decomp-recomp 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
+import core.grove
+open module grove = core.grove Ctor _≟ℂ_ arity
+import core.classify
+open module classify = core.classify Ctor _≟ℂ_ arity
+import core.classify-lemmas
+open module classify-lemmas = core.classify-lemmas Ctor _≟ℂ_ arity
+import core.classify-correct
+open module classify-correct = core.classify-correct Ctor _≟ℂ_ arity
+import core.decomp
+open module decomp = core.decomp Ctor _≟ℂ_ arity
+import core.recomp
+open module recomp = core.recomp Ctor _≟ℂ_ arity
 
 lem12 : (G : Graph) → (v : Vertex) → (X : X) → (ε : Edge) →
   (edge X G ε v) → (top X G v)

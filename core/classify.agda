@@ -1,7 +1,5 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module core.classify where
-
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
@@ -17,7 +15,15 @@ open import Data.Product hiding (map)
 
 open import core.finite
 open import core.list-logic
-open import core.graph
+
+module core.classify 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
 
 data parent : Graph → (v w : Vertex) → Set where 
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w

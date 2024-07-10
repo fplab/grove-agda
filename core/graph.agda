@@ -1,28 +1,21 @@
-open import Axiom.Extensionality.Propositional
-open import Data.Unit 
-open import Data.Product 
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
-open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_⊔_; _+_)
 open import Data.List
 open import Data.Fin hiding(_+_)
-open import Function.Equivalence hiding (_∘_)
-open import Function hiding (_⇔_)
-open import Function.Equality using (_⟨$⟩_)
-open import Level using (Level)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
 open import core.finite
 open import core.list-logic
 
-module core.graph where
+module core.graph 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)) 
+  (arity : Ctor → ℕ)
+  where
 
+-- maybe these postulates should be moved to a separate file
 postulate
-  
-  Ctor : Set
-  _≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)
-  arity : Ctor → ℕ
   
   VertexId : Set
   _≟V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≡ i₂)

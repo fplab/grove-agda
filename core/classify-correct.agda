@@ -1,7 +1,5 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module core.classify-correct where
-
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
@@ -18,9 +16,19 @@ open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hidi
 
 open import core.finite
 open import core.list-logic
-open import core.graph
-open import core.classify
-open import core.classify-lemmas
+
+module core.classify-correct 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
+import core.classify
+open module classify = core.classify Ctor _≟ℂ_ arity
+import core.classify-lemmas
+open module classify-lemmas = core.classify-lemmas Ctor _≟ℂ_ arity
 
 data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 

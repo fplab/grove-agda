@@ -1,4 +1,3 @@
-module core.recomp where
 
 open import Data.Nat
 open import Data.List hiding(lookup)
@@ -7,11 +6,23 @@ open import Data.Vec hiding(_++_; concat; map)
 open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
+open import Relation.Binary.PropositionalEquality
+open import Relation.Nullary
 
 open import core.finite
-open import core.graph
-open import core.grove
-open import core.classify
+
+module core.recomp 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
+import core.grove
+open module grove = core.grove Ctor _≟ℂ_ arity
+import core.classify
+open module classify = core.classify Ctor _≟ℂ_ arity
 
 vertex-of-term : Term → Vertex 
 vertex-of-term (T u k _) = V k u

@@ -1,7 +1,5 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module core.decomp where
-
 open import Data.Nat
 open import Data.Fin
 open import Data.List
@@ -13,10 +11,21 @@ open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
 open import core.finite
-open import core.graph
-open import core.grove
-open import core.classify
-open import core.classify-correct
+
+module core.decomp 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
+import core.grove
+open module grove = core.grove Ctor _≟ℂ_ arity
+import core.classify
+open module classify = core.classify Ctor _≟ℂ_ arity
+import core.classify-correct
+open module classify-correct = core.classify-correct Ctor _≟ℂ_ arity
 
 mutual 
 

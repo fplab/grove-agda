@@ -1,5 +1,3 @@
-module core.classify-lemmas where
-
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
@@ -16,8 +14,17 @@ open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hidi
 
 open import core.finite
 open import core.list-logic
-open import core.graph
-open import core.classify
+
+module core.classify-lemmas 
+  (Ctor : Set) 
+  (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
+  (arity : Ctor → ℕ)
+  where
+
+import core.graph
+open module graph = core.graph Ctor _≟ℂ_ arity
+import core.classify
+open module classify = core.classify Ctor _≟ℂ_ arity
 
 id-min-leq : (u1 u2 : VertexId) → id-min u1 u2 ≤V𝕀 u1
 id-min-leq u1 u2 with (u1 ≤?V𝕀 u2)
