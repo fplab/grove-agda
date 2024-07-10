@@ -5,7 +5,7 @@ open import Relation.Binary using (Decidable)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 
-open import Grove.Prelude
+open import Grove.Prelude using (assimilation; ¬-≡)
 open import Grove.Marking.Typ
 open import Grove.Marking.Var
 

@@ -2,7 +2,7 @@ open import Data.List using (List; []; _∷_)
 open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 
-open import Grove.Marking.Id
+open import Grove.Marking.Ident
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx

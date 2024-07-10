@@ -2,7 +2,7 @@ open import Data.Product using (_×_; _,_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 
-open import Grove.Prelude
+open import Grove.Prelude using (¬-≡)
 
 -- types
 module Grove.Marking.Typ where

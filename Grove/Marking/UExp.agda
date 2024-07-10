@@ -4,7 +4,7 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
-open import Grove.Marking.Id
+open import Grove.Marking.Ident
 open import Grove.Marking.Var
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
@@ -29,7 +29,7 @@ module Grove.Marking.UExp where
 
     -- TODO fix to match term representation
     data USubExp : Set where
-      -□^_^_ : (w  : EdgeId) → (p : Position) → USubExp
+      -□^_^_ : (w  : EdgeId) → (p : VertexId) → USubExp
       -∶_    : (ė  : USubExp') → USubExp
       -⋏_    : (ė* : List USubExp') → USubExp
 

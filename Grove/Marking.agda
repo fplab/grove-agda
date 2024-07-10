@@ -6,7 +6,7 @@ open import Relation.Nullary using (¬_; Dec; yes; no)
 module Grove.Marking where
   -- reexport marking definitions
   open import Grove.Marking.Hole public
-  open import Grove.Marking.Id public
+  open import Grove.Marking.Ident public
   open import Grove.Marking.Var public
   open import Grove.Marking.Typ public
   open import Grove.Marking.GTyp public
@@ -61,8 +61,8 @@ module Grove.Marking where
   arity CNum  = 0
   arity CPlus = 2
 
-  import core.grove using (Term; T; ⋎; ⤾)
-  open module Grove = core.grove Ctor _≟ℂ_ arity public
+  import Grove.Core.Grove using (Term; T; ⋎; ⤾)
+  open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity public
 
   -- y : Term → UExp
   -- y (T u CVar es) = {! !}
