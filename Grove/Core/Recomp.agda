@@ -29,7 +29,7 @@ private
 vertex-of-term : Term → Vertex 
 vertex-of-term (T u k _) = V k u
 vertex-of-term (⋎ _ v) = v
-vertex-of-term (⤾ _ v) = v
+vertex-of-term (↻ _ v) = v
 
 mutual 
   recomp-sub : VertexId → (k : Ctor) → (p : Fin (arity k)) → (EdgeId × Term) → List Edge
@@ -44,7 +44,7 @@ mutual
   recomp-t : Term → (List Edge)
   recomp-t (T u k ts) = concat (comprehend ts (recomp-pos u k))
   recomp-t (⋎ _ _) = []
-  recomp-t (⤾ _ _) = []
+  recomp-t (↻ _ _) = []
 
 recomp-grove : Grove → Graph 
 recomp-grove grove = concat (map recomp-t grove)

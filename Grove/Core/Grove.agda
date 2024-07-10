@@ -23,8 +23,7 @@ mutual
   data Term : Set where
     T : VertexId → (k : Ctor) → (Vec TermList (arity k)) → Term 
     ⋎ : EdgeId → Vertex → Term 
-    -- TODO change to ↻ cause my font doesn't have whatever this is
-    ⤾ : EdgeId → Vertex → Term
+    ↻ : EdgeId → Vertex → Term
     
   data TermList : Set where 
     □ : Source → TermList 

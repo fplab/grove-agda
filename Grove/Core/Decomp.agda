@@ -50,7 +50,7 @@ mutual
   decomp-v' fuel G v u with classify fuel G v [] 
   ... | Top NP = decomp-v fuel G v -- impossible
   ... | Top MP = ⋎ u v
-  ... | Top U = ⤾ u v
+  ... | Top U = ↻ u v
   ... | Inner X w = decomp-v fuel G v
   
 -- -- note: in the actual implementation, this would map over vertices in G directly

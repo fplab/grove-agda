@@ -58,7 +58,7 @@ module Grove.Core.SimplEquiv where
       TVar : VertexId → Name → Term 
       TLam : VertexId → Name → TermList → Term 
       ⋎ : EdgeId → Vertex → Term 
-      ⤾ : EdgeId → Vertex → Term
+      ↻ : EdgeId → Vertex → Term
       
     data TermList : Set where 
       □ : Source → TermList 
@@ -74,7 +74,7 @@ module Grove.Core.SimplEquiv where
     f1 (TVar x x₁) = T x (Var x₁) []
     f1 (TLam x x₁ x₂) = T x (Lam x₁) (f1-list x₂ ∷ [])
     f1 (⋎ x x₁) = ⋎ x x₁ 
-    f1 (⤾ x x₁) = ⤾ x x₁
+    f1 (↻ x x₁) = ↻ x x₁
 
     f1-list : TermList → GTermList
     f1-list (□ x) = □ x 
@@ -88,7 +88,7 @@ module Grove.Core.SimplEquiv where
     f2 (T x (Var x₁) []) = TVar x x₁
     f2 (T x Ap (x₁ ∷ x₂ ∷ [])) = TAp x (f2-list x₁) (f2-list x₂)
     f2 (⋎ x x₁) = ⋎ x x₁ 
-    f2 (⤾ x x₁) = ⤾ x x₁
+    f2 (↻ x x₁) = ↻ x x₁
 
     f2-list : GTermList → TermList
     f2-list (□ x) = □ x  
@@ -102,7 +102,7 @@ module Grove.Core.SimplEquiv where
     f1-f2 (TVar x x₁) = refl
     f1-f2 (TLam x x₁ x₂) rewrite f1-f2-list x₂ = refl
     f1-f2 (⋎ x x₁) = refl 
-    f1-f2 (⤾ x x₁) = refl
+    f1-f2 (↻ x x₁) = refl
 
     f1-f2-list : (t : TermList) → (f2-list (f1-list t)) ≡ t 
     f1-f2-list (□ x) = refl 
@@ -120,7 +120,7 @@ module Grove.Core.SimplEquiv where
     f2-f1 (T x (Var x₂) []) = refl
     f2-f1 (T x Ap (x₁ ∷ x₂ ∷ [])) rewrite (f2-f1-list x₁) rewrite (f2-f1-list x₂) = refl
     f2-f1 (⋎ x x₁) = refl 
-    f2-f1 (⤾ x x₁) = refl
+    f2-f1 (↻ x x₁) = refl
 
     f2-f1-list : (t : GTermList) → (f1-list (f2-list t)) ≡ t 
     f2-f1-list (□ x) = refl 
