@@ -5,6 +5,7 @@ open import Data.Fin hiding(_+_)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
+open import core.ident
 open import core.finite
 open import core.list-logic
 
@@ -13,21 +14,6 @@ module core.graph
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)) 
   (arity : Ctor → ℕ)
   where
-
--- maybe these postulates should be moved to a separate file
-postulate
-  
-  VertexId : Set
-  _≟V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≡ i₂)
-  _≤V𝕀_ : (i₁ i₂ : VertexId) → Set 
-  _≤?V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≤V𝕀 i₂) 
-  ≤V𝕀-reflexive : (i : VertexId) → (i ≤V𝕀 i) 
-  ≤V𝕀-antisym : (i₁ i₂ : VertexId) → (i₁ ≤V𝕀 i₂) → (i₂ ≤V𝕀 i₁) → (i₁ ≡ i₂)
-  ≤V𝕀-transitive : (i₁ i₂ i₃ : VertexId) → (i₁ ≤V𝕀 i₂) → (i₂ ≤V𝕀 i₃) → (i₁ ≤V𝕀 i₃)
-  ≤V𝕀-total : (i₁ i₂ : VertexId) → (i₁ ≤V𝕀 i₂) + (i₂ ≤V𝕀 i₁)
-  
-  EdgeId : Set
-  _≟E𝕀_ : (i₁ i₂ : EdgeId) → Dec (i₁ ≡ i₂)
 
 record Vertex : Set where
   constructor V

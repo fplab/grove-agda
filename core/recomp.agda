@@ -9,6 +9,7 @@ open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hidi
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
+open import core.ident
 open import core.finite
 
 module core.recomp 

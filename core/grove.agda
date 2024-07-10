@@ -7,6 +7,7 @@ open import Data.Product
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 
+open import core.ident
 open import core.finite
 
 module core.grove 

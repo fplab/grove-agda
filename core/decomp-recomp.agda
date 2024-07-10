@@ -12,6 +12,7 @@ open import Data.Empty
 open import Data.Vec hiding (concat;map;filter)
 open import Function
 
+open import core.ident
 open import core.finite
 open import core.list-logic
 

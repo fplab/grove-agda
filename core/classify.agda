@@ -13,6 +13,7 @@ open import Data.Empty
 open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 
+open import core.ident
 open import core.finite
 open import core.list-logic
 

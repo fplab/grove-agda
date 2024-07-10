@@ -10,6 +10,7 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
+open import core.ident
 open import core.finite
 
 module core.decomp 
