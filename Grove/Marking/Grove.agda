@@ -55,6 +55,5 @@ module Grove.Marking.Grove where
   arity (CNum _) = 0
   arity (CPlus ) = 2
 
-  import Grove.Core.Grove
-  module MarkingGrove = Grove.Core.Grove Ctor _≟ℂ_ arity
-  open MarkingGrove public
+  import Grove.Core
+  open Grove.Core Ctor _≟ℂ_ arity public

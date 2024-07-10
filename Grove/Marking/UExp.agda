@@ -4,13 +4,13 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
-open import Grove.Marking.Grove using (Vertex)
-
 open import Grove.Ident
 open import Grove.Marking.Var
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
+
+open import Grove.Marking.Grove using (Vertex; Source)
 
 -- unmarked expressions
 module Grove.Marking.UExp where
@@ -26,14 +26,14 @@ module Grove.Marking.UExp where
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
-      -⋎^_      : (u : VertexId) → UExp
-      -↻^_      : (u : VertexId) → UExp
+      -⋎^_^_    : (w : EdgeId) → (v : Vertex) → UExp
+      -↻^_^_    : (w : EdgeId) → (v : Vertex) → UExp
 
     -- TODO fix to match term representation
     data USubExp : Set where
-      -□^_^_ : (w  : EdgeId) → (p : VertexId) → USubExp
-      -∶_    : (ė  : USubExp') → USubExp
-      -⋏_    : (ė* : List USubExp') → USubExp
+      -□ : (s : Source) → USubExp
+      -∶ : (ė : USubExp') → USubExp
+      -⋏ : (s : Source) → (ė* : List USubExp')  → USubExp
 
     USubExp' = EdgeId × UExp
 
@@ -50,11 +50,11 @@ module Grove.Marking.UExp where
     USuPlus : ∀ {e₁ e₂ u}
       → USubsumable (- e₁ + e₂ ^ u)
 
-    USuMultiParent : ∀ {u}
-      → USubsumable (-⋎^ u)
+    USuMultiParent : ∀ {w v}
+      → USubsumable (-⋎^ w ^ v)
 
-    USuUnicycle : ∀ {u}
-      → USubsumable (-↻^ u)
+    USuUnicycle : ∀ {w v}
+      → USubsumable (-↻^ w ^ v)
 
   mutual
     -- synthesis
@@ -81,15 +81,15 @@ module Grove.Marking.UExp where
         → (e₂⇐num : Γ ⊢s e₂ ⇐ num)
         → Γ ⊢ - e₁ + e₂ ^ u ⇒ num
 
-      USMultiParent : ∀ {Γ u}
-        → Γ ⊢ -⋎^ u ⇒ unknown
+      USMultiParent : ∀ {Γ w v}
+        → Γ ⊢ -⋎^ w ^ v ⇒ unknown
 
-      USUnicycle : ∀ {Γ u}
-        → Γ ⊢ -↻^ u ⇒ unknown
+      USUnicycle : ∀ {Γ w v}
+        → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
     data _⊢s_⇒_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
-      USubSHole : ∀ {Γ w p}
-        → Γ ⊢s -□^ w ^ p ⇒ unknown
+      USubSHole : ∀ {Γ s}
+        → Γ ⊢s -□ s ⇒ unknown
 
       USubSJust : ∀ {Γ w e τ}
         → (e⇒τ : Γ ⊢ e ⇒ τ)
@@ -97,9 +97,9 @@ module Grove.Marking.UExp where
 
       -- TODO synthesize meet?
       -- TODO rename to USubSMultiChild?
-      USubSConflict : ∀ {Γ ė*}
+      USubSConflict : ∀ {Γ s ė*}
         → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
-        → Γ ⊢s -⋏ ė* ⇒ unknown
+        → Γ ⊢s -⋏ s ė* ⇒ unknown
 
     -- analysis
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where

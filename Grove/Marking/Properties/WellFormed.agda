@@ -87,17 +87,17 @@ module Grove.Marking.Properties.WellFormed where
     ⇒τ→↬⇒τ {e = - e₁ + e₂ ^ u}      (USPlus e₁⇐num e₂⇐num)
       with ě₁ , e₁↬⇐ě₁ ← ⇐sτ→↬⇐sτ e₁⇐num
          | ě₂ , e₂↬⇐ě₂ ← ⇐sτ→↬⇐sτ e₂⇐num          = ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂
-    ⇒τ→↬⇒τ {e = -⋎^ u}              USMultiParent = ⊢⋎^ u , MKSMultiParent
-    ⇒τ→↬⇒τ {e = -↻^ u}              USUnicycle    = ⊢↻^ u , MKSUnicycle
+    ⇒τ→↬⇒τ {e = -⋎^ w ^ v}          USMultiParent = ⊢⋎^ w ^ v , MKSMultiParent
+    ⇒τ→↬⇒τ {e = -↻^ w ^ v}          USUnicycle    = ⊢↻^ w ^ v , MKSUnicycle
 
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□^ w ^ p}     USubSHole = ⊢□^ w ^ p , MKSubSHole
+    ⇒sτ→↬⇒sτ {e = -□ s}       USubSHole = ⊢□ s , MKSubSHole
     ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (USubSJust e⇒τ) 
-      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ           = ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
-    ⇒sτ→↬⇒sτ {e = -⋏ ė*}        (USubSConflict ė⇒*)
-      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*           = ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě*
+      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
+    ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (USubSConflict ė⇒*)
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
 
     ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List USubExp'}
               → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)

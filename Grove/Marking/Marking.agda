@@ -58,11 +58,11 @@ module Grove.Marking.Marking where
         → (e₂↬⇐ě₂ : Γ ⊢s e₂ ↬⇐ ě₂)
         → Γ ⊢ - e₁ + e₂ ^ u ↬⇒ ⊢ ě₁ + ě₂ ^ u
 
-      MKSMultiParent : ∀ {Γ u}
-        → Γ ⊢ -⋎^ u ↬⇒ ⊢⋎^ u
+      MKSMultiParent : ∀ {Γ w v}
+        → Γ ⊢ -⋎^ w ^ v ↬⇒ ⊢⋎^ w ^ v
 
-      MKSUnicycle : ∀ {Γ u}
-        → Γ ⊢ -↻^ u ↬⇒ ⊢↻^ u
+      MKSUnicycle : ∀ {Γ w v}
+        → Γ ⊢ -↻^ w ^ v ↬⇒ ⊢↻^ w ^ v
 
     MKSubSConflictChildren : ∀ {Γ} {ė* : List USubExp'}
       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
@@ -71,17 +71,17 @@ module Grove.Marking.Marking where
     MKSubSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSubSConflictChildren ė↬⇒ě*)
 
     data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇒s τ) → Set where
-      MKSubSHole : ∀ {Γ w p}
-        → Γ ⊢s -□^ w ^ p ↬⇒ ⊢□^ w ^ p
+      MKSubSHole : ∀ {Γ s}
+        → Γ ⊢s -□ s ↬⇒ ⊢□ s
 
       MKSubSJust : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇒ τ} 
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
         → Γ ⊢s -∶ (w , e) ↬⇒ ⊢∶ (w , ě)
 
-      MKSubSConflict : ∀ {Γ ė*}
+      MKSubSConflict : ∀ {Γ s ė*}
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-        → Γ ⊢s -⋏ ė* ↬⇒ ⊢⋏ (MKSubSConflictChildren ė↬⇒ě*)
+        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*)
 
     USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
@@ -90,8 +90,8 @@ module Grove.Marking.Marking where
     USu→MSu {ě = ⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u} USuAp           _ = MSuAp2
     USu→MSu {ě = ⊢ℕ n ^ u}               USuNum          _ = MSuNum
     USu→MSu {ě = ⊢ ě₁ + ě₂ ^ u}          USuPlus         _ = MSuPlus
-    USu→MSu {ě = ⊢⋎^ u}                  USuMultiParent  _ = MSuMultiParent
-    USu→MSu {ě = ⊢↻^ u}                  USuUnicycle     _ = MSuUnicycle
+    USu→MSu {ě = ⊢⋎^ w ^ p}              USuMultiParent  _ = MSuMultiParent
+    USu→MSu {ě = ⊢↻^ w ^ p}              USuUnicycle     _ = MSuUnicycle
 
     -- analysis
     data _⊢_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where

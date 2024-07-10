@@ -17,27 +17,28 @@ open import Function
 open import Grove.Prelude
 open import Grove.Ident
 
-module Grove.Core.DecompRecomp 
+module Grove.Core.Properties.DecompRecomp 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-import Grove.Core.Grove
-import Grove.Core.Classify
-import Grove.Core.ClassifyLemmas
-import Grove.Core.ClassifyCorrect
-import Grove.Core.Decomp
-import Grove.Core.Recomp
+private
+  import Grove.Core.Graph
+  import Grove.Core.Grove
+  import Grove.Core.Classify
+  import Grove.Core.ClassifyLemmas
+  import Grove.Core.ClassifyCorrect
+  import Grove.Core.Decomp
+  import Grove.Core.Recomp
 
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
-open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
-open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
-open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
-open module Decomp = Grove.Core.Decomp Ctor _≟ℂ_ arity
-open module Recomp = Grove.Core.Recomp Ctor _≟ℂ_ arity
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+  open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
+  open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+  open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
+  open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
+  open module Decomp = Grove.Core.Decomp Ctor _≟ℂ_ arity
+  open module Recomp = Grove.Core.Recomp Ctor _≟ℂ_ arity
 
 lem12 : (G : Graph) → (v : Vertex) → (X : X) → (ε : Edge) →
   (edge X G ε v) → (top X G v)

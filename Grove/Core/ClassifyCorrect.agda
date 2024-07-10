@@ -23,12 +23,14 @@ module Grove.Core.ClassifyCorrect
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
-import Grove.Core.Classify
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
-import Grove.Core.ClassifyLemmas
-open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
+private
+  import Grove.Core.Graph
+  import Grove.Core.Classify
+  import Grove.Core.ClassifyLemmas
+
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+  open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+  open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
 
 data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 

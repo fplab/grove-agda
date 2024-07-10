@@ -21,10 +21,12 @@ module Grove.Core.ClassifyLemmas
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
-import Grove.Core.Classify
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+private
+  import Grove.Core.Graph
+  import Grove.Core.Classify
+
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+  open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
 
 id-min-leq : (u1 u2 : VertexId) → id-min u1 u2 ≤V𝕀 u1
 id-min-leq u1 u2 with (u1 ≤?V𝕀 u2)

@@ -23,7 +23,7 @@ module Grove.Marking.Properties.Totality where
     ...  | yes (_ , S {τ = τ} x≢x' ∋x) = τ       , ⊢ (S x≢x' ∋x) ^ u , MKSVar (S x≢x' ∋x)
     ...  | no  ∌x                  = unknown , ⊢⟦ ∌x ⟧^ u        , MKSFree ∌x        
     ↬⇒-totality Γ (-λ x ∶ τ ∙ e ^ u)
-      with τ' , ě , e↬⇒ě ← ↬⇒s-totality (Γ , x ∶ (τ △)) e
+      with τ' , ě , e↬⇒ě ← ↬⇒s-totality (_,_∶_ Γ x (τ △)) e
          = (τ △) -→ τ' , ⊢λ x ∶ τ ∙ ě ^ u , MKSLam e↬⇒ě
     ↬⇒-totality Γ (- e₁ ∙ e₂ ^ u)
       with ↬⇒s-totality Γ e₁
@@ -40,19 +40,19 @@ module Grove.Marking.Properties.Totality where
       with ě₁ , e₁↬⇐ě₁ ← ↬⇐s-totality Γ num e₁
          | ě₂ , e₂↬⇐ě₂ ← ↬⇐s-totality Γ num e₂
          = num , ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂
-    ↬⇒-totality Γ (-⋎^ u) = unknown , ⊢⋎^ u , MKSMultiParent
-    ↬⇒-totality Γ (-↻^ u) = unknown , ⊢↻^ u , MKSUnicycle
+    ↬⇒-totality Γ (-⋎^ w ^ v) = unknown , ⊢⋎^ w ^ v , MKSMultiParent
+    ↬⇒-totality Γ (-↻^ w ^ v) = unknown , ⊢↻^ w ^ v , MKSUnicycle
 
     ↬⇒s-totality : (Γ : Ctx)
                  → (e : USubExp)
                  → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
-    ↬⇒s-totality Γ (-□^ w ^ p) = unknown , ⊢□^ w ^ p , MKSubSHole
+    ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKSubSHole
     ↬⇒s-totality Γ (-∶ (w , e))
       with τ' , ě , e↬⇒ě ← ↬⇒-totality Γ e
          = τ' , ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
-    ↬⇒s-totality Γ (-⋏ ė*)
+    ↬⇒s-totality Γ (-⋏ s ė*)
       with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
-         = unknown , ⊢⋏ MKSubSConflictChildren ė↬⇒ě* , MKSubSConflict ė↬⇒ě*
+         = unknown , ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
 
     ↬⇒s-totality* : (Γ : Ctx)
                   → (ė* : List USubExp')
@@ -92,14 +92,14 @@ module Grove.Marking.Properties.Totality where
     ...  | yes (τ₁ , τ₂ , τ'▸)
              with (τ △) ~? τ₁
     ...         | yes τ~τ₁
-                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (Γ , x ∶ (τ △)) τ₂ e'
+                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) τ₂ e'
                        = ⊢λ x ∶ τ ∙ ě' [ τ'▸ ∙ τ~τ₁ ]^ u , MKALam1 τ'▸ τ~τ₁ e'↬⇐ě'
     ...         | no  τ~̸τ₁
-                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (Γ , x ∶ (τ △)) τ₂ e'
+                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) τ₂ e'
                        = ⊢λ x ∶⸨ τ ⸩∙ ě' [ τ'▸ ∙ τ~̸τ₁ ]^ u , MKALam3 τ'▸ τ~̸τ₁ e'↬⇐ě'
     ↬⇐-totality Γ τ' e@(-λ x ∶ τ ∙ e' ^ u)
          | no τ'!▸
-             with ě' , e'↬⇐ě' ← ↬⇐s-totality (Γ , x ∶ (τ △)) unknown e'
+             with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) unknown e'
                 = ⊢⸨λ x ∶ τ ∙ ě' ⸩[ τ'!▸ ]^ u , MKALam2 τ'!▸ e'↬⇐ě'
     ↬⇐-totality Γ τ' e@(- _ ∙ _ ^ u)
       with ↬⇒-totality Γ e
@@ -111,11 +111,11 @@ module Grove.Marking.Properties.Totality where
     ↬⇐-totality Γ τ' e@(- _ + _ ^ u)
       with _ , ě@(⊢ _ + _ ^ u) , e↬⇒ě ← ↬⇒-totality Γ e
          = ↬⇐-subsume ě τ' e↬⇒ě USuPlus
-    ↬⇐-totality Γ τ' e@(-⋎^ u)
-      with _ , ě@(⊢⋎^ u) , e↬⇒ě ← ↬⇒-totality Γ e
+    ↬⇐-totality Γ τ' e@(-⋎^ w ^ v)
+      with _ , ě@(⊢⋎^ w ^ v) , e↬⇒ě ← ↬⇒-totality Γ e
          = ↬⇐-subsume ě τ' e↬⇒ě USuMultiParent
-    ↬⇐-totality Γ τ' e@(-↻^ u)
-      with _ , ě@(⊢↻^ u) , e↬⇒ě ← ↬⇒-totality Γ e
+    ↬⇐-totality Γ τ' e@(-↻^ w ^ v)
+      with _ , ě@(⊢↻^ w ^ v) , e↬⇒ě ← ↬⇒-totality Γ e
          = ↬⇐-subsume ě τ' e↬⇒ě USuUnicycle
 
     ↬⇐s-totality : (Γ : Ctx)

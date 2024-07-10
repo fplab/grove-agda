@@ -19,13 +19,13 @@ module Grove.Marking.Erasure where
     (⊢ℕ n ^ u)               ⇒□ = -ℕ n ^ u
     (⊢ ě₁ + ě₂ ^ u)          ⇒□ = - (ě₁ ⇐□s) + (ě₂ ⇐□s) ^ u
     (⊢⟦_⟧^_ {y = y} ∌y u)    ⇒□ = - y ^ u
-    (⊢⋎^ u)                  ⇒□ = -⋎^ u
-    (⊢↻^ u)                  ⇒□ = -↻^ u
+    (⊢⋎^ w ^ v)              ⇒□ = -⋎^ w ^ v
+    (⊢↻^ w ^ v)              ⇒□ = -↻^ w ^ v
 
     _⇒□s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → USubExp
-    (⊢□^ w ^ p)  ⇒□s = -□^ w ^ p
+    (⊢□ s)       ⇒□s = -□ s
     (⊢∶ (w , ě)) ⇒□s = -∶ (w , ě ⇒□)
-    (⊢⋏ ė*)      ⇒□s = -⋏ (ė* ⇒□s*)
+    (⊢⋏ s ė*)    ⇒□s = -⋏ s (ė* ⇒□s*)
 
     _⇒□s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → List USubExp'
     []                 ⇒□s* = []
@@ -90,8 +90,8 @@ module Grove.Marking.Erasure where
     ⊢⇒-⊢⇐ ě@(⊢ℕ n ^ u)               = ⊢⇒-⊢⇐-subsume ě MSuNum
     ⊢⇒-⊢⇐ ě@(⊢ ě₁ + ě₂ ^ u)          = ⊢⇒-⊢⇐-subsume ě MSuPlus
     ⊢⇒-⊢⇐ ě@(⊢⟦ ∌y ⟧^ u)             = ⊢⇒-⊢⇐-subsume ě MSuFree
-    ⊢⇒-⊢⇐ ě@(⊢⋎^ u)                  = ⊢⇒-⊢⇐-subsume ě MSuMultiParent
-    ⊢⇒-⊢⇐ ě@(⊢↻^ u)                  = ⊢⇒-⊢⇐-subsume ě MSuUnicycle
+    ⊢⇒-⊢⇐ ě@(⊢⋎^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuMultiParent
+    ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuUnicycle
 
     ⊢⇒s-⊢⇐s : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒s τ) → Σ[ ě' ∈ Γ ⊢⇐s τ' ] ě ⇒□s ≡ ě' ⇐□s
     ⊢⇒s-⊢⇐s ě = ⊢⇒s-⊢⇐s-subsume ě

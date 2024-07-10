@@ -17,13 +17,14 @@ module Grove.Core.Recomp
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-import Grove.Core.Grove
-import Grove.Core.Classify
+private
+  import Grove.Core.Graph
+  import Grove.Core.Grove
+  import Grove.Core.Classify
 
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
-open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+  open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
+  open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
 
 vertex-of-term : Term → Vertex 
 vertex-of-term (T u k _) = V k u

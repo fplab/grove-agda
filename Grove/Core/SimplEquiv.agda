@@ -14,8 +14,7 @@ open import Function
 open import Grove.Prelude
 open import Grove.Ident
 
-module Grove.Core.SimplEquiv where 
-  
+module Grove.Core.SimplEquiv where
   postulate 
     Name : Set 
     _≟N_ : (x₁ x₂ : Name) → Dec (x₁ ≡ x₂) 

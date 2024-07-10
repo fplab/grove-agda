@@ -19,15 +19,16 @@ module Grove.Core.Decomp
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-import Grove.Core.Grove
-import Grove.Core.Classify
-import Grove.Core.ClassifyCorrect
+private
+  import Grove.Core.Graph
+  import Grove.Core.Grove
+  import Grove.Core.Classify
+  import Grove.Core.ClassifyCorrect
 
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
-open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
-open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+  open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
+  open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+  open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
 
 mutual 
 

@@ -22,8 +22,9 @@ module Grove.Core.Classify
   (arity : Ctor → ℕ)
   where
 
-import Grove.Core.Graph
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+private
+  import Grove.Core.Graph
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 
 data parent : Graph → (v w : Vertex) → Set where 
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w

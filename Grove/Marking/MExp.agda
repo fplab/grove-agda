@@ -10,6 +10,8 @@ open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.MultiParents
 
+open import Grove.Marking.Grove using (Vertex; Source)
+
 -- instrinsically typed marked expressions
 module Grove.Marking.MExp where
   infix  4 _⊢⇒_
@@ -69,19 +71,20 @@ module Grove.Marking.MExp where
         → (u : VertexId)
         → Γ ⊢⇒ unknown
 
-      ⊢⋎^_ : ∀ {Γ}
-        → (u : VertexId)
+      ⊢⋎^_^_ : ∀ {Γ}
+        → (w : EdgeId)
+        → (v : Vertex)
         → Γ ⊢⇒ unknown
 
-      ⊢↻^_ : ∀ {Γ}
-        → (u : VertexId)
+      ⊢↻^_^_ : ∀ {Γ}
+        → (w : EdgeId)
+        → (v : Vertex)
         → Γ ⊢⇒ unknown
 
     data _⊢⇒s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MSubSHole: \vdash\sq^_^_
-      ⊢□^_^_ : ∀ {Γ}
-        → (w : EdgeId)
-        → (p : VertexId)
+      -- MSubSHole: \vdash\sq
+      ⊢□ : ∀ {Γ}
+        → (s : Source)
         → Γ ⊢⇒s unknown
 
       -- MSubSJust
@@ -89,9 +92,9 @@ module Grove.Marking.MExp where
         → (ė : EdgeId × Γ ⊢⇒ τ)
         → Γ ⊢⇒s τ
 
-      -- MSubSConflict: \vdash\curlywedge_
-      -- TODO synthesize meet?
-      ⊢⋏_ : ∀ {Γ}
+      -- MSubSConflict: \vdash\curlywedge
+      ⊢⋏ : ∀ {Γ}
+        → (s : Source)
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
 
@@ -125,11 +128,11 @@ module Grove.Marking.MExp where
         → {∌y : Γ ∌ y}
         → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
 
-      MSuMultiParent : ∀ {Γ u}
-        → MSubsumable {Γ} (⊢⋎^ u)
+      MSuMultiParent : ∀ {Γ w v}
+        → MSubsumable {Γ} (⊢⋎^ w ^ v)
 
-      MSuUnicycle : ∀ {Γ u}
-        → MSubsumable {Γ} (⊢↻^ u)
+      MSuUnicycle : ∀ {Γ w v}
+        → MSubsumable {Γ} (⊢↻^ w ^ v)
 
     -- analysis
     data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where
@@ -218,15 +221,15 @@ module Grove.Marking.MExp where
         → (less₂ : Markless⇐s ě₂)
         → Markless⇒ {Γ} (⊢ ě₁ + ě₂ ^ u)
 
-      MLSMultiParent : ∀ {Γ u}
-        → Markless⇒ {Γ} (⊢⋎^ u)
+      MLSMultiParent : ∀ {Γ w v}
+        → Markless⇒ {Γ} (⊢⋎^ w ^ v)
 
-      MLSUnicycle : ∀ {Γ u}
-        → Markless⇒ {Γ} (⊢↻^ u)
+      MLSUnicycle : ∀ {Γ w v}
+        → Markless⇒ {Γ} (⊢↻^ w ^ v)
 
     data Markless⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → Set where
-      MLSubSHole : ∀ {Γ w p}
-        → Markless⇒s {Γ} (⊢□^ w ^ p)
+      MLSubSHole : ∀ {Γ s}
+        → Markless⇒s {Γ} (⊢□ s)
 
       MLSubSJust : ∀ {Γ w τ}
         → {ě : Γ ⊢⇒ τ}
@@ -234,10 +237,10 @@ module Grove.Marking.MExp where
         → Markless⇒s {Γ} (⊢∶ (w , ě))
 
       -- TODO maybe this is a mark?
-      MLSubSConflict : ∀ {Γ}
+      MLSubSConflict : ∀ {Γ s}
         → {ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)}
         → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) ė*)
-        → Markless⇒s {Γ} (⊢⋏ ė*)
+        → Markless⇒s {Γ} (⊢⋏ s ė*)
 
     data Markless⇐ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → Set where
       MLALam : ∀ {Γ τ₁ τ₂ τ₃ x τ u}
@@ -253,6 +256,8 @@ module Grove.Marking.MExp where
         → {su : MSubsumable ě}
         → (less : Markless⇒ ě)
         → Markless⇐ {Γ} (⊢∙ ě [ τ~τ' ∙ su ])
+
+      -- TODO analysis cases for multiparent + unicycle conflicts
 
     data Markless⇐s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → Set where
       MLSubASubsume : ∀ {Γ τ τ'}
@@ -270,13 +275,13 @@ module Grove.Marking.MExp where
     multiparents⇒ (⊢ℕ _ ^ _)             = []
     multiparents⇒ (⊢ ě₁ + ě₂ ^ _)        = (multiparents⇐s ě₁) ++ (multiparents⇐s ě₂)
     multiparents⇒ (⊢⟦ _ ⟧^ _)            = []
-    multiparents⇒ {Γ} (⊢⋎^ u)            = [ ⟨ u , Γ , Syn ⟩ ]
-    multiparents⇒ {Γ} (⊢↻^ u)            = [ ⟨ u , Γ , Syn ⟩ ]
+    multiparents⇒ {Γ} (⊢⋎^ w ^ v)        = [ ⟨ v , w , Γ , Syn ⟩ ]
+    multiparents⇒ {Γ} (⊢↻^ w ^ v)        = [ ⟨ v , w , Γ , Syn ⟩ ]
 
     multiparents⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → MultiParents
-    multiparents⇒s (⊢□^ _ ^ _)  = []
+    multiparents⇒s (⊢□ _)       = []
     multiparents⇒s (⊢∶ (_ , ě)) = multiparents⇒ ě
-    multiparents⇒s (⊢⋏ ė*)      = multiparents⇒s* ė*
+    multiparents⇒s (⊢⋏ _ ė*)    = multiparents⇒s* ė*
 
     multiparents⇒s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → MultiParents
     multiparents⇒s* []                 = []
