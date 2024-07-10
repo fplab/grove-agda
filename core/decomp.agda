@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module core.decomp where
 
 open import Data.Nat
@@ -20,20 +22,23 @@ mutual
 
   -- {-# TERMINATING #-}
   decomp-sub : ℕ → Graph → (EdgeId × Vertex) → (EdgeId × Term)
-  decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v')
+  decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v' u')
 
-  decomp-pos : ℕ → Graph → (k : Ctor) → VertexId → (p : Fin (arity k)) → List (EdgeId × Term)
-  decomp-pos fuel G k u p = map (decomp-sub fuel G) (children G (S (V k u) p))
+  decomp-pos : ℕ → Graph → (k : Ctor) → VertexId → (p : Fin (arity k)) → TermList
+  decomp-pos fuel G k u p with map (decomp-sub fuel G) (children G (S (V k u) p))
+  ... | [] = □ (S (V k u) p)
+  ... | t ∷ [] = ∶ t
+  ... | t1 ∷ t2 ∷ ts = ⋏ (S (V k u) p) (t1 ∷ t2 ∷ ts)
 
   decomp-v : ℕ → Graph → Vertex → Term
-  decomp-v zero G (V k u) = ⋎ (V k u) -- this is an arbitrary return value
+  decomp-v zero G (V k u) = {!   !}
   decomp-v (suc fuel) G (V k u) = T u k (vec-of-map (decomp-pos fuel G k u)) 
 
-  decomp-v' : ℕ → Graph → Vertex → Term 
-  decomp-v' fuel G v with classify fuel G v [] 
+  decomp-v' : ℕ → Graph → Vertex → EdgeId → Term 
+  decomp-v' fuel G v u with classify fuel G v [] 
   ... | Top NP = decomp-v fuel G v -- impossible
-  ... | Top MP = ⋎ v
-  ... | Top U = ⤾ v
+  ... | Top MP = ⋎ u v
+  ... | Top U = ⤾ u v
   ... | Inner X w = decomp-v fuel G v
   
 -- -- note: in the actual implementation, this would map over vertices in G directly
