@@ -27,6 +27,7 @@ module Grove.Marking.UExp where
       -⋎^_      : (u : VertexId) → UExp
       -↻^_      : (u : VertexId) → UExp
 
+    -- TODO fix to match term representation
     data USubExp : Set where
       -□^_^_ : (w  : EdgeId) → (p : Position) → USubExp
       -∶_    : (ė  : USubExp') → USubExp
