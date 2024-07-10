@@ -10,23 +10,23 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import core.ident
-open import core.finite
+open import Grove.Core.Ident
+open import Grove.Core.Finite
 
-module core.decomp 
+module Grove.Core.Decomp 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import core.graph
-open module graph = core.graph Ctor _≟ℂ_ arity
-import core.grove
-open module grove = core.grove Ctor _≟ℂ_ arity
-import core.classify
-open module classify = core.classify Ctor _≟ℂ_ arity
-import core.classify-correct
-open module classify-correct = core.classify-correct Ctor _≟ℂ_ arity
+import Grove.Core.Graph
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+import Grove.Core.Grove
+open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
+import Grove.Core.Classify
+open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+import Grove.Core.ClassifyCorrect
+open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
 
 mutual 
 

@@ -5,11 +5,11 @@ open import Data.Fin hiding(_+_)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
-open import core.ident
-open import core.finite
-open import core.list-logic
+open import Grove.Core.Ident
+open import Grove.Core.Finite
+open import Grove.Core.ListLogic
 
-module core.graph 
+module Grove.Core.Graph
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂)) 
   (arity : Ctor → ℕ)

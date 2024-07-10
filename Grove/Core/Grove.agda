@@ -1,4 +1,3 @@
-
 open import Data.List
 open import Data.Fin
 open import Data.Vec
@@ -7,17 +6,17 @@ open import Data.Product
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 
-open import core.ident
-open import core.finite
+open import Grove.Core.Ident
+open import Grove.Core.Finite
 
-module core.grove 
+module Grove.Core.Grove 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import core.graph
-open module graph = core.graph Ctor _≟ℂ_ arity
+import Grove.Core.Graph
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 
 mutual 
   data Term : Set where

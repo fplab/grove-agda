@@ -1,4 +1,4 @@
-module core.finite where
+module Grove.Core.Finite where
 
 open import Data.Product 
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)

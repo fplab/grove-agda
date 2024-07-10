@@ -13,18 +13,18 @@ open import Data.Empty
 open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 
-open import core.ident
-open import core.finite
-open import core.list-logic
+open import Grove.Core.Ident
+open import Grove.Core.Finite
+open import Grove.Core.ListLogic
 
-module core.classify 
+module Grove.Core.Classify 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import core.graph
-open module graph = core.graph Ctor _≟ℂ_ arity
+import Grove.Core.Graph
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 
 data parent : Graph → (v w : Vertex) → Set where 
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w

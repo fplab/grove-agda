@@ -11,11 +11,11 @@ open import Data.Empty
 open import Data.Vec hiding (concat;map;filter)
 open import Function
 
-open import core.ident
-import core.graph
-import core.grove
+open import Grove.Core.Ident
+import Grove.Core.Graph
+import Grove.Core.Grove
 
-module core.simpl-equiv where 
+module Grove.Core.SimplEquiv where 
   
   postulate 
     Name : Set 
@@ -52,7 +52,7 @@ module core.simpl-equiv where
   arity (Var x) = 0
   arity Ap = 2
 
-  open module graph = core.graph Ctor _≟ℂ_ arity
+  open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 
   mutual 
     data Term : Set where

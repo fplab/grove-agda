@@ -14,22 +14,22 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import core.ident
-open import core.finite
-open import core.list-logic
+open import Grove.Core.Ident
+open import Grove.Core.Finite
+open import Grove.Core.ListLogic
 
-module core.classify-correct 
+module Grove.Core.ClassifyCorrect 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import core.graph
-open module graph = core.graph Ctor _≟ℂ_ arity
-import core.classify
-open module classify = core.classify Ctor _≟ℂ_ arity
-import core.classify-lemmas
-open module classify-lemmas = core.classify-lemmas Ctor _≟ℂ_ arity
+import Grove.Core.Graph
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+import Grove.Core.Classify
+open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+import Grove.Core.ClassifyLemmas
+open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
 
 data class-correct : (G : Graph) → (v : Vertex) → (class G v) → Set where 
   TopCorrect : ∀{X G v} → (top X G v) → class-correct G v (Top X) 

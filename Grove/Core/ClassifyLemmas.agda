@@ -3,7 +3,7 @@ open import Relation.Nullary
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.List hiding (lookup; _∷ʳ_)
 open import Data.Vec
-open import Data.Fin hiding(_+_; _-_)
+open import Data.Fin hiding(_+_; _-_; _≥_)
 open import Data.Maybe hiding(map) 
 open import Data.Nat hiding (_+_)
 open import Data.Nat.Properties
@@ -12,20 +12,20 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import core.ident
-open import core.finite
-open import core.list-logic
+open import Grove.Core.Ident
+open import Grove.Core.Finite
+open import Grove.Core.ListLogic
 
-module core.classify-lemmas 
+module Grove.Core.ClassifyLemmas 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
   where
 
-import core.graph
-open module graph = core.graph Ctor _≟ℂ_ arity
-import core.classify
-open module classify = core.classify Ctor _≟ℂ_ arity
+import Grove.Core.Graph
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+import Grove.Core.Classify
+open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
 
 id-min-leq : (u1 u2 : VertexId) → id-min u1 u2 ≤V𝕀 u1
 id-min-leq u1 u2 with (u1 ≤?V𝕀 u2)

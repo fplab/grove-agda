@@ -1,4 +1,4 @@
-module core.list-logic where
+module Grove.Core.ListLogic where
 
 open import Agda.Primitive using (Level; lzero; lsuc) renaming (_⊔_ to lmax)
 open import Relation.Unary
@@ -15,7 +15,7 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import core.finite
+open import Grove.Core.Finite
 
 private
   variable

@@ -2,10 +2,9 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
 
-module core.ident where 
+module Grove.Core.Ident where 
 
 postulate
-  
   VertexId : Set
   _≟V𝕀_ : (i₁ i₂ : VertexId) → Dec (i₁ ≡ i₂)
   _≤V𝕀_ : (i₁ i₂ : VertexId) → Set 
