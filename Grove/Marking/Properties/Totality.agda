@@ -4,7 +4,12 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Nullary using (Dec; yes; no)
 
-open import Grove.Marking.Definitions
+open import Grove.Marking.Typ
+open import Grove.Marking.GTyp
+open import Grove.Marking.Ctx
+open import Grove.Marking.UExp
+open import Grove.Marking.MExp
+open import Grove.Marking.Marking
 
 module Grove.Marking.Properties.Totality where
   mutual

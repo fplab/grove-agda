@@ -5,7 +5,12 @@ open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (¬_)
 
-open import Grove.Marking.Definitions
+open import Grove.Marking.Typ
+open import Grove.Marking.Ctx
+open import Grove.Marking.UExp
+open import Grove.Marking.MExp
+open import Grove.Marking.Erasure
+open import Grove.Marking.Marking
 
 module Grove.Marking.Properties.WellFormed where
   mutual
