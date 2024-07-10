@@ -9,51 +9,81 @@ open import Grove.Marking.Var
 module Grove.Marking.Grove where
   -- grove instantiation
   data Ctor : Set where
-    CVar  : (x : Var) → Ctor
-    CLam  : (x : Var) → Ctor
-    CAp   : Ctor
-    CNum  : (n : ℕ) → Ctor
-    CPlus : Ctor
+    -- expressions
+    CEVar   : (x : Var) → Ctor
+    CELam   : (x : Var) → Ctor
+    CEAp    : Ctor
+    CENum   : (n : ℕ) → Ctor
+    CEPlus  : Ctor
+    -- types
+    CTNum   : Ctor
+    CTArrow : Ctor
 
   _≟ℂ_ : Decidable (_≡_ {A = Ctor})
-  CVar x ≟ℂ CVar x' with x ≟ x'
-  ... | yes refl   = yes refl
-  ... | no  x≢x'   = no λ { refl → x≢x' refl }
-  CVar x ≟ℂ CLam _ = no (λ ())
-  CVar _ ≟ℂ CAp    = no (λ ())
-  CVar _ ≟ℂ CNum _ = no (λ ())
-  CVar _ ≟ℂ CPlus  = no (λ ())
-  CLam _ ≟ℂ CVar _ = no (λ ())
-  CLam x ≟ℂ CLam x' with x ≟ x'
-  ... | yes refl   = yes refl
-  ... | no  x≢x'   = no λ { refl → x≢x' refl }
-  CLam _ ≟ℂ CAp    = no (λ ())
-  CLam _ ≟ℂ CNum _ = no (λ ())
-  CLam _ ≟ℂ CPlus  = no (λ ())
-  CAp    ≟ℂ CVar _ = no (λ ())
-  CAp    ≟ℂ CLam _ = no (λ ())
-  CAp    ≟ℂ CAp    = yes refl
-  CAp    ≟ℂ CNum _ = no (λ ())
-  CAp    ≟ℂ CPlus  = no (λ ())
-  CNum _ ≟ℂ CVar _ = no (λ ())
-  CNum _ ≟ℂ CLam _ = no (λ ())
-  CNum _ ≟ℂ CAp    = no (λ ())
-  CNum n ≟ℂ CNum n' with n ≟ n'
-  ... | yes refl   = yes refl
-  ... | no  n≢n'   = no λ { refl → n≢n' refl }
-  CNum _ ≟ℂ CPlus  = no (λ ())
-  CPlus  ≟ℂ CVar _ = no (λ ())
-  CPlus  ≟ℂ CLam _ = no (λ ())
-  CPlus  ≟ℂ CAp    = no (λ ())
-  CPlus  ≟ℂ CNum _ = no (λ ())
-  CPlus  ≟ℂ CPlus  = yes refl
+  CEVar x ≟ℂ CEVar x' with x ≟ x'
+  ... | yes refl     = yes refl
+  ... | no  x≢x'     = no λ { refl → x≢x' refl }
+  CEVar x ≟ℂ CELam _ = no (λ ())
+  CEVar _ ≟ℂ CEAp    = no (λ ())
+  CEVar _ ≟ℂ CENum _ = no (λ ())
+  CEVar _ ≟ℂ CEPlus  = no (λ ())
+  CEVar _ ≟ℂ CTNum   = no (λ ())
+  CEVar _ ≟ℂ CTArrow = no (λ ())
+  CELam _ ≟ℂ CEVar _ = no (λ ())
+  CELam x ≟ℂ CELam x' with x ≟ x'
+  ... | yes refl     = yes refl
+  ... | no  x≢x'     = no λ { refl → x≢x' refl }
+  CELam _ ≟ℂ CEAp    = no (λ ())
+  CELam _ ≟ℂ CENum _ = no (λ ())
+  CELam _ ≟ℂ CEPlus  = no (λ ())
+  CELam _ ≟ℂ CTNum   = no (λ ())
+  CELam _ ≟ℂ CTArrow = no (λ ())
+  CEAp    ≟ℂ CEVar _ = no (λ ())
+  CEAp    ≟ℂ CELam _ = no (λ ())
+  CEAp    ≟ℂ CEAp    = yes refl
+  CEAp    ≟ℂ CENum _ = no (λ ())
+  CEAp    ≟ℂ CEPlus  = no (λ ())
+  CEAp    ≟ℂ CTNum   = no (λ ())
+  CEAp    ≟ℂ CTArrow = no (λ ())
+  CENum _ ≟ℂ CEVar _ = no (λ ())
+  CENum _ ≟ℂ CELam _ = no (λ ())
+  CENum _ ≟ℂ CEAp    = no (λ ())
+  CENum n ≟ℂ CENum n' with n ≟ n'
+  ... | yes refl     = yes refl
+  ... | no  n≢n'     = no λ { refl → n≢n' refl }
+  CENum _ ≟ℂ CEPlus  = no (λ ())
+  CENum _ ≟ℂ CTNum   = no (λ ())
+  CENum _ ≟ℂ CTArrow = no (λ ())
+  CEPlus  ≟ℂ CEVar _ = no (λ ())
+  CEPlus  ≟ℂ CELam _ = no (λ ())
+  CEPlus  ≟ℂ CEAp    = no (λ ())
+  CEPlus  ≟ℂ CENum _ = no (λ ())
+  CEPlus  ≟ℂ CEPlus  = yes refl
+  CEPlus  ≟ℂ CTNum   = no (λ ())
+  CEPlus  ≟ℂ CTArrow = no (λ ())
+  CTNum   ≟ℂ CEVar x = no (λ ())
+  CTNum   ≟ℂ CELam x = no (λ ())
+  CTNum   ≟ℂ CEAp    = no (λ ())
+  CTNum   ≟ℂ CENum n = no (λ ())
+  CTNum   ≟ℂ CEPlus  = no (λ ())
+  CTNum   ≟ℂ CTNum   = yes refl
+  CTNum   ≟ℂ CTArrow = no (λ ())
+  CTArrow ≟ℂ CEVar x = no (λ ())
+  CTArrow ≟ℂ CELam x = no (λ ())
+  CTArrow ≟ℂ CEAp    = no (λ ())
+  CTArrow ≟ℂ CENum n = no (λ ())
+  CTArrow ≟ℂ CEPlus  = no (λ ())
+  CTArrow ≟ℂ CTNum   = no (λ ())
+  CTArrow ≟ℂ CTArrow = yes refl
 
   arity : Ctor → ℕ
-  arity (CVar _) = 0
-  arity (CLam _) = 2
-  arity (CAp   ) = 2
-  arity (CNum _) = 0
-  arity (CPlus ) = 2
+  arity (CEVar _) = 0
+  arity (CELam _) = 2
+  arity (CEAp   ) = 2
+  arity (CENum _) = 0
+  arity (CEPlus ) = 2
+  arity (CTNum  ) = 0
+  arity (CTArrow) = 2
 
   import Grove.Core
   open Grove.Core Ctor _≟ℂ_ arity public
