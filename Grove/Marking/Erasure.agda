@@ -46,13 +46,13 @@ module Grove.Marking.Erasure where
     ⊢⇐-⊢⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → ∃[ τ' ] Σ[ ě' ∈ Γ ⊢⇒ τ' ] ě ⇐□ ≡ ě' ⇒□
     ⊢⇐-⊢⇒ (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
       with τ' , ě' , eq ← ⊢⇐s-⊢⇒s ě rewrite eq
-         = (τ △) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
+         = (τ △s) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
     ⊢⇐-⊢⇒ (⊢⸨λ x ∶ τ ∙ ě ⸩[ τ'!▸ ]^ u)
       with τ' , ě' , eq ← ⊢⇐s-⊢⇒s ě rewrite eq
-         = (τ △) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
+         = (τ △s) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
     ⊢⇐-⊢⇒ (⊢λ x ∶⸨ τ ⸩∙ ě [ τ₃▸ ∙ τ~̸τ₁ ]^ u)
       with τ' , ě' , eq ← ⊢⇐s-⊢⇒s ě rewrite eq
-         = (τ △) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
+         = (τ △s) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
     ⊢⇐-⊢⇒ (⊢⸨_⸩[_∙_] {τ' = τ'} ě τ~̸τ' su) = τ' , ě , refl
     ⊢⇐-⊢⇒ (⊢∙_[_∙_]  {τ' = τ'} ě τ~τ' su) = τ' , ě , refl
 
@@ -80,7 +80,7 @@ module Grove.Marking.Erasure where
       with τ' ▸-→?
     ...  | no  τ'!▸ with ě' , eq ← ⊢⇒s-⊢⇐s ě rewrite eq
          = ⊢⸨λ x ∶ τ ∙ ě' ⸩[ τ'!▸ ]^ u , refl
-    ...  | yes (τ₁ , τ₂ , τ'▸) with (τ △) ~? τ₁
+    ...  | yes (τ₁ , τ₂ , τ'▸) with (τ △s) ~? τ₁
     ...    | yes τ~τ₁ with ě' , eq ← ⊢⇒s-⊢⇐s ě rewrite eq
            = ⊢λ x ∶ τ ∙ ě' [ τ'▸ ∙ τ~τ₁ ]^ u , refl
     ...    | no  τ~̸τ₁ with ě' , eq ← ⊢⇒s-⊢⇐s ě rewrite eq

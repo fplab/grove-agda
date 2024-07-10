@@ -22,7 +22,7 @@ module Grove.Marking.UExp where
   mutual
     data UExp : Set where
       -_^_      : (x : Var) → (u : VertexId) → UExp
-      -λ_∶_∙_^_ : (x : Var) → (σ : GTyp) → (e : USubExp) → (u : VertexId) → UExp
+      -λ_∶_∙_^_ : (x : Var) → (σ : GSubTyp) → (e : USubExp) → (u : VertexId) → UExp
       -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
@@ -64,8 +64,8 @@ module Grove.Marking.UExp where
         → Γ ⊢ - x ^ u ⇒ τ
 
       USLam : ∀ {Γ x σ e u τ'}
-        → (e⇒τ' : Γ , x ∶ (σ △) ⊢s e ⇒ τ')
-        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ △) -→ τ'
+        → (e⇒τ' : Γ , x ∶ (σ △s) ⊢s e ⇒ τ')
+        → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇒ (σ △s) -→ τ'
 
       USAp : ∀ {Γ e₁ e₂ u τ τ₁ τ₂}
         → (e₁⇒τ : Γ ⊢s e₁ ⇒ τ)
@@ -105,8 +105,8 @@ module Grove.Marking.UExp where
     data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
       UALam : ∀ {Γ x σ e u τ₁ τ₂ τ₃}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
-        → (τ~τ₁ : (σ △) ~ τ₁)
-        → (e⇐τ₂ : Γ , x ∶ (σ △) ⊢s e ⇐ τ₂)
+        → (τ~τ₁ : (σ △s) ~ τ₁)
+        → (e⇐τ₂ : Γ , x ∶ (σ △s) ⊢s e ⇐ τ₂)
         → Γ ⊢ -λ x ∶ σ ∙ e ^ u ⇐ τ₃
 
       UASubsume : ∀ {Γ e τ τ'}

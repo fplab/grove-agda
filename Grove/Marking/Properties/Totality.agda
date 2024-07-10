@@ -23,8 +23,8 @@ module Grove.Marking.Properties.Totality where
     ...  | yes (_ , S {τ = τ} x≢x' ∋x) = τ       , ⊢ (S x≢x' ∋x) ^ u , MKSVar (S x≢x' ∋x)
     ...  | no  ∌x                  = unknown , ⊢⟦ ∌x ⟧^ u        , MKSFree ∌x        
     ↬⇒-totality Γ (-λ x ∶ τ ∙ e ^ u)
-      with τ' , ě , e↬⇒ě ← ↬⇒s-totality (_,_∶_ Γ x (τ △)) e
-         = (τ △) -→ τ' , ⊢λ x ∶ τ ∙ ě ^ u , MKSLam e↬⇒ě
+      with τ' , ě , e↬⇒ě ← ↬⇒s-totality (_,_∶_ Γ x (τ △s)) e
+         = (τ △s) -→ τ' , ⊢λ x ∶ τ ∙ ě ^ u , MKSLam e↬⇒ě
     ↬⇒-totality Γ (- e₁ ∙ e₂ ^ u)
       with ↬⇒s-totality Γ e₁
     ...  | τ , ě₁ , e₁↬⇒ě₁
@@ -90,16 +90,16 @@ module Grove.Marking.Properties.Totality where
     ↬⇐-totality Γ τ' e@(-λ x ∶ τ ∙ e' ^ u)
       with τ' ▸-→?
     ...  | yes (τ₁ , τ₂ , τ'▸)
-             with (τ △) ~? τ₁
+             with (τ △s) ~? τ₁
     ...         | yes τ~τ₁
-                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) τ₂ e'
+                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △s)) τ₂ e'
                        = ⊢λ x ∶ τ ∙ ě' [ τ'▸ ∙ τ~τ₁ ]^ u , MKALam1 τ'▸ τ~τ₁ e'↬⇐ě'
     ...         | no  τ~̸τ₁
-                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) τ₂ e'
+                    with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △s)) τ₂ e'
                        = ⊢λ x ∶⸨ τ ⸩∙ ě' [ τ'▸ ∙ τ~̸τ₁ ]^ u , MKALam3 τ'▸ τ~̸τ₁ e'↬⇐ě'
     ↬⇐-totality Γ τ' e@(-λ x ∶ τ ∙ e' ^ u)
          | no τ'!▸
-             with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △)) unknown e'
+             with ě' , e'↬⇐ě' ← ↬⇐s-totality (_,_∶_ Γ x (τ △s)) unknown e'
                 = ⊢⸨λ x ∶ τ ∙ ě' ⸩[ τ'!▸ ]^ u , MKALam2 τ'!▸ e'↬⇐ě'
     ↬⇐-totality Γ τ' e@(- _ ∙ _ ^ u)
       with ↬⇒-totality Γ e
