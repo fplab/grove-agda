@@ -3,7 +3,7 @@ open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (yes; no)
 
-open import Grove.Marking.Ident
+open import Grove.Ident
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
 open import Grove.Marking.UExp

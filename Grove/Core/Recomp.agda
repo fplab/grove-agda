@@ -8,8 +8,8 @@ open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hidi
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
-open import Grove.Core.Ident
-open import Grove.Core.Finite
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.Recomp 
   (Ctor : Set) 
@@ -18,10 +18,11 @@ module Grove.Core.Recomp
   where
 
 import Grove.Core.Graph
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 import Grove.Core.Grove
-open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
 import Grove.Core.Classify
+
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
 open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
 
 vertex-of-term : Term → Vertex 

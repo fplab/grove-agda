@@ -14,9 +14,8 @@ open import Data.Unit renaming (tt to <>)
 open import Data.Product hiding (map)
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr) hiding (map)
 
-open import Grove.Core.Ident
-open import Grove.Core.Finite
-open import Grove.Core.ListLogic
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.ClassifyCorrect 
   (Ctor : Set) 

@@ -1,7 +1,7 @@
 open import Data.List using (List)
 open import Data.Product using (_×_; _,_)
 
-open import Grove.Marking.Ident
+open import Grove.Ident
 open import Grove.Marking.Typ
 
 -- graph types

@@ -3,7 +3,7 @@ open import Data.List using (List; []; _∷_; _++_; [_])
 open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 
-open import Grove.Marking.Ident
+open import Grove.Ident
 open import Grove.Marking.Var
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp

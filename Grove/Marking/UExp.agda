@@ -4,7 +4,9 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
-open import Grove.Marking.Ident
+open import Grove.Marking.Grove using (Vertex)
+
+open import Grove.Ident
 open import Grove.Marking.Var
 open import Grove.Marking.Typ
 open import Grove.Marking.GTyp

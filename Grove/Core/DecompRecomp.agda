@@ -14,9 +14,8 @@ open import Data.Empty
 open import Data.Vec hiding (concat;map;filter)
 open import Function
 
-open import Grove.Core.Ident
-open import Grove.Core.Finite
-open import Grove.Core.ListLogic
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.DecompRecomp 
   (Ctor : Set) 
@@ -25,18 +24,19 @@ module Grove.Core.DecompRecomp
   where
 
 import Grove.Core.Graph
-open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
 import Grove.Core.Grove
-open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
 import Grove.Core.Classify
-open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
 import Grove.Core.ClassifyLemmas
-open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
 import Grove.Core.ClassifyCorrect
-open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
 import Grove.Core.Decomp
-open module Decomp = Grove.Core.Decomp Ctor _≟ℂ_ arity
 import Grove.Core.Recomp
+
+open module Graph = Grove.Core.Graph Ctor _≟ℂ_ arity
+open module Grove = Grove.Core.Grove Ctor _≟ℂ_ arity
+open module Classify = Grove.Core.Classify Ctor _≟ℂ_ arity
+open module ClassifyLemmas = Grove.Core.ClassifyLemmas Ctor _≟ℂ_ arity
+open module ClassifyCorrect = Grove.Core.ClassifyCorrect Ctor _≟ℂ_ arity
+open module Decomp = Grove.Core.Decomp Ctor _≟ℂ_ arity
 open module Recomp = Grove.Core.Recomp Ctor _≟ℂ_ arity
 
 lem12 : (G : Graph) → (v : Vertex) → (X : X) → (ε : Edge) →

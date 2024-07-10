@@ -1,6 +1,6 @@
 open import Data.List using (List)
 
-open import Grove.Marking.Ident
+open import Grove.Ident
 open import Grove.Marking.Typ
 open import Grove.Marking.Ctx
 

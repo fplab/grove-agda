@@ -6,8 +6,8 @@ open import Data.Product
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 
-open import Grove.Core.Ident
-open import Grove.Core.Finite
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.Grove 
   (Ctor : Set) 

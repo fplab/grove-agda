@@ -2,7 +2,7 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 open import Data.Sum renaming (_⊎_ to _+_; inj₁ to Inl ; inj₂ to Inr)
 
-module Grove.Core.Ident where 
+module Grove.Ident where 
 
 postulate
   VertexId : Set

@@ -11,9 +11,8 @@ open import Data.Empty
 open import Data.Vec hiding (concat;map;filter)
 open import Function
 
-open import Grove.Core.Ident
-import Grove.Core.Graph
-import Grove.Core.Grove
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.SimplEquiv where 
   

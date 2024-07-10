@@ -5,9 +5,8 @@ open import Data.Fin hiding(_+_)
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 open import Relation.Nullary
 
-open import Grove.Core.Ident
-open import Grove.Core.Finite
-open import Grove.Core.ListLogic
+open import Grove.Prelude
+open import Grove.Ident
 
 module Grove.Core.Graph
   (Ctor : Set) 
