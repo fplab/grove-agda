@@ -39,10 +39,10 @@ module Grove.Marking.Properties.Unicity where
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → τ₁ ≡ τ₂
-    ↬⇒s-τ-unicity MKSubSHole             MKSubSHole              = refl
-    ↬⇒s-τ-unicity (MKSubSJust e↬⇒ě)      (MKSubSJust e↬⇒ě')
+    ↬⇒s-τ-unicity MKChildSHole             MKChildSHole              = refl
+    ↬⇒s-τ-unicity (MKChildSOnly e↬⇒ě)      (MKChildSOnly e↬⇒ě')
       rewrite ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'                            = refl
-    ↬⇒s-τ-unicity (MKSubSConflict ė↬⇒ě*) (MKSubSConflict ė↬⇒ě*₁) = refl
+    ↬⇒s-τ-unicity (MKChildSConflict ė↬⇒ě*) (MKChildSConflict ė↬⇒ě*₁) = refl
 
   mutual
     ↬⇒-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇒ τ} {ě₂ : Γ ⊢⇒ τ}
@@ -83,16 +83,16 @@ module Grove.Marking.Properties.Unicity where
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → ě₁ ≡ ě₂
-    ↬⇒s-ě-unicity MKSubSHole             MKSubSHole = refl
-    ↬⇒s-ě-unicity (MKSubSJust e↬⇒ě)      (MKSubSJust e↬⇒ě')
+    ↬⇒s-ě-unicity MKChildSHole             MKChildSHole = refl
+    ↬⇒s-ě-unicity (MKChildSOnly e↬⇒ě)      (MKChildSOnly e↬⇒ě')
       rewrite ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'               = refl
-    ↬⇒s-ě-unicity (MKSubSConflict ė↬⇒ě*) (MKSubSConflict ė↬⇒ě*')
+    ↬⇒s-ě-unicity (MKChildSConflict ė↬⇒ě*) (MKChildSConflict ė↬⇒ě*')
       rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'           = refl
 
     ↬⇒s-ě-unicity* : ∀ {Γ} {ė* : List UChildExp'}
                    → (ė↬⇒ě*  : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
                    → (ė↬⇒ě*' : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                   → MKSubSConflictChildren ė↬⇒ě* ≡ MKSubSConflictChildren ė↬⇒ě*'
+                   → MKChildSConflictChildren ė↬⇒ě* ≡ MKChildSConflictChildren ė↬⇒ě*'
     ↬⇒s-ě-unicity* [] [] = refl
     ↬⇒s-ě-unicity* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) ((τ' , ě' , e↬⇒ě') ∷ ė↬⇒ě*')
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
@@ -101,7 +101,7 @@ module Grove.Marking.Properties.Unicity where
            = refl
 
     USu→MSu-unicity : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ}
-                      → (s : USubsumable e)
+                      → (s : UChildsumable e)
                       → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
                       → (e↬⇒ě' : Γ ⊢ e ↬⇒ ě)
                       → USu→MSu s e↬⇒ě ≡ USu→MSu s e↬⇒ě'
@@ -208,16 +208,16 @@ module Grove.Marking.Properties.Unicity where
                  → Γ ⊢s e ↬⇐ ě₁
                  → Γ ⊢s e ↬⇐ ě₂
                  → ě₁ ≡ ě₂
-    ↬⇐s-ě-unicity (MKSubASubsume e↬⇒ě τ~τ') (MKSubASubsume e↬⇒ě' τ~τ'')
+    ↬⇐s-ě-unicity (MKChildASubsume e↬⇒ě τ~τ') (MKChildASubsume e↬⇒ě' τ~τ'')
       with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒s-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~-≡ τ~τ' τ~τ''
          = refl
-    ↬⇐s-ě-unicity (MKSubASubsume e↬⇒ě τ~τ') (MKSubAInconsistentTypes e↬⇒ě' τ~̸τ')
+    ↬⇐s-ě-unicity (MKChildASubsume e↬⇒ě τ~τ') (MKChildAInconsistentTypes e↬⇒ě' τ~̸τ')
       with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
-    ↬⇐s-ě-unicity (MKSubAInconsistentTypes e↬⇒ě τ~̸τ') (MKSubASubsume e↬⇒ě' τ~τ')
+    ↬⇐s-ě-unicity (MKChildAInconsistentTypes e↬⇒ě τ~̸τ') (MKChildASubsume e↬⇒ě' τ~τ')
       with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
-    ↬⇐s-ě-unicity (MKSubAInconsistentTypes e↬⇒ě τ~̸τ') (MKSubAInconsistentTypes e↬⇒ě' τ~̸τ'')
+    ↬⇐s-ě-unicity (MKChildAInconsistentTypes e↬⇒ě τ~̸τ') (MKChildAInconsistentTypes e↬⇒ě' τ~̸τ'')
       with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒s-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''

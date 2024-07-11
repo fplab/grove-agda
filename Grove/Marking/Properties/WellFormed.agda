@@ -38,14 +38,14 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
-    ↬⇒□s MKSubSHole = refl
-    ↬⇒□s (MKSubSJust e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
-    ↬⇒□s (MKSubSConflict ė↬⇒ě*)
+    ↬⇒□s MKChildSHole = refl
+    ↬⇒□s (MKChildSOnly e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
+    ↬⇒□s (MKChildSConflict ė↬⇒ě*)
       with eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv    = refl
 
     ↬⇒□s* : ∀ {Γ ė*}
           → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-          → ((MKSubSConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
+          → ((MKChildSConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
     ↬⇒□s* All.[] = refl
     ↬⇒□s* (All._∷_ {w , e} {ė*} (τ , ě , e↬⇒ě) ė↬⇒ě*)
       with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
@@ -67,9 +67,9 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇐□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇐s τ}
         → Γ ⊢s e ↬⇐ ě
         → ě ⇐□s ≡ e
-    ↬⇐□s (MKSubASubsume e↬⇒ě τ~τ')
+    ↬⇐□s (MKChildASubsume e↬⇒ě τ~τ')
       rewrite ↬⇒□s e↬⇒ě = refl
-    ↬⇐□s (MKSubAInconsistentTypes e↬⇒ě τ~̸τ')
+    ↬⇐□s (MKChildAInconsistentTypes e↬⇒ě τ~̸τ')
       rewrite ↬⇒□s e↬⇒ě = refl
 
   mutual
@@ -93,11 +93,11 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□ s}       USubSHole = ⊢□ s , MKSubSHole
-    ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (USubSJust e⇒τ) 
-      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
-    ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (USubSConflict ė⇒*)
-      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
+    ⇒sτ→↬⇒sτ {e = -□ s}       UChildSHole = ⊢□ s , MKChildSHole
+    ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (UChildSOnly e⇒τ) 
+      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
+    ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (UChildSConflict ė⇒*)
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*) , MKChildSConflict ė↬⇒ě*
 
     ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List UChildExp'}
               → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
@@ -116,8 +116,8 @@ module Grove.Marking.Properties.WellFormed where
     ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇐ τ
              → Σ[ ě ∈ Γ ⊢⇐s τ ] Γ ⊢s e ↬⇐ ě
-    ⇐sτ→↬⇐sτ (USubASubsume e⇒τ' τ~τ')
-      with ě , e↬⇒ě ← ⇒sτ→↬⇒sτ e⇒τ' = ⊢∙ ě [ τ~τ' ] , MKSubASubsume e↬⇒ě τ~τ'
+    ⇐sτ→↬⇐sτ (UChildASubsume e⇒τ' τ~τ')
+      with ě , e↬⇒ě ← ⇒sτ→↬⇒sτ e⇒τ' = ⊢∙ ě [ τ~τ' ] , MKChildASubsume e↬⇒ě τ~τ'
 
   mutual
     -- marking synthesizes the same type as synthesis
@@ -152,10 +152,10 @@ module Grove.Marking.Properties.WellFormed where
             → Γ ⊢s e ⇒ τ
             → Γ ⊢s e ↬⇒ ě
             → τ ≡ τ'
-    ⇒s-↬s-≡ USubSHole           MKSubSHole             = refl
-    ⇒s-↬s-≡ (USubSJust e⇒τ)     (MKSubSJust e↬⇒ě)
+    ⇒s-↬s-≡ UChildSHole           MKChildSHole             = refl
+    ⇒s-↬s-≡ (UChildSOnly e⇒τ)     (MKChildSOnly e↬⇒ě)
       with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě                       = refl
-    ⇒s-↬s-≡ (USubSConflict ė⇒*) (MKSubSConflict ė↬⇒ě*) = refl
+    ⇒s-↬s-≡ (UChildSConflict ė⇒*) (MKChildSConflict ė↬⇒ě*) = refl
 
   mutual
     -- marking well-typed terms produces no marks
@@ -189,15 +189,15 @@ module Grove.Marking.Properties.WellFormed where
                  → Γ ⊢s e ⇒ τ
                  → Γ ⊢s e ↬⇒ ě
                  → Markless⇒s ě
-    ⇒sτ→markless USubSHole MKSubSHole = MLSubSHole
-    ⇒sτ→markless (USubSJust e⇒τ) (MKSubSJust e↬⇒ě)
-      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSubSJust (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒sτ→markless (USubSConflict ė⇒*) (MKSubSConflict ė↬⇒ě*) = MLSubSConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
+    ⇒sτ→markless UChildSHole MKChildSHole = MLSubSHole
+    ⇒sτ→markless (UChildSOnly e⇒τ) (MKChildSOnly e↬⇒ě)
+      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSubSOnly (⇒τ→markless e⇒τ e↬⇒ě)
+    ⇒sτ→markless (UChildSConflict ė⇒*) (MKChildSConflict ė↬⇒ě*) = MLSubSConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
 
     ⇒sτ→markless* : ∀ {Γ ė*}
                   → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
                   → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*)
+                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSConflictChildren ė↬⇒ě*)
     ⇒sτ→markless* [] [] = []
     ⇒sτ→markless* ((_ , e⇒) ∷ ė⇒*) ((_ , ě , e↬⇒ě) ∷ ė↬⇒ě*)
       with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
@@ -226,10 +226,10 @@ module Grove.Marking.Properties.WellFormed where
                  → Γ ⊢s e ⇐ τ
                  → Γ ⊢s e ↬⇐ ě
                  → Markless⇐s ě
-    ⇐sτ→markless (USubASubsume e⇒τ' τ~τ') (MKSubASubsume e↬⇒ě τ~τ'')
+    ⇐sτ→markless (UChildASubsume e⇒τ' τ~τ') (MKChildASubsume e↬⇒ě τ~τ'')
       with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
          = MLSubASubsume (⇒sτ→markless e⇒τ' e↬⇒ě)
-    ⇐sτ→markless (USubASubsume e⇒τ' τ~τ') (MKSubAInconsistentTypes e↬⇒ě τ~̸τ')
+    ⇐sτ→markless (UChildASubsume e⇒τ' τ~τ') (MKChildAInconsistentTypes e↬⇒ě τ~̸τ')
       with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
          = ⊥-elim (τ~̸τ' τ~τ')
 
@@ -259,13 +259,13 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇒ ě
                     → Markless⇒s ě
                     → Γ ⊢s e ⇒ τ
-    ↬⇒sτ-markless→⇒sτ MKSubSHole             MLSubSHole             = USubSHole
-    ↬⇒sτ-markless→⇒sτ (MKSubSJust e↬⇒ě)      (MLSubSJust less)      = USubSJust (↬⇒τ-markless→⇒τ e↬⇒ě less)
-    ↬⇒sτ-markless→⇒sτ (MKSubSConflict ė↬⇒ě*) (MLSubSConflict less*) = USubSConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
+    ↬⇒sτ-markless→⇒sτ MKChildSHole             MLSubSHole             = UChildSHole
+    ↬⇒sτ-markless→⇒sτ (MKChildSOnly e↬⇒ě)      (MLSubSOnly less)      = UChildSOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
+    ↬⇒sτ-markless→⇒sτ (MKChildSConflict ė↬⇒ě*) (MLSubSConflict less*) = UChildSConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
 
     ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
                        → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSubSConflictChildren ė↬⇒ě*))
+                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSConflictChildren ė↬⇒ě*))
                        → All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
     ↬⇒sτ-markless→⇒sτ* []                       []             = []
     ↬⇒sτ-markless→⇒sτ* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) (less ∷ less*) = (τ , ↬⇒τ-markless→⇒τ e↬⇒ě less) ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
@@ -286,8 +286,8 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇐ ě
                     → Markless⇐s ě
                     → Γ ⊢s e ⇐ τ
-    ↬⇐sτ-markless→⇐sτ (MKSubASubsume e↬⇒ě τ~τ') (MLSubASubsume less)
-      with e⇒τ ← ↬⇒sτ-markless→⇒sτ e↬⇒ě less = USubASubsume e⇒τ τ~τ'
+    ↬⇐sτ-markless→⇐sτ (MKChildASubsume e↬⇒ě τ~τ') (MLSubASubsume less)
+      with e⇒τ ← ↬⇒sτ-markless→⇒sτ e↬⇒ě less = UChildASubsume e⇒τ τ~τ'
 
   mutual
     -- ill-typed expressions are marked into non-markless expressions

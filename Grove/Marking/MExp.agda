@@ -82,57 +82,57 @@ module Grove.Marking.MExp where
         → Γ ⊢⇒ unknown
 
     data _⊢⇒s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MSubSHole: \vdash\sq
+      -- MChildSHole: \vdash\sq
       ⊢□ : ∀ {Γ}
         → (s : Source)
         → Γ ⊢⇒s unknown
 
-      -- MSubSJust
+      -- MChildSOnly
       ⊢∶ : ∀ {Γ τ}
         → (ė : EdgeId × Γ ⊢⇒ τ)
         → Γ ⊢⇒s τ
 
-      -- MSubSConflict: \vdash\curlywedge
+      -- MChildSConflict: \vdash\curlywedge
       ⊢⋏ : ∀ {Γ}
         → (s : Source)
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
 
-    data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
+    data MChildsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
       MSuVar : ∀ {Γ x u τ}
         → {∋x : Γ ∋ x ∶ τ}
-        → MSubsumable {Γ} (⊢ ∋x ^ u)
+        → MChildsumable {Γ} (⊢ ∋x ^ u)
 
       MSuAp1 : ∀ {Γ u τ τ₁ τ₂}
         → {ě₁ : Γ ⊢⇒s τ}
         → {ě₂ : Γ ⊢⇐s τ₁}
         → {τ▸ : τ ▸ τ₁ -→ τ₂}
-        → MSubsumable {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
+        → MChildsumable {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
 
       MSuAp2 : ∀ {Γ u τ}
         → {ě₁ : Γ ⊢⇒s τ}
         → {ě₂ : Γ ⊢⇐s unknown}
         → {τ!▸ : τ !▸-→}
-        → MSubsumable {Γ} (⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u)
+        → MChildsumable {Γ} (⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u)
 
       MSuNum : ∀ {Γ u}
         → {n : ℕ}
-        → MSubsumable {Γ} (⊢ℕ n ^ u)
+        → MChildsumable {Γ} (⊢ℕ n ^ u)
 
       MSuPlus : ∀ {Γ u}
         → {ě₁ : Γ ⊢⇐s num}
         → {ě₂ : Γ ⊢⇐s num}
-        → MSubsumable {Γ} (⊢ ě₁ + ě₂ ^ u)
+        → MChildsumable {Γ} (⊢ ě₁ + ě₂ ^ u)
 
       MSuFree : ∀ {Γ y u}
         → {∌y : Γ ∌ y}
-        → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
+        → MChildsumable {Γ} (⊢⟦ ∌y ⟧^ u)
 
       MSuMultiParent : ∀ {Γ w v}
-        → MSubsumable {Γ} (⊢⋎^ w ^ v)
+        → MChildsumable {Γ} (⊢⋎^ w ^ v)
 
       MSuUnicycle : ∀ {Γ w v}
-        → MSubsumable {Γ} (⊢↻^ w ^ v)
+        → MChildsumable {Γ} (⊢↻^ w ^ v)
 
     -- analysis
     data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where
@@ -169,24 +169,24 @@ module Grove.Marking.MExp where
       ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒ τ')
         → (τ~̸τ' : τ ~̸ τ')
-        → (su : MSubsumable ě)
+        → (su : MChildsumable ě)
         → Γ ⊢⇐ τ
 
       -- MASubsume
       ⊢∙_[_∙_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒ τ')
         → (τ~τ' : τ ~ τ')
-        → (su : MSubsumable ě)
+        → (su : MChildsumable ě)
         → Γ ⊢⇐ τ
 
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MSubASubsume
+      -- MChildASubsume
       ⊢∙_[_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒s τ')
         → (τ~τ' : τ ~ τ')
         → Γ ⊢⇐s τ
 
-      -- MSubAInconsistentTypes
+      -- MChildAInconsistentTypes
       ⊢⸨_⸩[_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒s τ')
         → (τ~̸τ' : τ ~̸ τ')
@@ -231,7 +231,7 @@ module Grove.Marking.MExp where
       MLSubSHole : ∀ {Γ s}
         → Markless⇒s {Γ} (⊢□ s)
 
-      MLSubSJust : ∀ {Γ w τ}
+      MLSubSOnly : ∀ {Γ w τ}
         → {ě : Γ ⊢⇒ τ}
         → (less : Markless⇒ ě)
         → Markless⇒s {Γ} (⊢∶ (w , ě))
@@ -253,7 +253,7 @@ module Grove.Marking.MExp where
       MLASubsume : ∀ {Γ τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → {τ~τ' : τ ~ τ'}
-        → {su : MSubsumable ě}
+        → {su : MChildsumable ě}
         → (less : Markless⇒ ě)
         → Markless⇐ {Γ} (⊢∙ ě [ τ~τ' ∙ su ])
 

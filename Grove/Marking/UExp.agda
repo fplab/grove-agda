@@ -37,24 +37,24 @@ module Grove.Marking.UExp where
 
     UChildExp' = EdgeId × UExp
 
-  data USubsumable : UExp → Set where
+  data UChildsumable : UExp → Set where
     USuVar : ∀ {x u}
-      → USubsumable (- x ^ u)
+      → UChildsumable (- x ^ u)
 
     USuAp : ∀ {e₁ e₂ u}
-      → USubsumable (- e₁ ∙ e₂ ^ u)
+      → UChildsumable (- e₁ ∙ e₂ ^ u)
 
     USuNum : ∀ {n u}
-      → USubsumable (-ℕ n ^ u)
+      → UChildsumable (-ℕ n ^ u)
 
     USuPlus : ∀ {e₁ e₂ u}
-      → USubsumable (- e₁ + e₂ ^ u)
+      → UChildsumable (- e₁ + e₂ ^ u)
 
     USuMultiParent : ∀ {w v}
-      → USubsumable (-⋎^ w ^ v)
+      → UChildsumable (-⋎^ w ^ v)
 
     USuUnicycle : ∀ {w v}
-      → USubsumable (-↻^ w ^ v)
+      → UChildsumable (-↻^ w ^ v)
 
   mutual
     -- synthesis
@@ -88,16 +88,16 @@ module Grove.Marking.UExp where
         → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
     data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
-      USubSHole : ∀ {Γ s}
+      UChildSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ⇒ unknown
 
-      USubSJust : ∀ {Γ w e τ}
+      UChildSOnly : ∀ {Γ w e τ}
         → (e⇒τ : Γ ⊢ e ⇒ τ)
         → Γ ⊢s -∶ (w , e) ⇒ τ
 
       -- TODO synthesize meet?
-      -- TODO rename to USubSMultiChild?
-      USubSConflict : ∀ {Γ s ė*}
+      -- TODO rename to UChildSMultiChild?
+      UChildSConflict : ∀ {Γ s ė*}
         → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ s ė* ⇒ unknown
 
@@ -112,11 +112,11 @@ module Grove.Marking.UExp where
       UASubsume : ∀ {Γ e τ τ'}
         → (e⇒τ' : Γ ⊢ e ⇒ τ')
         → (τ~τ' : τ ~ τ')
-        → (su : USubsumable e)
+        → (su : UChildsumable e)
         → Γ ⊢ e ⇐ τ
 
     data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
-      USubASubsume : ∀ {Γ e τ τ'} 
+      UChildASubsume : ∀ {Γ e τ τ'} 
         → (e⇒τ' : Γ ⊢s e ⇒ τ')
         → (τ~τ' : τ ~ τ')
         → Γ ⊢s e ⇐ τ
@@ -142,7 +142,7 @@ module Grove.Marking.UExp where
                → Γ ⊢s e ⇒ τ₁
                → Γ ⊢s e ⇒ τ₂
                → τ₁ ≡ τ₂
-    ⇒s-unicity USubSHole           USubSHole            = refl
-    ⇒s-unicity (USubSJust e⇒τ)     (USubSJust e⇒τ')
+    ⇒s-unicity UChildSHole           UChildSHole            = refl
+    ⇒s-unicity (UChildSOnly e⇒τ)     (UChildSOnly e⇒τ')
       rewrite ⇒-unicity e⇒τ e⇒τ'                        = refl
-    ⇒s-unicity (USubSConflict ė⇒*) (USubSConflict ė⇒*') = refl
+    ⇒s-unicity (UChildSConflict ė⇒*) (UChildSConflict ė⇒*') = refl

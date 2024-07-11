@@ -61,7 +61,7 @@ module Grove.Marking.Erasure where
     ⊢⇐s-⊢⇒s (⊢⸨_⸩[_] {τ' = τ'} ě τ~τ') = τ' , ě , refl
 
   private
-    ⊢⇒-⊢⇐-subsume : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒ τ) → (su : MSubsumable ě) → Σ[ ě' ∈ Γ ⊢⇐ τ' ] ě ⇒□ ≡ ě' ⇐□
+    ⊢⇒-⊢⇐-subsume : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒ τ) → (su : MChildsumable ě) → Σ[ ě' ∈ Γ ⊢⇐ τ' ] ě ⇒□ ≡ ě' ⇐□
     ⊢⇒-⊢⇐-subsume {τ = τ} {τ' = τ'} ě su
       with τ' ~? τ 
     ...  | yes τ'~τ = ⊢∙ ě [ τ'~τ ∙ su ]  , refl

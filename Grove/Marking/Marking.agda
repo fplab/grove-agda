@@ -64,26 +64,26 @@ module Grove.Marking.Marking where
       MKSUnicycle : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ↬⇒ ⊢↻^ w ^ v
 
-    MKSubSConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
+    MKChildSConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
       → List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)
-    MKSubSConflictChildren All.[]                              = []
-    MKSubSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSubSConflictChildren ė↬⇒ě*)
+    MKChildSConflictChildren All.[]                              = []
+    MKChildSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKChildSConflictChildren ė↬⇒ě*)
 
     data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
-      MKSubSHole : ∀ {Γ s}
+      MKChildSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ↬⇒ ⊢□ s
 
-      MKSubSJust : ∀ {Γ w e τ}
+      MKChildSOnly : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇒ τ} 
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
         → Γ ⊢s -∶ (w , e) ↬⇒ ⊢∶ (w , ě)
 
-      MKSubSConflict : ∀ {Γ s ė*}
+      MKChildSConflict : ∀ {Γ s ė*}
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*)
+        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*)
 
-    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
+    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → UChildsumable e → Γ ⊢ e ↬⇒ ě → MChildsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
     USu→MSu {ě = ⊢⟦ x ⟧^ u}              USuVar          _ = MSuFree
     USu→MSu {ě = ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u}    USuAp           _ = MSuAp1
@@ -119,24 +119,24 @@ module Grove.Marking.Marking where
         → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
         → (τ~τ' : τ ~ τ')
-        → (s : USubsumable e)
+        → (s : UChildsumable e)
         → Γ ⊢ e ↬⇐ ⊢∙ ě [ τ~τ' ∙ USu→MSu s e↬⇒ě ]
 
       MKAInconsistentTypes : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
         → (τ~̸τ' : τ ~̸ τ')
-        → (s : USubsumable e)
+        → (s : UChildsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
     data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
-      MKSubASubsume : ∀ {Γ e τ τ'}
+      MKChildASubsume : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒s τ'}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
         → (τ~τ' : τ ~ τ')
         → Γ ⊢s e ↬⇐ ⊢∙ ě [ τ~τ' ]
 
-      MKSubAInconsistentTypes : ∀ {Γ e τ τ'}
+      MKChildAInconsistentTypes : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒s τ'}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
         → (τ~̸τ' : τ ~̸ τ')

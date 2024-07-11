@@ -46,13 +46,13 @@ module Grove.Marking.Properties.Totality where
     ↬⇒s-totality : (Γ : Ctx)
                  → (e : UChildExp)
                  → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
-    ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKSubSHole
+    ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKChildSHole
     ↬⇒s-totality Γ (-∶ (w , e))
       with τ' , ě , e↬⇒ě ← ↬⇒-totality Γ e
-         = τ' , ⊢∶ (w , ě) , MKSubSJust e↬⇒ě
+         = τ' , ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
     ↬⇒s-totality Γ (-⋏ s ė*)
       with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
-         = unknown , ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
+         = unknown , ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*) , MKChildSConflict ė↬⇒ě*
 
     ↬⇒s-totality* : (Γ : Ctx)
                   → (ė* : List UChildExp')
@@ -64,7 +64,7 @@ module Grove.Marking.Properties.Totality where
                → (ě : Γ ⊢⇒ τ)
                → (τ' : Typ)
                → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
-               → (s : USubsumable e)
+               → (s : UChildsumable e)
                → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
     ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
     ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ'~τ s
@@ -76,8 +76,8 @@ module Grove.Marking.Properties.Totality where
                 → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
                 → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
     ↬⇐s-subsume {τ = τ} ě τ' e↬⇒ě  with τ' ~? τ
-    ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ] , MKSubASubsume e↬⇒ě τ'~τ
-    ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ] , MKSubAInconsistentTypes e↬⇒ě τ'~̸τ
+    ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ] , MKChildASubsume e↬⇒ě τ'~τ
+    ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ] , MKChildAInconsistentTypes e↬⇒ě τ'~̸τ
 
     ↬⇐-totality : (Γ : Ctx)
                 → (τ' : Typ)
