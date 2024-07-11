@@ -6,8 +6,8 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
 open import Grove.Ident
 open import Grove.Marking.Var
+open import Grove.Marking.STyp
 open import Grove.Marking.Typ
-open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 
 open import Grove.Marking.Grove using (Vertex; Location)
@@ -22,7 +22,7 @@ module Grove.Marking.UExp where
   mutual
     data UExp : Set where
       -_^_      : (x : Var) → (u : VertexId) → UExp
-      -λ_∶_∙_^_ : (x : Var) → (τ : GChildTyp) → (e : UChildExp) → (u : VertexId) → UExp
+      -λ_∶_∙_^_ : (x : Var) → (τ : ChildTyp) → (e : UChildExp) → (u : VertexId) → UExp
       -_∙_^_    : (e₁ : UChildExp) → (e₂ : UChildExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
       -_+_^_    : (e₁ : UChildExp) → (e₂ : UChildExp) → (u : VertexId) → UExp
@@ -51,7 +51,7 @@ module Grove.Marking.UExp where
 
   mutual
     -- synthesis
-    data _⊢_⇒_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
+    data _⊢_⇒_ : (Γ : Ctx) (e : UExp) (τ : STyp) → Set where
       USVar : ∀ {Γ x u τ}
         → (∋x : Γ ∋ x ∶ τ)
         → Γ ⊢ - x ^ u ⇒ τ
@@ -80,7 +80,7 @@ module Grove.Marking.UExp where
       USCycleLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
-    data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
+    data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : STyp) → Set where
       USHole : ∀ {Γ s}
         → Γ ⊢s -□ s ⇒ unknown
 
@@ -93,7 +93,7 @@ module Grove.Marking.UExp where
         → Γ ⊢s -⋏ s ė* ⇒ unknown
 
     -- analysis
-    data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
+    data _⊢_⇐_ : (Γ : Ctx) (e : UExp) (τ : STyp) → Set where
       UALam : ∀ {Γ x τ e u τ₁ τ₂ τ₃}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~τ₁ : (τ △s) ~ τ₁)
@@ -112,7 +112,7 @@ module Grove.Marking.UExp where
         → (su : USubsumable e)
         → Γ ⊢ e ⇐ τ
 
-    data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
+    data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : STyp) → Set where
       UAHole : ∀ {Γ s τ}
         → Γ ⊢s -□ s ⇐ τ
 
@@ -126,7 +126,7 @@ module Grove.Marking.UExp where
 
   -- synthesis unicity
   mutual
-    ⇒-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : Typ}
+    ⇒-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : STyp}
               → Γ ⊢ e ⇒ τ₁
               → Γ ⊢ e ⇒ τ₂
               → τ₁ ≡ τ₂
@@ -141,7 +141,7 @@ module Grove.Marking.UExp where
     ⇒-unicity USMultiLocationConflict          USMultiLocationConflict            = refl
     ⇒-unicity USCycleLocationConflict             USCycleLocationConflict               = refl
 
-    ⇒s-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : Typ}
+    ⇒s-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : STyp}
                → Γ ⊢s e ⇒ τ₁
                → Γ ⊢s e ⇒ τ₂
                → τ₁ ≡ τ₂

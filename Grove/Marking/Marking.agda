@@ -3,8 +3,8 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 
 open import Grove.Ident
+open import Grove.Marking.STyp
 open import Grove.Marking.Typ
-open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.UExp
 open import Grove.Marking.MExp
@@ -18,7 +18,7 @@ module Grove.Marking.Marking where
   -- mark insertion
   mutual
     -- synthesis
-    data _⊢_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇒ τ) → Set where
+    data _⊢_↬⇒_ : {τ : STyp} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇒ τ) → Set where
       MKSVar : ∀ {Γ x τ u}
         → (∋x : Γ ∋ x ∶ τ)
         → Γ ⊢ - x ^ u ↬⇒ ⊢ ∋x ^ u
@@ -70,7 +70,7 @@ module Grove.Marking.Marking where
     MKSLocalConflictChildren All.[]                              = []
     MKSLocalConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSLocalConflictChildren ė↬⇒ě*)
 
-    data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
+    data _⊢s_↬⇒_ : {τ : STyp} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
       MKSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ↬⇒ ⊢□ s
 
@@ -83,7 +83,7 @@ module Grove.Marking.Marking where
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
         → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKSLocalConflictChildren ė↬⇒ě*)
 
-    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
+    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : STyp} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
     USu→MSu {ě = ⊢⟦ x ⟧^ u}              USuVar          _ = MSuFree
     USu→MSu {ě = ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u}    USuAp           _ = MSuAp1
@@ -92,7 +92,7 @@ module Grove.Marking.Marking where
     USu→MSu {ě = ⊢ ě₁ + ě₂ ^ u}          USuPlus         _ = MSuPlus
 
     -- analysis
-    data _⊢_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where
+    data _⊢_↬⇐_ : {τ : STyp} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where
       MKALam1 : ∀ {Γ x τ e τ₁ τ₂ τ₃ u}
         → {ě : Γ , x ∶ (τ △s) ⊢⇐s τ₂}
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
@@ -126,7 +126,7 @@ module Grove.Marking.Marking where
         → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢∙ ě [ τ~τ' ∙ USu→MSu s e↬⇒ě ]
 
-      MKAInconsistentTypes : ∀ {Γ e τ τ'}
+      MKAInconsistentSTypes : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
         → (τ~̸τ' : τ ~̸ τ')
@@ -139,7 +139,7 @@ module Grove.Marking.Marking where
     MKALocalConflictChildren All.[]                          = []
     MKALocalConflictChildren (All._∷_ {w , _} (ě , _) ė↬⇐ě*) = (w , ě) ∷ (MKALocalConflictChildren ė↬⇐ě*)
 
-    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
+    data _⊢s_↬⇐_ : {τ : STyp} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
       MKAHole : ∀ {Γ s τ}
         → Γ ⊢s -□ s ↬⇐ ⊢□ {τ = τ} s
 

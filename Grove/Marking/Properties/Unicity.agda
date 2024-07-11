@@ -5,7 +5,7 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Product using (_×_; _,_; proj₂; ∃-syntax; Σ-syntax)
 
 open import Grove.Prelude
-open import Grove.Marking.Typ
+open import Grove.Marking.STyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.UExp
 open import Grove.Marking.MExp
@@ -13,7 +13,7 @@ open import Grove.Marking.Marking
 
 module Grove.Marking.Properties.Unicity where
   mutual
-    ↬⇒-τ-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
+    ↬⇒-τ-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : STyp} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
                  → Γ ⊢ e ↬⇒ ě₁
                  → Γ ⊢ e ↬⇒ ě₂
                  → τ₁ ≡ τ₂
@@ -35,7 +35,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒-τ-unicity MKSMultiLocationConflict          MKSMultiLocationConflict            = refl
     ↬⇒-τ-unicity MKSCycleLocationConflict             MKSCycleLocationConflict               = refl
 
-    ↬⇒s-τ-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒s τ₁} {ě₂ : Γ ⊢⇒s τ₂}
+    ↬⇒s-τ-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : STyp} {ě₁ : Γ ⊢⇒s τ₁} {ě₂ : Γ ⊢⇒s τ₂}
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → τ₁ ≡ τ₂
@@ -45,7 +45,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒s-τ-unicity (MKSLocalConflict ė↬⇒ě*) (MKSLocalConflict ė↬⇒ě*₁) = refl
 
   mutual
-    ↬⇒-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇒ τ} {ě₂ : Γ ⊢⇒ τ}
+    ↬⇒-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě₁ : Γ ⊢⇒ τ} {ě₂ : Γ ⊢⇒ τ}
                  → Γ ⊢ e ↬⇒ ě₁
                  → Γ ⊢ e ↬⇒ ě₂
                  → ě₁ ≡ ě₂
@@ -79,7 +79,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒-ě-unicity MKSMultiLocationConflict MKSMultiLocationConflict = refl
     ↬⇒-ě-unicity MKSCycleLocationConflict    MKSCycleLocationConflict    = refl
 
-    ↬⇒s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě₁ : Γ ⊢⇒s τ} {ě₂ : Γ ⊢⇒s τ}
+    ↬⇒s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp} {ě₁ : Γ ⊢⇒s τ} {ě₂ : Γ ⊢⇒s τ}
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → ě₁ ≡ ě₂
@@ -100,7 +100,7 @@ module Grove.Marking.Properties.Unicity where
       rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'
            = refl
 
-    USu→MSu-unicity : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ}
+    USu→MSu-unicity : ∀ {e : UExp} {Γ : Ctx} {τ : STyp} {ě : Γ ⊢⇒ τ}
                       → (s : USubsumable e)
                       → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
                       → (e↬⇒ě' : Γ ⊢ e ↬⇒ ě)
@@ -112,7 +112,7 @@ module Grove.Marking.Properties.Unicity where
     USu→MSu-unicity USuNum          MKSNum          _ = refl
     USu→MSu-unicity USuPlus         (MKSPlus _ _)   _ = refl
 
-    ↬⇐-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇐ τ} {ě₂ : Γ ⊢⇐ τ}
+    ↬⇐-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě₁ : Γ ⊢⇐ τ} {ě₂ : Γ ⊢⇐ τ}
                  → Γ ⊢ e ↬⇐ ě₁
                  → Γ ⊢ e ↬⇐ ě₂
                  → ě₁ ≡ ě₂
@@ -139,29 +139,29 @@ module Grove.Marking.Properties.Unicity where
             | ↬⇐s-ě-unicity e↬⇐ě e↬⇐ě' = refl
     ↬⇐-ě-unicity MKAMultiLocationConflict MKAMultiLocationConflict = refl
     ↬⇐-ě-unicity MKACycleLocationConflict MKACycleLocationConflict = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuVar) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuVar)
+    ↬⇐-ě-unicity (MKAInconsistentSTypes e↬⇒ě τ~̸τ' USuVar) (MKAInconsistentSTypes e↬⇒ě' τ~̸τ'' USuVar)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
       rewrite USu→MSu-unicity USuVar e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuAp) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuAp)
+    ↬⇐-ě-unicity (MKAInconsistentSTypes e↬⇒ě τ~̸τ' USuAp) (MKAInconsistentSTypes e↬⇒ě' τ~̸τ'' USuAp)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
       rewrite USu→MSu-unicity USuAp e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuNum) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuNum)
+    ↬⇐-ě-unicity (MKAInconsistentSTypes e↬⇒ě τ~̸τ' USuNum) (MKAInconsistentSTypes e↬⇒ě' τ~̸τ'' USuNum)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
       rewrite USu→MSu-unicity USuNum e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuPlus) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuPlus)
+    ↬⇐-ě-unicity (MKAInconsistentSTypes e↬⇒ě τ~̸τ' USuPlus) (MKAInconsistentSTypes e↬⇒ě' τ~̸τ'' USuPlus)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
       rewrite USu→MSu-unicity USuPlus e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' s) (MKASubsume e↬⇒ě' τ~τ' s')
+    ↬⇐-ě-unicity (MKAInconsistentSTypes e↬⇒ě τ~̸τ' s) (MKASubsume e↬⇒ě' τ~τ' s')
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
-    ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' s) (MKAInconsistentTypes e↬⇒ě' τ~̸τ' s')
+    ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' s) (MKAInconsistentSTypes e↬⇒ě' τ~̸τ' s')
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
     ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' USuVar) (MKASubsume e↬⇒ě' τ~τ'' USuVar)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
@@ -184,7 +184,7 @@ module Grove.Marking.Properties.Unicity where
          | refl ← ~-≡ τ~τ' τ~τ''
       rewrite USu→MSu-unicity USuPlus e↬⇒ě e↬⇒ě' = refl
 
-    ↬⇐s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě₁ : Γ ⊢⇐s τ} {ě₂ : Γ ⊢⇐s τ}
+    ↬⇐s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp} {ě₁ : Γ ⊢⇐s τ} {ě₂ : Γ ⊢⇐s τ}
                  → Γ ⊢s e ↬⇐ ě₁
                  → Γ ⊢s e ↬⇐ ě₂
                  → ě₁ ≡ ě₂
@@ -204,10 +204,10 @@ module Grove.Marking.Properties.Unicity where
       rewrite ↬⇐s-ě-unicity* ė↬⇐ě* ė↬⇐ě*'
            = refl
 
-  ↬⇒-unicity-sig : ∀ {Γ : Ctx} {τ₁ τ₂ : Typ} → τ₁ ≡ τ₂ → Γ ⊢⇒ τ₁ → Γ ⊢⇒ τ₂ → Set
+  ↬⇒-unicity-sig : ∀ {Γ : Ctx} {τ₁ τ₂ : STyp} → τ₁ ≡ τ₂ → Γ ⊢⇒ τ₁ → Γ ⊢⇒ τ₂ → Set
   ↬⇒-unicity-sig refl e₁ e₂ = e₁ ≡ e₂
 
-  ↬⇒-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
+  ↬⇒-unicity : ∀ {Γ : Ctx} {e : UExp} {τ₁ τ₂ : STyp} {ě₁ : Γ ⊢⇒ τ₁} {ě₂ : Γ ⊢⇒ τ₂}
              → (e↬⇒ě₁ : Γ ⊢ e ↬⇒ ě₁)
              → (e↬⇒ě₂ : Γ ⊢ e ↬⇒ ě₂)
              → Σ[ τ₁≡τ₂ ∈ τ₁ ≡ τ₂ ] ↬⇒-unicity-sig τ₁≡τ₂ ě₁ ě₂
@@ -215,7 +215,7 @@ module Grove.Marking.Properties.Unicity where
     with refl ← ↬⇒-τ-unicity e↬⇒ě₁ e↬⇒ě₂
        = refl , ↬⇒-ě-unicity e↬⇒ě₁ e↬⇒ě₂
 
-  ↬⇐-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇐ τ} {ě₂ : Γ ⊢⇐ τ}
+  ↬⇐-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě₁ : Γ ⊢⇐ τ} {ě₂ : Γ ⊢⇐ τ}
              → Γ ⊢ e ↬⇐ ě₁
              → Γ ⊢ e ↬⇐ ě₂
              → ě₁ ≡ ě₂

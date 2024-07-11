@@ -4,8 +4,8 @@ open import Data.List.Relation.Unary.All using (All)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Nullary using (Dec; yes; no)
 
+open import Grove.Marking.STyp
 open import Grove.Marking.Typ
-open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.UExp
 open import Grove.Marking.MExp
@@ -15,7 +15,7 @@ module Grove.Marking.Properties.Totality where
   mutual
     ↬⇒-totality : (Γ : Ctx)
                 → (e : UExp)
-                → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒ τ ] (Γ ⊢ e ↬⇒ ě)
+                → Σ[ τ ∈ STyp ] Σ[ ě ∈ Γ ⊢⇒ τ ] (Γ ⊢ e ↬⇒ ě)
     ↬⇒-totality Γ (- x ^ u)
       with Γ ∋? x
     ...  | yes (_ , Z {τ = τ})         = τ       , ⊢ Z ^ u           , MKSVar Z          
@@ -44,7 +44,7 @@ module Grove.Marking.Properties.Totality where
 
     ↬⇒s-totality : (Γ : Ctx)
                  → (e : UChildExp)
-                 → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
+                 → Σ[ τ ∈ STyp ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
     ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKSHole
     ↬⇒s-totality Γ (-∶ (w , e))
       with τ' , ě , e↬⇒ě ← ↬⇒-totality Γ e
@@ -61,16 +61,16 @@ module Grove.Marking.Properties.Totality where
 
     ↬⇐-subsume : ∀ {Γ e τ}
                → (ě : Γ ⊢⇒ τ)
-               → (τ' : Typ)
+               → (τ' : STyp)
                → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
                → (s : USubsumable e)
                → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
     ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
     ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ'~τ s
-    ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ∙ USu→MSu s e↬⇒ě ] , MKAInconsistentTypes e↬⇒ě τ'~̸τ s
+    ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ∙ USu→MSu s e↬⇒ě ] , MKAInconsistentSTypes e↬⇒ě τ'~̸τ s
 
     ↬⇐-totality : (Γ : Ctx)
-                → (τ' : Typ)
+                → (τ' : STyp)
                 → (e : UExp)
                 → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
     ↬⇐-totality Γ τ' e@(- x ^ u)
@@ -105,7 +105,7 @@ module Grove.Marking.Properties.Totality where
     ↬⇐-totality Γ τ' e@(-↻^ w ^ v) = (⊢↻^ w ^ v) , MKACycleLocationConflict
 
     ↬⇐s-totality : (Γ : Ctx)
-                 → (τ' : Typ)
+                 → (τ' : STyp)
                  → (e : UChildExp)
                  → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
     ↬⇐s-totality Γ τ' (-□ s) = (⊢□ s) , MKAHole
@@ -115,7 +115,7 @@ module Grove.Marking.Properties.Totality where
       with ė↬⇐ě* ← ↬⇐s-totality* Γ τ' ė*
          = ⊢⋏ s (MKALocalConflictChildren ė↬⇐ě*) , MKALocalConflict ė↬⇐ě*
 
-    ↬⇐s-totality* : (Γ : Ctx) (τ' : Typ)
+    ↬⇐s-totality* : (Γ : Ctx) (τ' : STyp)
                   → (ė* : List UChildExp')
                   → All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ' ] Γ ⊢ e ↬⇐ ě) ė*
     ↬⇐s-totality* Γ τ' []             = All.[]

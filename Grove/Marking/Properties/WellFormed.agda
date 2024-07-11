@@ -5,7 +5,7 @@ open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (¬_)
 
-open import Grove.Marking.Typ
+open import Grove.Marking.STyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.UExp
 open import Grove.Marking.MExp
@@ -15,7 +15,7 @@ open import Grove.Marking.Marking
 module Grove.Marking.Properties.WellFormed where
   mutual
     -- marking preserves syntactic structure
-    ↬⇒□ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇒ τ}
+    ↬⇒□ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇒ τ}
         → Γ ⊢ e ↬⇒ ě
         → ě ⇒□ ≡ e
     ↬⇒□ (MKSVar ∋x)       = refl
@@ -35,7 +35,7 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□ MKSMultiLocationConflict    = refl
     ↬⇒□ MKSCycleLocationConflict       = refl
 
-    ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
+    ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp} {ě : Γ ⊢⇒s τ}
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
     ↬⇒□s MKSHole = refl
@@ -50,7 +50,7 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□s* (All._∷_ {w , e} {ė*} (τ , ě , e↬⇒ě) ė↬⇒ě*)
       with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
 
-    ↬⇐□ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
+    ↬⇐□ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇐ τ}
         → Γ ⊢ e ↬⇐ ě
         → ě ⇐□ ≡ e
     ↬⇐□ (MKALam1 τ₁▸ τ~τ₁ e↬⇐ě)
@@ -61,12 +61,12 @@ module Grove.Marking.Properties.WellFormed where
       rewrite ↬⇐□s e↬⇐ě  = refl
     ↬⇐□ MKAMultiLocationConflict = refl
     ↬⇐□ MKACycleLocationConflict = refl
-    ↬⇐□ (MKAInconsistentTypes e↬⇒ě τ~̸τ' s)
+    ↬⇐□ (MKAInconsistentSTypes e↬⇒ě τ~̸τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
     ↬⇐□ (MKASubsume e↬⇒ě τ~τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
 
-    ↬⇐□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇐s τ}
+    ↬⇐□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp} {ě : Γ ⊢⇐s τ}
         → Γ ⊢s e ↬⇐ ě
         → ě ⇐□s ≡ e
     ↬⇐□s MKAHole = refl
@@ -83,7 +83,7 @@ module Grove.Marking.Properties.WellFormed where
 
   mutual
     -- well-typed unmarked expressions are marked into marked expressions of the same type
-    ⇒τ→↬⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
+    ⇒τ→↬⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp}
            → Γ ⊢ e ⇒ τ
            → Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě
     ⇒τ→↬⇒τ {e = - x ^ u}            (USVar ∋x)    = ⊢ ∋x ^ u , MKSVar ∋x
@@ -99,7 +99,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇒τ→↬⇒τ {e = -⋎^ w ^ v}          USMultiLocationConflict = ⊢⋎^ w ^ v , MKSMultiLocationConflict
     ⇒τ→↬⇒τ {e = -↻^ w ^ v}          USCycleLocationConflict    = ⊢↻^ w ^ v , MKSCycleLocationConflict
 
-    ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
+    ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
     ⇒sτ→↬⇒sτ {e = -□ s}       USHole = ⊢□ s , MKSHole
@@ -114,7 +114,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→↬⇒sτ* []             = []
     ⇒sτ→↬⇒sτ* ((τ , e⇒) ∷ ė⇒*) = (τ , ⇒τ→↬⇒τ e⇒) ∷ ⇒sτ→↬⇒sτ* ė⇒*
 
-    ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ}
+    ⇐τ→↬⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp}
            → Γ ⊢ e ⇐ τ
            → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě
     ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e ^ u} (UALam τ₃▸ τ~τ₁ e⇐τ₂)
@@ -124,7 +124,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇐τ→↬⇐τ {e = e}                (UASubsume e⇒τ' τ~τ' su)
       with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ'   = ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su
 
-    ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
+    ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : STyp}
              → Γ ⊢s e ⇐ τ
              → Σ[ ě ∈ Γ ⊢⇐s τ ] Γ ⊢s e ↬⇐ ě
     ⇐sτ→↬⇐sτ {e = -□ s}       UAHole = ⊢□ s , MKAHole
@@ -133,7 +133,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇐sτ→↬⇐sτ {e = -⋏ s ė*}    (UALocalConflict ė⇐*)
       with ė↬⇐ě* ← ⇐sτ→↬⇐sτ* ė⇐*        = ⊢⋏ s (MKALocalConflictChildren ė↬⇐ě*) , MKALocalConflict ė↬⇐ě*
 
-    ⇐sτ→↬⇐sτ* : ∀ {Γ : Ctx} {τ : Typ} {ė* : List UChildExp'}
+    ⇐sτ→↬⇐sτ* : ∀ {Γ : Ctx} {τ : STyp} {ė* : List UChildExp'}
               → (ė⇐* : All (λ (_ , e) → Γ ⊢ e ⇐ τ) ė*)
               → All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*
     ⇐sτ→↬⇐sτ* []             = []
@@ -141,7 +141,7 @@ module Grove.Marking.Properties.WellFormed where
 
   mutual
     -- marking synthesizes the same type as synthesis
-    ⇒-↬-≡ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {τ' : Typ} {ě : Γ ⊢⇒ τ'}
+    ⇒-↬-≡ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {τ' : STyp} {ě : Γ ⊢⇒ τ'}
            → Γ ⊢ e ⇒ τ
            → Γ ⊢ e ↬⇒ ě
            → τ ≡ τ'
@@ -179,7 +179,7 @@ module Grove.Marking.Properties.WellFormed where
 
   mutual
     -- marking well-typed terms produces no marks
-    ⇒τ→markless : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇒ τ}
+    ⇒τ→markless : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇒ τ}
                 → Γ ⊢ e ⇒ τ
                 → Γ ⊢ e ↬⇒ ě
                 → Markless⇒ ě
@@ -223,7 +223,7 @@ module Grove.Marking.Properties.WellFormed where
       with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
          = ⇒τ→markless e⇒ e↬⇒ě ∷ ⇒sτ→markless* ė⇒* ė↬⇒ě*
 
-    ⇐τ→markless : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
+    ⇐τ→markless : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇐ τ}
                 → Γ ⊢ e ⇐ τ
                 → Γ ⊢ e ↬⇐ ě
                 → Markless⇐ ě
@@ -237,7 +237,7 @@ module Grove.Marking.Properties.WellFormed where
          = ⊥-elim (τ~̸τ₁ τ~τ₁)
     ⇐τ→markless UAMultiLocationConflict MKAMultiLocationConflict = MLAMultiLocationConflict
     ⇐τ→markless UACycleLocationConflict MKACycleLocationConflict = MLACycleLocationConflict
-    ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKAInconsistentTypes e↬⇒ě τ~̸τ' su')
+    ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKAInconsistentSTypes e↬⇒ě τ~̸τ' su')
       with refl ← ⇒-↬-≡ e⇒τ' e↬⇒ě
          = ⊥-elim (τ~̸τ' τ~τ')
     ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKASubsume e↬⇒ě τ~τ'' su')
@@ -261,7 +261,7 @@ module Grove.Marking.Properties.WellFormed where
 
   mutual
     -- synthetically marking an expression into a markless expression and a type implies the original synthesizes that type
-    ↬⇒τ-markless→⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇒ τ}
+    ↬⇒τ-markless→⇒τ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇒ τ}
                     → Γ ⊢ e ↬⇒ ě
                     → Markless⇒ ě
                     → Γ ⊢ e ⇒ τ
@@ -297,7 +297,7 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒sτ-markless→⇒sτ* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) (less ∷ less*) = (τ , ↬⇒τ-markless→⇒τ e↬⇒ě less) ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
 
     -- analytically marking an expression into a markless expression against a type implies the original analyzes against type
-    ↬⇐τ-markless→⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě : Γ ⊢⇐ τ}
+    ↬⇐τ-markless→⇐τ : ∀ {Γ : Ctx} {e : UExp} {τ : STyp} {ě : Γ ⊢⇐ τ}
                     → Γ ⊢ e ↬⇐ ě
                     → Markless⇐ ě
                     → Γ ⊢ e ⇐ τ
@@ -327,14 +327,14 @@ module Grove.Marking.Properties.WellFormed where
 
   mutual
     -- ill-typed expressions are marked into non-markless expressions
-    ¬⇒τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : Typ} {ě : Γ ⊢⇒ τ'}
-                  → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇒ τ)
+    ¬⇒τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : STyp} {ě : Γ ⊢⇒ τ'}
+                  → ¬ (Σ[ τ ∈ STyp ] Γ ⊢ e ⇒ τ)
                   → Γ ⊢ e ↬⇒ ě
                   → ¬ (Markless⇒ ě)
     ¬⇒τ→¬markless {τ' = τ'} ¬e⇒τ e↬⇒ě less = ¬e⇒τ (τ' , ↬⇒τ-markless→⇒τ e↬⇒ě less)
 
-    ¬⇐τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : Typ} {ě : Γ ⊢⇐ τ'}
-                  → ¬ (Σ[ τ ∈ Typ ] Γ ⊢ e ⇐ τ)
+    ¬⇐τ→¬markless : ∀ {Γ : Ctx} {e : UExp} {τ' : STyp} {ě : Γ ⊢⇐ τ'}
+                  → ¬ (Σ[ τ ∈ STyp ] Γ ⊢ e ⇐ τ)
                   → Γ ⊢ e ↬⇐ ě
                   → ¬ (Markless⇐ ě)
     ¬⇐τ→¬markless {τ' = τ'} ¬e⇐τ e↬⇐ě less = ¬e⇐τ (τ' , ↬⇐τ-markless→⇐τ e↬⇐ě less)

@@ -5,8 +5,8 @@ open import Data.Product using (_×_; _,_; ∃-syntax)
 
 open import Grove.Ident
 open import Grove.Marking.Var
+open import Grove.Marking.STyp
 open import Grove.Marking.Typ
-open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 
 open import Grove.Marking.Grove using (Vertex; Location)
@@ -20,7 +20,7 @@ module Grove.Marking.MExp where
 
   mutual
     -- synthesis
-    data _⊢⇒_ : (Γ : Ctx) (τ : Typ) → Set where
+    data _⊢⇒_ : (Γ : Ctx) (τ : STyp) → Set where
       -- MSVar
       ⊢_^_ : ∀ {Γ x τ}
         → (∋x : Γ ∋ x ∶ τ)
@@ -30,7 +30,7 @@ module Grove.Marking.MExp where
       -- MSLam
       ⊢λ_∶_∙_^_ : ∀ {Γ τ'}
         → (x : Var)
-        → (τ : GChildTyp)
+        → (τ : ChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇒s τ')
         → (u : VertexId)
         → Γ ⊢⇒ (τ △s) -→ τ'
@@ -80,7 +80,7 @@ module Grove.Marking.MExp where
         → (v : Vertex)
         → Γ ⊢⇒ unknown
 
-    data _⊢⇒s_ : (Γ : Ctx) (τ : Typ) → Set where
+    data _⊢⇒s_ : (Γ : Ctx) (τ : STyp) → Set where
       -- MSHole: \vdash\sq
       ⊢□ : ∀ {Γ}
         → (s : Location)
@@ -97,7 +97,7 @@ module Grove.Marking.MExp where
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
 
-    data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
+    data MSubsumable : {Γ : Ctx} {τ : STyp} → (ě : Γ ⊢⇒ τ) → Set where
       MSuVar : ∀ {Γ x u τ}
         → {∋x : Γ ∋ x ∶ τ}
         → MSubsumable {Γ} (⊢ ∋x ^ u)
@@ -128,11 +128,11 @@ module Grove.Marking.MExp where
         → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
 
     -- analysis
-    data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where
+    data _⊢⇐_ : (Γ : Ctx) (τ : STyp) → Set where
       -- MALam1
       ⊢λ_∶_∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : GChildTyp)
+        → (τ : ChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~τ₁ : (τ △s) ~ τ₁)
@@ -142,7 +142,7 @@ module Grove.Marking.MExp where
       -- MALam2
       ⊢⸨λ_∶_∙_⸩[_]^_ : ∀ {Γ τ'}
         → (x : Var)
-        → (τ : GChildTyp)
+        → (τ : ChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s unknown)
         → (τ'!▸ : τ' !▸-→)
         → (u : VertexId)
@@ -151,7 +151,7 @@ module Grove.Marking.MExp where
       -- MALam3
       ⊢λ_∶⸨_⸩∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : GChildTyp)
+        → (τ : ChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~̸τ₁ : (τ △s) ~̸ τ₁)
@@ -168,7 +168,7 @@ module Grove.Marking.MExp where
         → (v : Vertex)
         → Γ ⊢⇐ τ
 
-      -- MAInconsistentTypes
+      -- MAInconsistentSTypes
       ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒ τ')
         → (τ~̸τ' : τ ~̸ τ')
@@ -182,7 +182,7 @@ module Grove.Marking.MExp where
         → (su : MSubsumable ě)
         → Γ ⊢⇐ τ
 
-    data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
+    data _⊢⇐s_ : (Γ : Ctx) (τ : STyp) → Set where
       -- MAHole: \vdash\sq
       ⊢□ : ∀ {Γ τ}
         → (s : Location)

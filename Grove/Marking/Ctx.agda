@@ -6,7 +6,7 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 
 open import Grove.Prelude using (assimilation; ¬-≡)
-open import Grove.Marking.Typ
+open import Grove.Marking.STyp
 open import Grove.Marking.Var
 
 module Grove.Marking.Ctx where
@@ -16,10 +16,10 @@ module Grove.Marking.Ctx where
   -- contexts
   data Ctx : Set where
     ∅     : Ctx
-    _,_∶_ : Ctx → Var → Typ → Ctx
+    _,_∶_ : Ctx → Var → STyp → Ctx
 
   -- context membership
-  data _∋_∶_ : (Γ : Ctx) (x : Var) (τ : Typ) → Set where
+  data _∋_∶_ : (Γ : Ctx) (x : Var) (τ : STyp) → Set where
     Z : ∀ {Γ x τ}                            → Γ , x  ∶ τ  ∋ x ∶ τ
     S : ∀ {Γ x x' τ τ'} → x ≢ x' → Γ ∋ x ∶ τ → Γ , x' ∶ τ' ∋ x ∶ τ
 

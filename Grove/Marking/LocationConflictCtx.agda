@@ -2,7 +2,7 @@ open import Data.List using (List; []; _∷_; [_]; _++_)
 open import Data.Product using (_×_; _,_; ∃-syntax)
 
 open import Grove.Ident
-open import Grove.Marking.Typ
+open import Grove.Marking.STyp
 open import Grove.Marking.Ctx
 open import Grove.Marking.MExp
 
@@ -11,7 +11,7 @@ open import Grove.Marking.Grove using (Vertex; Location)
 module Grove.Marking.LocationConflictCtx where
   data Mode : Set where
     Syn : Mode
-    Ana : (τ : Typ) → Mode
+    Ana : (τ : STyp) → Mode
 
   record LocationConflict : Set where
     constructor ⟨_,_,_,_⟩

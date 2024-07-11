@@ -6,8 +6,8 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (yes; no)
 
 open import Grove.Ident
+open import Grove.Marking.STyp
 open import Grove.Marking.Typ
-open import Grove.Marking.GTyp
 open import Grove.Marking.UExp
 open import Grove.Marking.MExp
 
