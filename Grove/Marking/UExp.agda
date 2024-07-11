@@ -22,20 +22,20 @@ module Grove.Marking.UExp where
   mutual
     data UExp : Set where
       -_^_      : (x : Var) → (u : VertexId) → UExp
-      -λ_∶_∙_^_ : (x : Var) → (τ : GSubTyp) → (e : USubExp) → (u : VertexId) → UExp
-      -_∙_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
+      -λ_∶_∙_^_ : (x : Var) → (τ : GChildTyp) → (e : UChildExp) → (u : VertexId) → UExp
+      -_∙_^_    : (e₁ : UChildExp) → (e₂ : UChildExp) → (u : VertexId) → UExp
       -ℕ_^_     : (n : ℕ) → (u : VertexId) → UExp
-      -_+_^_    : (e₁ : USubExp) → (e₂ : USubExp) → (u : VertexId) → UExp
+      -_+_^_    : (e₁ : UChildExp) → (e₂ : UChildExp) → (u : VertexId) → UExp
       -⋎^_^_    : (w : EdgeId) → (v : Vertex) → UExp
       -↻^_^_    : (w : EdgeId) → (v : Vertex) → UExp
 
     -- TODO fix to match term representation
-    data USubExp : Set where
-      -□ : (s : Source) → USubExp
-      -∶ : (ė : USubExp') → USubExp
-      -⋏ : (s : Source) → (ė* : List USubExp')  → USubExp
+    data UChildExp : Set where
+      -□ : (s : Source) → UChildExp
+      -∶ : (ė : UChildExp') → UChildExp
+      -⋏ : (s : Source) → (ė* : List UChildExp')  → UChildExp
 
-    USubExp' = EdgeId × UExp
+    UChildExp' = EdgeId × UExp
 
   data USubsumable : UExp → Set where
     USuVar : ∀ {x u}
@@ -87,7 +87,7 @@ module Grove.Marking.UExp where
       USUnicycle : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
-    data _⊢s_⇒_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
+    data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
       USubSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ⇒ unknown
 
@@ -115,7 +115,7 @@ module Grove.Marking.UExp where
         → (su : USubsumable e)
         → Γ ⊢ e ⇐ τ
 
-    data _⊢s_⇐_ : (Γ : Ctx) (e : USubExp) (τ : Typ) → Set where
+    data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
       USubASubsume : ∀ {Γ e τ τ'} 
         → (e⇒τ' : Γ ⊢s e ⇒ τ')
         → (τ~τ' : τ ~ τ')
@@ -138,7 +138,7 @@ module Grove.Marking.UExp where
     ⇒-unicity USMultiParent          USMultiParent            = refl
     ⇒-unicity USUnicycle             USUnicycle               = refl
 
-    ⇒s-unicity : ∀ {Γ : Ctx} {e : USubExp} {τ₁ τ₂ : Typ}
+    ⇒s-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : Typ}
                → Γ ⊢s e ⇒ τ₁
                → Γ ⊢s e ⇒ τ₂
                → τ₁ ≡ τ₂

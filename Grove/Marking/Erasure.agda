@@ -22,12 +22,12 @@ module Grove.Marking.Erasure where
     (⊢⋎^ w ^ v)              ⇒□ = -⋎^ w ^ v
     (⊢↻^ w ^ v)              ⇒□ = -↻^ w ^ v
 
-    _⇒□s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → USubExp
+    _⇒□s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → UChildExp
     (⊢□ s)       ⇒□s = -□ s
     (⊢∶ (w , ě)) ⇒□s = -∶ (w , ě ⇒□)
     (⊢⋏ s ė*)    ⇒□s = -⋏ s (ė* ⇒□s*)
 
-    _⇒□s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → List USubExp'
+    _⇒□s* : ∀ {Γ} → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)) → List UChildExp'
     []                 ⇒□s* = []
     ((w , _ , ě) ∷ ė*) ⇒□s* = (w , ě ⇒□) ∷ (ė* ⇒□s*)
 
@@ -38,7 +38,7 @@ module Grove.Marking.Erasure where
     ⊢⸨ ě ⸩[ τ~̸τ' ∙ su ]                ⇐□ = ě ⇒□
     ⊢∙ ě [ τ~τ' ∙ su ]                 ⇐□ = ě ⇒□
 
-    _⇐□s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → USubExp
+    _⇐□s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → UChildExp
     ⊢∙ ě [ τ~τ' ] ⇐□s  = ě ⇒□s
     ⊢⸨ ě ⸩[ τ~̸τ' ] ⇐□s = ě ⇒□s
 

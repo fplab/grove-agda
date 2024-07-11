@@ -35,7 +35,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒-τ-unicity MKSMultiParent          MKSMultiParent            = refl
     ↬⇒-τ-unicity MKSUnicycle             MKSUnicycle               = refl
 
-    ↬⇒s-τ-unicity : ∀ {Γ : Ctx} {e : USubExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒s τ₁} {ě₂ : Γ ⊢⇒s τ₂}
+    ↬⇒s-τ-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : Typ} {ě₁ : Γ ⊢⇒s τ₁} {ě₂ : Γ ⊢⇒s τ₂}
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → τ₁ ≡ τ₂
@@ -79,7 +79,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒-ě-unicity MKSMultiParent MKSMultiParent = refl
     ↬⇒-ě-unicity MKSUnicycle    MKSUnicycle    = refl
 
-    ↬⇒s-ě-unicity : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ} {ě₁ : Γ ⊢⇒s τ} {ě₂ : Γ ⊢⇒s τ}
+    ↬⇒s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě₁ : Γ ⊢⇒s τ} {ě₂ : Γ ⊢⇒s τ}
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → ě₁ ≡ ě₂
@@ -89,7 +89,7 @@ module Grove.Marking.Properties.Unicity where
     ↬⇒s-ě-unicity (MKSubSConflict ė↬⇒ě*) (MKSubSConflict ė↬⇒ě*')
       rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'           = refl
 
-    ↬⇒s-ě-unicity* : ∀ {Γ} {ė* : List USubExp'}
+    ↬⇒s-ě-unicity* : ∀ {Γ} {ė* : List UChildExp'}
                    → (ė↬⇒ě*  : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
                    → (ė↬⇒ě*' : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
                    → MKSubSConflictChildren ė↬⇒ě* ≡ MKSubSConflictChildren ė↬⇒ě*'
@@ -204,7 +204,7 @@ module Grove.Marking.Properties.Unicity where
          | refl ← ~-≡ τ~τ' τ~τ''
       rewrite USu→MSu-unicity USuUnicycle e↬⇒ě e↬⇒ě' = refl
 
-    ↬⇐s-ě-unicity : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ} {ě₁ : Γ ⊢⇐s τ} {ě₂ : Γ ⊢⇐s τ}
+    ↬⇐s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě₁ : Γ ⊢⇐s τ} {ě₂ : Γ ⊢⇐s τ}
                  → Γ ⊢s e ↬⇐ ě₁
                  → Γ ⊢s e ↬⇐ ě₂
                  → ě₁ ≡ ě₂

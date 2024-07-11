@@ -64,13 +64,13 @@ module Grove.Marking.Marking where
       MKSUnicycle : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ↬⇒ ⊢↻^ w ^ v
 
-    MKSubSConflictChildren : ∀ {Γ} {ė* : List USubExp'}
+    MKSubSConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
       → List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)
     MKSubSConflictChildren All.[]                              = []
     MKSubSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSubSConflictChildren ė↬⇒ě*)
 
-    data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇒s τ) → Set where
+    data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
       MKSubSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ↬⇒ ⊢□ s
 
@@ -129,7 +129,7 @@ module Grove.Marking.Marking where
         → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
-    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : USubExp) → (Γ ⊢⇐s τ) → Set where
+    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
       MKSubASubsume : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒s τ'}
         → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)

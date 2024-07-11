@@ -11,16 +11,16 @@ module Grove.Marking.GTyp where
   mutual
     data GTyp : Set where
       num^_  : (u : VertexId) → GTyp
-      _-→_^_ : (τ₁ : GSubTyp) → (τ₂ : GSubTyp) → (u : VertexId) → GTyp
+      _-→_^_ : (τ₁ : GChildTyp) → (τ₂ : GChildTyp) → (u : VertexId) → GTyp
       ⋎^_^_  : (w : EdgeId) → (v : Vertex) → GTyp
       ↻^_^_  : (w : EdgeId) → (v : Vertex) → GTyp
 
-    data GSubTyp : Set where
-      □ : (s : Source) → GSubTyp
-      ∶ : (τ : GSubTyp') → GSubTyp
-      ⋏ : (s : Source) → (τ* : List GSubTyp') → GSubTyp
+    data GChildTyp : Set where
+      □ : (s : Source) → GChildTyp
+      ∶ : (τ : GChildTyp') → GChildTyp
+      ⋏ : (s : Source) → (τ* : List GChildTyp') → GChildTyp
 
-    GSubTyp' = EdgeId × GTyp
+    GChildTyp' = EdgeId × GTyp
 
     _△ : GTyp → Typ
     (num^ u)       △ = num
@@ -28,7 +28,7 @@ module Grove.Marking.GTyp where
     (⋎^ w ^ v)     △ = unknown
     (↻^ w ^ v)     △ = unknown
 
-    _△s : GSubTyp → Typ
+    _△s : GChildTyp → Typ
     (□ s)       △s = unknown
     (∶ (w , τ)) △s = τ △
     (⋏ s τ*)    △s = unknown

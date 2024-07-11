@@ -44,7 +44,7 @@ module Grove.Marking.Properties.Totality where
     ↬⇒-totality Γ (-↻^ w ^ v) = unknown , ⊢↻^ w ^ v , MKSUnicycle
 
     ↬⇒s-totality : (Γ : Ctx)
-                 → (e : USubExp)
+                 → (e : UChildExp)
                  → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
     ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKSubSHole
     ↬⇒s-totality Γ (-∶ (w , e))
@@ -55,7 +55,7 @@ module Grove.Marking.Properties.Totality where
          = unknown , ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
 
     ↬⇒s-totality* : (Γ : Ctx)
-                  → (ė* : List USubExp')
+                  → (ė* : List UChildExp')
                   → All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
     ↬⇒s-totality* Γ []             = All.[]
     ↬⇒s-totality* Γ ((w , e) ∷ ė*) = All._∷_ (↬⇒-totality Γ e) (↬⇒s-totality* Γ ė*)
@@ -120,7 +120,7 @@ module Grove.Marking.Properties.Totality where
 
     ↬⇐s-totality : (Γ : Ctx)
                  → (τ' : Typ)
-                 → (e : USubExp)
+                 → (e : UChildExp)
                  → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
     ↬⇐s-totality Γ τ' e
       with _ , ě , e↬⇒ě ← ↬⇒s-totality Γ e

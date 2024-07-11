@@ -31,7 +31,7 @@ module Grove.Marking.MExp where
       -- MSLam
       ⊢λ_∶_∙_^_ : ∀ {Γ τ'}
         → (x : Var)
-        → (τ : GSubTyp)
+        → (τ : GChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇒s τ')
         → (u : VertexId)
         → Γ ⊢⇒ (τ △s) -→ τ'
@@ -139,7 +139,7 @@ module Grove.Marking.MExp where
       -- MALam1
       ⊢λ_∶_∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : GSubTyp)
+        → (τ : GChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~τ₁ : (τ △s) ~ τ₁)
@@ -149,7 +149,7 @@ module Grove.Marking.MExp where
       -- MALam2
       ⊢⸨λ_∶_∙_⸩[_]^_ : ∀ {Γ τ'}
         → (x : Var)
-        → (τ : GSubTyp)
+        → (τ : GChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s unknown)
         → (τ'!▸ : τ' !▸-→)
         → (u : VertexId)
@@ -158,7 +158,7 @@ module Grove.Marking.MExp where
       -- MALam3
       ⊢λ_∶⸨_⸩∙_[_∙_]^_ : ∀ {Γ τ₁ τ₂ τ₃}
         → (x : Var)
-        → (τ : GSubTyp)
+        → (τ : GChildTyp)
         → (ě : Γ , x ∶ (τ △s) ⊢⇐s τ₂)
         → (τ₃▸ : τ₃ ▸ τ₁ -→ τ₂)
         → (τ~̸τ₁ : (τ △s) ~̸ τ₁)

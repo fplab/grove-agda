@@ -35,7 +35,7 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□ MKSMultiParent    = refl
     ↬⇒□ MKSUnicycle       = refl
 
-    ↬⇒□s : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
+    ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
     ↬⇒□s MKSubSHole = refl
@@ -64,7 +64,7 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇐□ (MKASubsume e↬⇒ě τ~τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
 
-    ↬⇐□s : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ} {ě : Γ ⊢⇐s τ}
+    ↬⇐□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇐s τ}
         → Γ ⊢s e ↬⇐ ě
         → ě ⇐□s ≡ e
     ↬⇐□s (MKSubASubsume e↬⇒ě τ~τ')
@@ -90,7 +90,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇒τ→↬⇒τ {e = -⋎^ w ^ v}          USMultiParent = ⊢⋎^ w ^ v , MKSMultiParent
     ⇒τ→↬⇒τ {e = -↻^ w ^ v}          USUnicycle    = ⊢↻^ w ^ v , MKSUnicycle
 
-    ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
+    ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
     ⇒sτ→↬⇒sτ {e = -□ s}       USubSHole = ⊢□ s , MKSubSHole
@@ -99,7 +99,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (USubSConflict ė⇒*)
       with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKSubSConflictChildren ė↬⇒ě*) , MKSubSConflict ė↬⇒ě*
 
-    ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List USubExp'}
+    ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List UChildExp'}
               → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
               → All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*
     ⇒sτ→↬⇒sτ* []             = []
@@ -113,7 +113,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇐τ→↬⇐τ {e = e}                (UASubsume e⇒τ' τ~τ' su)
       with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ'   = ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su
 
-    ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : USubExp} {τ : Typ}
+    ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇐ τ
              → Σ[ ě ∈ Γ ⊢⇐s τ ] Γ ⊢s e ↬⇐ ě
     ⇐sτ→↬⇐sτ (USubASubsume e⇒τ' τ~τ')
