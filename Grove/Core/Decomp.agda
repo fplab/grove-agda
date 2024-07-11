@@ -36,7 +36,7 @@ mutual
   decomp-sub : ℕ → Graph → (EdgeId × Vertex) → (EdgeId × Term)
   decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v' u')
 
-  decomp-pos : ℕ → Graph → (k : Ctor) → VertexId → (p : Fin (arity k)) → TermList
+  decomp-pos : ℕ → Graph → (k : Ctor) → VertexId → (p : Fin (arity k)) → ChildTerm
   decomp-pos fuel G k u p with map (decomp-sub fuel G) (children G (S (V k u) p))
   ... | [] = □ (S (V k u) p)
   ... | t ∷ [] = ∶ t

@@ -35,7 +35,7 @@ mutual
   recomp-sub : VertexId → (k : Ctor) → (p : Fin (arity k)) → (EdgeId × Term) → List Edge
   recomp-sub u k p (u' , t) = (E (S (V k u) p) (vertex-of-term t) u') ∷ (recomp-t t)
 
-  recomp-pos : VertexId → (k : Ctor) → (p : Fin (arity k)) → TermList → (List Edge)
+  recomp-pos : VertexId → (k : Ctor) → (p : Fin (arity k)) → ChildTerm → (List Edge)
   recomp-pos u k p (□ _) = []
   recomp-pos u k p (∶ t) = recomp-sub u k p t
   recomp-pos u k p (⋏ _ ts) = concat (map (recomp-sub u k p) ts) 

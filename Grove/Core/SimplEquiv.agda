@@ -54,18 +54,18 @@ module Grove.Core.SimplEquiv where
 
   mutual 
     data Term : Set where
-      TAp : VertexId → TermList → TermList → Term 
+      TAp : VertexId → ChildTerm → ChildTerm → Term 
       TVar : VertexId → Name → Term 
-      TLam : VertexId → Name → TermList → Term 
+      TLam : VertexId → Name → ChildTerm → Term 
       ⋎ : EdgeId → Vertex → Term 
       ↻ : EdgeId → Vertex → Term
       
-    data TermList : Set where 
-      □ : Location → TermList 
-      ∶ : (EdgeId × Term) → TermList
-      ⋏ : Location → (List (EdgeId × Term)) → TermList
+    data ChildTerm : Set where 
+      □ : Location → ChildTerm 
+      ∶ : (EdgeId × Term) → ChildTerm
+      ⋏ : Location → (List (EdgeId × Term)) → ChildTerm
 
-  open module grove = core.grove Ctor _≟ℂ_ arity renaming (Term to GTerm; TermList to GTermList)
+  open module grove = core.grove Ctor _≟ℂ_ arity renaming (Term to GTerm; ChildTerm to GChildTerm)
 
   mutual 
     {-# TERMINATING #-}
@@ -76,7 +76,7 @@ module Grove.Core.SimplEquiv where
     f1 (⋎ x x₁) = ⋎ x x₁ 
     f1 (↻ x x₁) = ↻ x x₁
 
-    f1-list : TermList → GTermList
+    f1-list : ChildTerm → GChildTerm
     f1-list (□ x) = □ x 
     f1-list (∶ (u , x)) = ∶ (u , f1 x)
     f1-list (⋏ x x₁) = ⋏ x (map (λ (u , x₂) → (u , f1 x₂)) x₁)
@@ -90,7 +90,7 @@ module Grove.Core.SimplEquiv where
     f2 (⋎ x x₁) = ⋎ x x₁ 
     f2 (↻ x x₁) = ↻ x x₁
 
-    f2-list : GTermList → TermList
+    f2-list : GChildTerm → ChildTerm
     f2-list (□ x) = □ x  
     f2-list (∶ (u , x)) = ∶ (u , f2 x)
     f2-list (⋏ x x₁) = ⋏ x (map (λ (u , x₂) → (u , f2 x₂)) x₁)
@@ -104,7 +104,7 @@ module Grove.Core.SimplEquiv where
     f1-f2 (⋎ x x₁) = refl 
     f1-f2 (↻ x x₁) = refl
 
-    f1-f2-list : (t : TermList) → (f2-list (f1-list t)) ≡ t 
+    f1-f2-list : (t : ChildTerm) → (f2-list (f1-list t)) ≡ t 
     f1-f2-list (□ x) = refl 
     f1-f2-list (∶ (u , x)) rewrite f1-f2 x = refl
     f1-f2-list (⋏ x x₁) rewrite f1-f2-map x₁ = refl
@@ -122,7 +122,7 @@ module Grove.Core.SimplEquiv where
     f2-f1 (⋎ x x₁) = refl 
     f2-f1 (↻ x x₁) = refl
 
-    f2-f1-list : (t : GTermList) → (f1-list (f2-list t)) ≡ t 
+    f2-f1-list : (t : GChildTerm) → (f1-list (f2-list t)) ≡ t 
     f2-f1-list (□ x) = refl 
     f2-f1-list (∶ (u , x)) rewrite f2-f1 x = refl
     f2-f1-list (⋏ x x₁) rewrite f2-f1-map x₁ = refl

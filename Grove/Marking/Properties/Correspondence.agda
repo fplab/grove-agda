@@ -6,7 +6,7 @@ open import Data.Vec using ([]; _∷_)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; inspect; [_])
 
 open import Grove.Ident using (EdgeId)
-open import Grove.Marking.Grove using (Ctor; Term; TermList; T; ⋎; ↻; □; ∶; ⋏)
+open import Grove.Marking.Grove using (Ctor; Term; ChildTerm; T; ⋎; ↻; □; ∶; ⋏)
 open import Grove.Marking.Typ
 open import Grove.Marking.UExp
 
@@ -17,75 +17,75 @@ module Grove.Marking.Properties.Correspondence where
     Term→UExp (⋎ w v)                             = just (-⋎^ w ^ v)
     Term→UExp (↻ w v)                             = just (-↻^ w ^ v)
     Term→UExp (T u (Ctor.CEVar x) [])             = just (- x ^ u)
-    Term→UExp (T u (Ctor.CELam x) (τ ∷ e ∷ []))   = zipWith (λ { τ e → -λ x ∶ τ ∙ e ^ u }) (TermList→ChildTyp τ) (TermList→UChildExp e)
-    Term→UExp (T u Ctor.CEAp      (e₁ ∷ e₂ ∷ [])) = zipWith (λ { e₁ e₂ → - e₁ ∙ e₂ ^ u }) (TermList→UChildExp e₁) (TermList→UChildExp e₂)
+    Term→UExp (T u (Ctor.CELam x) (τ ∷ e ∷ []))   = zipWith (λ { τ e → -λ x ∶ τ ∙ e ^ u }) (ChildTerm→ChildTyp τ) (ChildTerm→UChildExp e)
+    Term→UExp (T u Ctor.CEAp      (e₁ ∷ e₂ ∷ [])) = zipWith (λ { e₁ e₂ → - e₁ ∙ e₂ ^ u }) (ChildTerm→UChildExp e₁) (ChildTerm→UChildExp e₂)
     Term→UExp (T u (Ctor.CENum n) [])             = just (-ℕ n ^ u)
-    Term→UExp (T u Ctor.CEPlus    (e₁ ∷ e₂ ∷ [])) = zipWith (λ { e₁ e₂ → - e₁ + e₂ ^ u }) (TermList→UChildExp e₁) (TermList→UChildExp e₂)
+    Term→UExp (T u Ctor.CEPlus    (e₁ ∷ e₂ ∷ [])) = zipWith (λ { e₁ e₂ → - e₁ + e₂ ^ u }) (ChildTerm→UChildExp e₁) (ChildTerm→UChildExp e₂)
     Term→UExp (T u Ctor.CTNum     [])             = nothing
     Term→UExp (T u Ctor.CTArrow   (_ ∷ _ ∷ []))   = nothing
 
-    TermList→UChildExp : TermList → Maybe UChildExp
-    TermList→UChildExp (□ s) = just (-□ s)
-    TermList→UChildExp (∶ (w , e)) = map (λ e → -∶ (w , e)) (Term→UExp e)
-    TermList→UChildExp (⋏ s ė*) = map (λ ė* → -⋏ s ė*) (TermList→UChildExp* ė*)
+    ChildTerm→UChildExp : ChildTerm → Maybe UChildExp
+    ChildTerm→UChildExp (□ s) = just (-□ s)
+    ChildTerm→UChildExp (∶ (w , e)) = map (λ e → -∶ (w , e)) (Term→UExp e)
+    ChildTerm→UChildExp (⋏ s ė*) = map (λ ė* → -⋏ s ė*) (ChildTerm→UChildExp* ė*)
 
-    TermList→UChildExp* : List (EdgeId × Term) → Maybe (List UChildExp')
-    TermList→UChildExp* []             = just []
-    TermList→UChildExp* ((w , e) ∷ ė*) = zipWith (λ { e ė* → (w , e) ∷ ė* }) (Term→UExp e) (TermList→UChildExp* ė*)
+    ChildTerm→UChildExp* : List (EdgeId × Term) → Maybe (List UChildExp')
+    ChildTerm→UChildExp* []             = just []
+    ChildTerm→UChildExp* ((w , e) ∷ ė*) = zipWith (λ { e ė* → (w , e) ∷ ė* }) (Term→UExp e) (ChildTerm→UChildExp* ė*)
 
     Term→Typ : Term → Maybe Typ
     Term→Typ (⋎ w v)                           = just (⋎^ w ^ v)
     Term→Typ (↻ w v)                           = just (↻^ w ^ v)
     Term→Typ (T u Ctor.CTNum [])               = just (num^ u)
-    Term→Typ (T u Ctor.CTArrow (τ₁ ∷ τ₂ ∷ [])) = zipWith (λ { τ₁ τ₂ → τ₁ -→ τ₂ ^ u }) (TermList→ChildTyp τ₁) (TermList→ChildTyp τ₂)
+    Term→Typ (T u Ctor.CTArrow (τ₁ ∷ τ₂ ∷ [])) = zipWith (λ { τ₁ τ₂ → τ₁ -→ τ₂ ^ u }) (ChildTerm→ChildTyp τ₁) (ChildTerm→ChildTyp τ₂)
     Term→Typ (T u (Ctor.CEVar x) [])           = nothing
     Term→Typ (T u (Ctor.CELam x) (_ ∷ _ ∷ [])) = nothing
     Term→Typ (T u Ctor.CEAp      (_ ∷ _ ∷ [])) = nothing
     Term→Typ (T u (Ctor.CENum n) [])           = nothing
     Term→Typ (T u Ctor.CEPlus    (_ ∷ _ ∷ [])) = nothing
 
-    TermList→ChildTyp : TermList → Maybe ChildTyp
-    TermList→ChildTyp (□ s) = just (□ s)
-    TermList→ChildTyp (∶ (w , τ)) = map (λ τ → ∶ (w , τ)) (Term→Typ τ)
-    TermList→ChildTyp (⋏ s τ*) = map (λ τ* → ⋏ s τ*) (TermList→ChildTyp* τ*)
+    ChildTerm→ChildTyp : ChildTerm → Maybe ChildTyp
+    ChildTerm→ChildTyp (□ s) = just (□ s)
+    ChildTerm→ChildTyp (∶ (w , τ)) = map (λ τ → ∶ (w , τ)) (Term→Typ τ)
+    ChildTerm→ChildTyp (⋏ s τ*) = map (λ τ* → ⋏ s τ*) (ChildTerm→ChildTyp* τ*)
 
-    TermList→ChildTyp* : List (EdgeId × Term) → Maybe (List ChildTyp')
-    TermList→ChildTyp* []             = just []
-    TermList→ChildTyp* ((w , τ) ∷ τ*) = zipWith (λ { τ τ* → (w , τ) ∷ τ* }) (Term→Typ τ) (TermList→ChildTyp* τ*)
+    ChildTerm→ChildTyp* : List (EdgeId × Term) → Maybe (List ChildTyp')
+    ChildTerm→ChildTyp* []             = just []
+    ChildTerm→ChildTyp* ((w , τ) ∷ τ*) = zipWith (λ { τ τ* → (w , τ) ∷ τ* }) (Term→Typ τ) (ChildTerm→ChildTyp* τ*)
 
   mutual
     UExp→Term : UExp → Term
     UExp→Term (- x ^ u) = T u (Ctor.CEVar x) []
-    UExp→Term (-λ x ∶ τ ∙ e ^ u) = T u (Ctor.CELam x) ((ChildTyp→TermList τ) ∷ (UChildExp→TermList e) ∷ [])
-    UExp→Term (- e₁ ∙ e₂ ^ u) = T u (Ctor.CEPlus) ((UChildExp→TermList e₁) ∷ (UChildExp→TermList e₂) ∷ [])
+    UExp→Term (-λ x ∶ τ ∙ e ^ u) = T u (Ctor.CELam x) ((ChildTyp→ChildTerm τ) ∷ (UChildExp→ChildTerm e) ∷ [])
+    UExp→Term (- e₁ ∙ e₂ ^ u) = T u (Ctor.CEPlus) ((UChildExp→ChildTerm e₁) ∷ (UChildExp→ChildTerm e₂) ∷ [])
     UExp→Term (-ℕ n ^ u) = T u (Ctor.CENum n) []
-    UExp→Term (- e₁ + e₂ ^ u) = T u (Ctor.CEPlus) ((UChildExp→TermList e₁) ∷ (UChildExp→TermList e₂) ∷ [])
+    UExp→Term (- e₁ + e₂ ^ u) = T u (Ctor.CEPlus) ((UChildExp→ChildTerm e₁) ∷ (UChildExp→ChildTerm e₂) ∷ [])
     UExp→Term (-⋎^ w ^ v) = ⋎ w v
     UExp→Term (-↻^ w ^ v) = ↻ w v
 
-    UChildExp→TermList : UChildExp → TermList
-    UChildExp→TermList (-□ s) = □ s
-    UChildExp→TermList (-∶ (w , e)) = ∶ (w , UExp→Term e)
-    UChildExp→TermList (-⋏ s ė*) = ⋏ s (UChildExp→TermList* ė*)
+    UChildExp→ChildTerm : UChildExp → ChildTerm
+    UChildExp→ChildTerm (-□ s) = □ s
+    UChildExp→ChildTerm (-∶ (w , e)) = ∶ (w , UExp→Term e)
+    UChildExp→ChildTerm (-⋏ s ė*) = ⋏ s (UChildExp→ChildTerm* ė*)
 
-    UChildExp→TermList* : List UChildExp' → List (EdgeId × Term)
-    UChildExp→TermList* [] = []
-    UChildExp→TermList* ((w , e) ∷ ė*) = (w , UExp→Term e) ∷ (UChildExp→TermList* ė*)
+    UChildExp→ChildTerm* : List UChildExp' → List (EdgeId × Term)
+    UChildExp→ChildTerm* [] = []
+    UChildExp→ChildTerm* ((w , e) ∷ ė*) = (w , UExp→Term e) ∷ (UChildExp→ChildTerm* ė*)
 
     Typ→Term : Typ → Term
     Typ→Term (num^ u) = T u Ctor.CTNum []
-    Typ→Term (τ₁ -→ τ₂ ^ u) = T u Ctor.CTArrow ((ChildTyp→TermList τ₁) ∷ (ChildTyp→TermList τ₂) ∷ [])
+    Typ→Term (τ₁ -→ τ₂ ^ u) = T u Ctor.CTArrow ((ChildTyp→ChildTerm τ₁) ∷ (ChildTyp→ChildTerm τ₂) ∷ [])
     Typ→Term (⋎^ w ^ v) = ⋎ w v
     Typ→Term (↻^ w ^ v) = ↻ w v
 
-    ChildTyp→TermList : ChildTyp → TermList
-    ChildTyp→TermList (□ s) = □ s
-    ChildTyp→TermList (∶ (w , τ)) = ∶ (w , Typ→Term τ)
-    ChildTyp→TermList (⋏ s τ*) = ⋏ s (ChildTyp→TermList* τ*)
+    ChildTyp→ChildTerm : ChildTyp → ChildTerm
+    ChildTyp→ChildTerm (□ s) = □ s
+    ChildTyp→ChildTerm (∶ (w , τ)) = ∶ (w , Typ→Term τ)
+    ChildTyp→ChildTerm (⋏ s τ*) = ⋏ s (ChildTyp→ChildTerm* τ*)
 
-    ChildTyp→TermList* : List ChildTyp' → List (EdgeId × Term)
-    ChildTyp→TermList* [] = []
-    ChildTyp→TermList* ((w , τ) ∷ τ*) = (w , Typ→Term τ) ∷ (ChildTyp→TermList* τ*)
+    ChildTyp→ChildTerm* : List ChildTyp' → List (EdgeId × Term)
+    ChildTyp→ChildTerm* [] = []
+    ChildTyp→ChildTerm* ((w , τ) ∷ τ*) = (w , Typ→Term τ) ∷ (ChildTyp→ChildTerm* τ*)
 
   mutual
     Term→UExp→Term-sig : (t : Term) → Set
@@ -98,13 +98,13 @@ module Grove.Marking.Properties.Correspondence where
     Term→UExp→Term (↻ w v)                             = {! !}
     Term→UExp→Term (T u (Ctor.CEVar x) [])             = {! !}
     Term→UExp→Term (T u (Ctor.CELam x) (t₁ ∷ t₂ ∷ []))
-      with TermList→ChildTyp t₁ | TermList→UChildExp t₂ in h₂ | TermList→UChildExp→TermList t₂
+      with ChildTerm→ChildTyp t₁ | ChildTerm→UChildExp t₂ in h₂ | ChildTerm→UChildExp→ChildTerm t₂
     ...  | just τ | just e | ih₂ = goal eqv₁ (eqv₂ ih₂)
-      where eqv₁ : ChildTyp→TermList τ ≡ t₁
+      where eqv₁ : ChildTyp→ChildTerm τ ≡ t₁
             eqv₁ = {! !}
-            eqv₂ : TermList→UChildExp→TermList-sig t₂ → UChildExp→TermList e ≡ t₂
+            eqv₂ : ChildTerm→UChildExp→ChildTerm-sig t₂ → UChildExp→ChildTerm e ≡ t₂
             eqv₂ ih₂ rewrite h₂ = ?
-            goal : ChildTyp→TermList τ ≡ t₁ → UChildExp→TermList e ≡ t₂
+            goal : ChildTyp→ChildTerm τ ≡ t₁ → UChildExp→ChildTerm e ≡ t₂
                  → UExp→Term (-λ x ∶ τ ∙ e ^ u) ≡ T u (Ctor.CELam x) (t₁ ∷ t₂ ∷ [])
             goal refl refl = refl
     Term→UExp→Term (T u Ctor.CEAp      (e₁ ∷ e₂ ∷ [])) = {! !}
@@ -113,9 +113,9 @@ module Grove.Marking.Properties.Correspondence where
     Term→UExp→Term (T u Ctor.CTNum     [])             = tt
     Term→UExp→Term (T u Ctor.CTArrow   (_ ∷ _ ∷ []))   = tt
 
-    TermList→UChildExp→TermList-sig : (t : TermList) → Set
-    TermList→UChildExp→TermList-sig t with TermList→UChildExp t
-    ... | just e  = UChildExp→TermList e ≡ t
+    ChildTerm→UChildExp→ChildTerm-sig : (t : ChildTerm) → Set
+    ChildTerm→UChildExp→ChildTerm-sig t with ChildTerm→UChildExp t
+    ... | just e  = UChildExp→ChildTerm e ≡ t
     ... | nothing = ⊤
 
-    TermList→UChildExp→TermList : (e : TermList) → TermList→UChildExp→TermList-sig e
+    ChildTerm→UChildExp→ChildTerm : (e : ChildTerm) → ChildTerm→UChildExp→ChildTerm-sig e

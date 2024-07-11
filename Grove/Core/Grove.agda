@@ -21,14 +21,14 @@ private
 
 mutual 
   data Term : Set where
-    T : VertexId → (k : Ctor) → (Vec TermList (arity k)) → Term 
+    T : VertexId → (k : Ctor) → (Vec ChildTerm (arity k)) → Term 
     ⋎ : EdgeId → Vertex → Term 
     ↻ : EdgeId → Vertex → Term
     
-  data TermList : Set where 
-    □ : Location → TermList 
-    ∶ : (EdgeId × Term) → TermList
-    ⋏ : Location → (List (EdgeId × Term)) → TermList
+  data ChildTerm : Set where 
+    □ : Location → ChildTerm 
+    ∶ : (EdgeId × Term) → ChildTerm
+    ⋏ : Location → (List (EdgeId × Term)) → ChildTerm
 
 Grove : Set
 Grove = (List Term)
