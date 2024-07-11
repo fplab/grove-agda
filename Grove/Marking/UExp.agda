@@ -29,7 +29,6 @@ module Grove.Marking.UExp where
       -⋎^_^_    : (w : EdgeId) → (v : Vertex) → UExp
       -↻^_^_    : (w : EdgeId) → (v : Vertex) → UExp
 
-    -- TODO fix to match term representation
     data UChildExp : Set where
       -□ : (s : Source) → UChildExp
       -∶ : (ė : UChildExp') → UChildExp

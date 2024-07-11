@@ -13,7 +13,6 @@ open import Grove.Marking.Marking
 
 module Grove.Marking.Properties.Totality where
   mutual
-    -- TODO make context implicit
     ↬⇒-totality : (Γ : Ctx)
                 → (e : UExp)
                 → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒ τ ] (Γ ⊢ e ↬⇒ ě)
