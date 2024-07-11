@@ -193,10 +193,10 @@ module Grove.Marking.Properties.WellFormed where
                  → Γ ⊢s e ⇒ τ
                  → Γ ⊢s e ↬⇒ ě
                  → Markless⇒s ě
-    ⇒sτ→markless USHole MKChildSHole = MLSubSHole
+    ⇒sτ→markless USHole MKChildSHole = MLSHole
     ⇒sτ→markless (USOnly e⇒τ) (MKChildSOnly e↬⇒ě)
-      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSubSOnly (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒sτ→markless (USLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = MLSubSLocalConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
+      with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSOnly (⇒τ→markless e⇒τ e↬⇒ě)
+    ⇒sτ→markless (USLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = MLSLocalConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
 
     ⇒sτ→markless* : ∀ {Γ ė*}
                   → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
@@ -234,7 +234,7 @@ module Grove.Marking.Properties.WellFormed where
                  → Markless⇐s ě
     ⇐sτ→markless (UASubsume e⇒τ' τ~τ') (MKChildASubsume e↬⇒ě τ~τ'')
       with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
-         = MLSubASubsume (⇒sτ→markless e⇒τ' e↬⇒ě)
+         = MLASubsume (⇒sτ→markless e⇒τ' e↬⇒ě)
     ⇐sτ→markless (UASubsume e⇒τ' τ~τ') (MKChildAInconsistentTypes e↬⇒ě τ~̸τ')
       with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
          = ⊥-elim (τ~̸τ' τ~τ')
@@ -265,9 +265,9 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇒ ě
                     → Markless⇒s ě
                     → Γ ⊢s e ⇒ τ
-    ↬⇒sτ-markless→⇒sτ MKChildSHole             MLSubSHole             = USHole
-    ↬⇒sτ-markless→⇒sτ (MKChildSOnly e↬⇒ě)      (MLSubSOnly less)      = USOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
-    ↬⇒sτ-markless→⇒sτ (MKChildSLocalConflict ė↬⇒ě*) (MLSubSLocalConflict less*) = USLocalConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
+    ↬⇒sτ-markless→⇒sτ MKChildSHole             MLSHole             = USHole
+    ↬⇒sτ-markless→⇒sτ (MKChildSOnly e↬⇒ě)      (MLSOnly less)      = USOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
+    ↬⇒sτ-markless→⇒sτ (MKChildSLocalConflict ė↬⇒ě*) (MLSLocalConflict less*) = USLocalConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
 
     ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
                        → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
@@ -294,7 +294,7 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇐ ě
                     → Markless⇐s ě
                     → Γ ⊢s e ⇐ τ
-    ↬⇐sτ-markless→⇐sτ (MKChildASubsume e↬⇒ě τ~τ') (MLSubASubsume less)
+    ↬⇐sτ-markless→⇐sτ (MKChildASubsume e↬⇒ě τ~τ') (MLASubsume less)
       with e⇒τ ← ↬⇒sτ-markless→⇒sτ e↬⇒ě less = UASubsume e⇒τ τ~τ'
 
   mutual

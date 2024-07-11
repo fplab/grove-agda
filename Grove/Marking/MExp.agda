@@ -184,16 +184,20 @@ module Grove.Marking.MExp where
         → Γ ⊢⇐ τ
 
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MASubsume
-      ⊢∙_[_] : ∀ {Γ τ τ'}
-        → (ě : Γ ⊢⇒s τ')
-        → (τ~τ' : τ ~ τ')
+      -- MAHole: \vdash\sq
+      ⊢□ : ∀ {Γ τ}
+        → (s : Source)
         → Γ ⊢⇐s τ
 
-      -- MAInconsistentTypes
-      ⊢⸨_⸩[_] : ∀ {Γ τ τ'}
-        → (ě : Γ ⊢⇒s τ')
-        → (τ~̸τ' : τ ~̸ τ')
+      -- MAOnly
+      ⊢∶ : ∀ {Γ τ}
+        → (ė : EdgeId × Γ ⊢⇐ τ)
+        → Γ ⊢⇐s τ
+
+      -- MALocalConflict: \vdash\curlywedge
+      ⊢⋏ : ∀ {Γ τ}
+        → (s : Source)
+        → (ė* : List (EdgeId × Γ ⊢⇐ τ))
         → Γ ⊢⇐s τ
 
   mutual
@@ -232,16 +236,15 @@ module Grove.Marking.MExp where
         → Markless⇒ {Γ} (⊢↻^ w ^ v)
 
     data Markless⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → Set where
-      MLSubSHole : ∀ {Γ s}
+      MLSHole : ∀ {Γ s}
         → Markless⇒s {Γ} (⊢□ s)
 
-      MLSubSOnly : ∀ {Γ w τ}
+      MLSOnly : ∀ {Γ w τ}
         → {ě : Γ ⊢⇒ τ}
         → (less : Markless⇒ ě)
         → Markless⇒s {Γ} (⊢∶ (w , ě))
 
-      -- TODO maybe this is a mark?
-      MLSubSLocalConflict : ∀ {Γ s}
+      MLSLocalConflict : ∀ {Γ s}
         → {ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)}
         → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) ė*)
         → Markless⇒s {Γ} (⊢⋏ s ė*)
@@ -267,14 +270,19 @@ module Grove.Marking.MExp where
         → (less : Markless⇒ ě)
         → Markless⇐ {Γ} (⊢∙ ě [ τ~τ' ∙ su ])
 
-      -- TODO analysis cases for multiparent + unicycle conflicts
-
     data Markless⇐s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → Set where
-      MLSubASubsume : ∀ {Γ τ τ'}
-        → {ě : Γ ⊢⇒s τ'}
-        → {τ~τ' : τ ~ τ'}
-        → (less : Markless⇒s ě)
-        → Markless⇐s {Γ} (⊢∙ ě [ τ~τ' ])
+      MLAHole : ∀ {Γ s τ}
+        → Markless⇐s {Γ} (⊢□ {τ = τ} s)
+
+      MLAOnly : ∀ {Γ w τ}
+        → {ě : Γ ⊢⇐ τ}
+        → (less : Markless⇐ ě)
+        → Markless⇐s {Γ} (⊢∶ (w , ě))
+
+      MLALocalConflict : ∀ {Γ s τ}
+        → {ė* : List (EdgeId × Γ ⊢⇐ τ)}
+        → (less* : All (λ { (_ , ě) → Markless⇐ ě }) ė*)
+        → Markless⇐s {Γ} (⊢⋏ s ė*)
 
   mutual
     multiparents⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇒ τ) → MultiParents
@@ -307,5 +315,10 @@ module Grove.Marking.MExp where
     multiparents⇐ ⊢∙ ě [ _ ∙ _ ]                = multiparents⇒ ě
 
     multiparents⇐s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → MultiParents
-    multiparents⇐s ⊢∙ ě [ _ ]  = multiparents⇒s ě
-    multiparents⇐s ⊢⸨ ě ⸩[ _ ] = multiparents⇒s ě
+    multiparents⇐s (⊢□ _)       = []
+    multiparents⇐s (⊢∶ (_ , ě)) = multiparents⇐ ě
+    multiparents⇐s (⊢⋏ _ ė*)    = multiparents⇐s* ė*
+
+    multiparents⇐s* : ∀ {Γ τ} → (ė* : List (EdgeId × Γ ⊢⇐ τ)) → MultiParents
+    multiparents⇐s* []             = []
+    multiparents⇐s* ((_ , ě) ∷ ė*) = (multiparents⇐ ě) ++ multiparents⇐s* ė*

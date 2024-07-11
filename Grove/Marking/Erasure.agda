@@ -1,4 +1,6 @@
 open import Data.List using (List; []; _∷_)
+open import Data.List.Relation.Unary.All using (All; []; _∷_)
+open import Data.List.Relation.Binary.Pointwise using (Pointwise; []; _∷_)
 open import Data.Product using (_×_; _,_; ∃-syntax; Σ-syntax)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Relation.Nullary using (yes; no)
@@ -41,8 +43,13 @@ module Grove.Marking.Erasure where
     ⊢∙ ě [ τ~τ' ∙ su ]                 ⇐□ = ě ⇒□
 
     _⇐□s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → UChildExp
-    ⊢∙ ě [ τ~τ' ] ⇐□s  = ě ⇒□s
-    ⊢⸨ ě ⸩[ τ~̸τ' ] ⇐□s = ě ⇒□s
+    (⊢□ s)       ⇐□s = -□ s
+    (⊢∶ (w , ě)) ⇐□s = -∶ (w , ě ⇐□)
+    (⊢⋏ s ė*)    ⇐□s = -⋏ s (ė* ⇐□s*)
+
+    _⇐□s* : ∀ {Γ τ} → (ė* : List (EdgeId × Γ ⊢⇐ τ)) → List UChildExp'
+    []             ⇐□s* = []
+    ((w , ě) ∷ ė*) ⇐□s* = (w , ě ⇐□) ∷ (ė* ⇐□s*)
 
   mutual
     ⊢⇐-⊢⇒ : ∀ {Γ τ} → (ě : Γ ⊢⇐ τ) → ∃[ τ' ] Σ[ ě' ∈ Γ ⊢⇒ τ' ] ě ⇐□ ≡ ě' ⇒□
@@ -61,8 +68,29 @@ module Grove.Marking.Erasure where
     ⊢⇐-⊢⇒ (⊢∙_[_∙_]  {τ' = τ'} ě τ~τ' su) = τ' , ě , refl
 
     ⊢⇐s-⊢⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇐s τ) → ∃[ τ' ] Σ[ ě' ∈ Γ ⊢⇒s τ' ] ě ⇐□s ≡ ě' ⇒□s
-    ⊢⇐s-⊢⇒s (⊢∙_[_]  {τ' = τ'} ě τ~τ') = τ' , ě , refl
-    ⊢⇐s-⊢⇒s (⊢⸨_⸩[_] {τ' = τ'} ě τ~τ') = τ' , ě , refl
+    ⊢⇐s-⊢⇒s (⊢□ s) = unknown , (⊢□ s) , refl
+    ⊢⇐s-⊢⇒s (⊢∶ (w , ě)) 
+      with τ' , ě' , eq ← ⊢⇐-⊢⇒ ě rewrite eq
+         = τ' , (⊢∶ (w , ě')) , refl
+    ⊢⇐s-⊢⇒s (⊢⋏ s ė*)
+      with ė*' , eq* ← ⊢⇐s-⊢⇒s* ė*
+      rewrite ⊢⇐s-⊢⇒s*-eq eq* = unknown , (⊢⋏ s ė*') , refl
+
+    ⊢⇐s-⊢⇒s* : ∀ {Γ τ}
+             → (ė* : List (EdgeId × Γ ⊢⇐ τ))
+             → Σ[ ė*' ∈ List (EdgeId × ∃[ τ' ] Γ ⊢⇒ τ') ] Pointwise (λ { (w , ě) (w' , _ , ě') → w ≡ w' × ě ⇐□ ≡ ě' ⇒□ }) ė* ė*'
+    ⊢⇐s-⊢⇒s* [] = [] , []
+    ⊢⇐s-⊢⇒s* ((w , ě) ∷ ė*)
+      with τ' , ě' , eq ← ⊢⇐-⊢⇒ ě
+      with ė*' , eq* ← ⊢⇐s-⊢⇒s* ė*
+         = (w , τ' , ě') ∷ ė*' , (refl , eq) ∷ eq*
+
+    ⊢⇐s-⊢⇒s*-eq : ∀ {Γ τ} {ė* : List (EdgeId × Γ ⊢⇐ τ)}
+      → {ė*' : List (EdgeId × ∃[ τ' ] Γ ⊢⇒ τ')}
+      → (eq* : Pointwise (λ { (w , ě) (w' , _ , ě') → w ≡ w' × ě ⇐□ ≡ ě' ⇒□ }) ė* ė*')
+      → ė* ⇐□s* ≡ ė*' ⇒□s*
+    ⊢⇐s-⊢⇒s*-eq [] = refl
+    ⊢⇐s-⊢⇒s*-eq ((weq , eq) ∷ eq*) rewrite weq | eq | ⊢⇐s-⊢⇒s*-eq eq* = refl
 
   private
     ⊢⇒-⊢⇐-subsume : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒ τ) → (su : MSubsumable ě) → Σ[ ě' ∈ Γ ⊢⇐ τ' ] ě ⇒□ ≡ ě' ⇐□
@@ -70,12 +98,6 @@ module Grove.Marking.Erasure where
       with τ' ~? τ 
     ...  | yes τ'~τ = ⊢∙ ě [ τ'~τ ∙ su ]  , refl
     ...  | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ∙ su ] , refl
-
-    ⊢⇒s-⊢⇐s-subsume : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒s τ) → Σ[ ě' ∈ Γ ⊢⇐s τ' ] ě ⇒□s ≡ ě' ⇐□s
-    ⊢⇒s-⊢⇐s-subsume {τ = τ} {τ' = τ'} ě
-      with τ' ~? τ 
-    ...  | yes τ'~τ = ⊢∙ ě [ τ'~τ ]  , refl
-    ...  | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ] , refl
 
   mutual
     ⊢⇒-⊢⇐ : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒ τ) → Σ[ ě' ∈ Γ ⊢⇐ τ' ] ě ⇒□ ≡ ě' ⇐□
@@ -98,4 +120,26 @@ module Grove.Marking.Erasure where
     ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = (⊢↻^ w ^ v) , refl
 
     ⊢⇒s-⊢⇐s : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒s τ) → Σ[ ě' ∈ Γ ⊢⇐s τ' ] ě ⇒□s ≡ ě' ⇐□s
-    ⊢⇒s-⊢⇐s ě = ⊢⇒s-⊢⇐s-subsume ě
+    ⊢⇒s-⊢⇐s (⊢□ s) = ⊢□ s , refl
+    ⊢⇒s-⊢⇐s (⊢∶ (w , ě))
+      with ě' , eq ← ⊢⇒-⊢⇐ ě
+      rewrite eq = (⊢∶ (w , ě')) , refl
+    ⊢⇒s-⊢⇐s (⊢⋏ s ė*)
+      with ė*' , eq* ← ⊢⇒s-⊢⇐s* ė*
+      rewrite ⊢⇒s-⊢⇐s*-eq eq* = (⊢⋏ s ė*') , refl
+
+    ⊢⇒s-⊢⇐s* : ∀ {Γ τ}
+             → (ė* : List (EdgeId × ∃[ τ' ] Γ ⊢⇒ τ'))
+             → Σ[ ė*' ∈ List (EdgeId × Γ ⊢⇐ τ) ] Pointwise (λ { (w , _ , ě) (w' , ě') → w ≡ w' × ě ⇒□ ≡ ě' ⇐□ }) ė* ė*'
+    ⊢⇒s-⊢⇐s* [] = [] , []
+    ⊢⇒s-⊢⇐s* ((w , τ , ě) ∷ ė*)
+      with ě' , eq ← ⊢⇒-⊢⇐ ě
+      with ė*' , eq* ← ⊢⇒s-⊢⇐s* ė*
+         = (w , ě') ∷ ė*' , (refl , eq) ∷ eq*
+
+    ⊢⇒s-⊢⇐s*-eq : ∀ {Γ τ} {ė* : List (EdgeId × ∃[ τ' ] Γ ⊢⇒ τ')}
+      → {ė*' : List (EdgeId × Γ ⊢⇐ τ)}
+      → (eq* : Pointwise (λ { (w , _ , ě) (w' , ě') → w ≡ w' × ě ⇒□ ≡ ě' ⇐□ }) ė* ė*')
+      → ė* ⇒□s* ≡ ė*' ⇐□s*
+    ⊢⇒s-⊢⇐s*-eq [] = refl
+    ⊢⇒s-⊢⇐s*-eq ((weq , eq) ∷ eq*) rewrite weq | eq | ⊢⇒s-⊢⇐s*-eq eq* = refl

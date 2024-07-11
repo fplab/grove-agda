@@ -133,15 +133,21 @@ module Grove.Marking.Marking where
         → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
-    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
-      MKChildASubsume : ∀ {Γ e τ τ'}
-        → {ě : Γ ⊢⇒s τ'}
-        → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
-        → (τ~τ' : τ ~ τ')
-        → Γ ⊢s e ↬⇐ ⊢∙ ě [ τ~τ' ]
+    MKChildALocalConflictChildren : ∀ {Γ τ} {ė* : List UChildExp'}
+      → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+      → List (EdgeId × Γ ⊢⇐ τ)
+    MKChildALocalConflictChildren All.[]                          = []
+    MKChildALocalConflictChildren (All._∷_ {w , _} (ě , _) ė↬⇐ě*) = (w , ě) ∷ (MKChildALocalConflictChildren ė↬⇐ě*)
 
-      MKChildAInconsistentTypes : ∀ {Γ e τ τ'}
-        → {ě : Γ ⊢⇒s τ'}
-        → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
-        → (τ~̸τ' : τ ~̸ τ')
-        → Γ ⊢s e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ]
+    data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
+      MKChildAHole : ∀ {Γ s τ}
+        → Γ ⊢s -□ s ↬⇐ ⊢□ {τ = τ} s
+
+      MKChildAOnly : ∀ {Γ w e τ}
+        → {ě : Γ ⊢⇐ τ} 
+        → (e↬⇐ě : Γ  ⊢ e ↬⇐ ě)
+        → Γ ⊢s -∶ (w , e) ↬⇐ ⊢∶ (w , ě)
+
+      MKChildALocalConflict : ∀ {Γ s ė* τ}
+        → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+        → Γ ⊢s -⋏ s ė* ↬⇐ ⊢⋏ s (MKChildALocalConflictChildren ė↬⇐ě*)

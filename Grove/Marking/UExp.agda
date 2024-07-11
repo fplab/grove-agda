@@ -89,8 +89,6 @@ module Grove.Marking.UExp where
         → (e⇒τ : Γ ⊢ e ⇒ τ)
         → Γ ⊢s -∶ (w , e) ⇒ τ
 
-      -- TODO synthesize meet?
-      -- TODO rename to USMultiChild?
       USLocalConflict : ∀ {Γ s ė*}
         → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ s ė* ⇒ unknown
@@ -116,10 +114,16 @@ module Grove.Marking.UExp where
         → Γ ⊢ e ⇐ τ
 
     data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
-      UASubsume : ∀ {Γ e τ τ'} 
-        → (e⇒τ' : Γ ⊢s e ⇒ τ')
-        → (τ~τ' : τ ~ τ')
-        → Γ ⊢s e ⇐ τ
+      UAHole : ∀ {Γ s τ}
+        → Γ ⊢s -□ s ⇐ τ
+
+      UAOnly : ∀ {Γ w e τ}
+        → (e⇐τ : Γ ⊢ e ⇐ τ)
+        → Γ ⊢s -∶ (w , e) ⇐ τ
+
+      UALocalConflict : ∀ {Γ s ė* τ}
+        → (ė⇐* : All (λ (_ , e) → Γ ⊢ e ⇐ τ) ė*)
+        → Γ ⊢s -⋏ s ė* ⇐ τ
 
   -- synthesis unicity
   mutual
