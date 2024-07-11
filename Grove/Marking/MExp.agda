@@ -82,17 +82,17 @@ module Grove.Marking.MExp where
         → Γ ⊢⇒ unknown
 
     data _⊢⇒s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MChildSHole: \vdash\sq
+      -- MSHole: \vdash\sq
       ⊢□ : ∀ {Γ}
         → (s : Source)
         → Γ ⊢⇒s unknown
 
-      -- MChildSOnly
+      -- MSOnly
       ⊢∶ : ∀ {Γ τ}
         → (ė : EdgeId × Γ ⊢⇒ τ)
         → Γ ⊢⇒s τ
 
-      -- MChildSLocalConflict: \vdash\curlywedge
+      -- MSLocalConflict: \vdash\curlywedge
       ⊢⋏ : ∀ {Γ}
         → (s : Source)
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
@@ -180,13 +180,13 @@ module Grove.Marking.MExp where
         → Γ ⊢⇐ τ
 
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
-      -- MChildASubsume
+      -- MASubsume
       ⊢∙_[_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒s τ')
         → (τ~τ' : τ ~ τ')
         → Γ ⊢⇐s τ
 
-      -- MChildAInconsistentTypes
+      -- MAInconsistentTypes
       ⊢⸨_⸩[_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒s τ')
         → (τ~̸τ' : τ ~̸ τ')

@@ -88,16 +88,16 @@ module Grove.Marking.UExp where
         → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
     data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
-      UChildSHole : ∀ {Γ s}
+      USHole : ∀ {Γ s}
         → Γ ⊢s -□ s ⇒ unknown
 
-      UChildSOnly : ∀ {Γ w e τ}
+      USOnly : ∀ {Γ w e τ}
         → (e⇒τ : Γ ⊢ e ⇒ τ)
         → Γ ⊢s -∶ (w , e) ⇒ τ
 
       -- TODO synthesize meet?
-      -- TODO rename to UChildSMultiChild?
-      UChildSLocalConflict : ∀ {Γ s ė*}
+      -- TODO rename to USMultiChild?
+      USLocalConflict : ∀ {Γ s ė*}
         → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ s ė* ⇒ unknown
 
@@ -116,7 +116,7 @@ module Grove.Marking.UExp where
         → Γ ⊢ e ⇐ τ
 
     data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
-      UChildASubsume : ∀ {Γ e τ τ'} 
+      UASubsume : ∀ {Γ e τ τ'} 
         → (e⇒τ' : Γ ⊢s e ⇒ τ')
         → (τ~τ' : τ ~ τ')
         → Γ ⊢s e ⇐ τ
@@ -142,7 +142,7 @@ module Grove.Marking.UExp where
                → Γ ⊢s e ⇒ τ₁
                → Γ ⊢s e ⇒ τ₂
                → τ₁ ≡ τ₂
-    ⇒s-unicity UChildSHole           UChildSHole            = refl
-    ⇒s-unicity (UChildSOnly e⇒τ)     (UChildSOnly e⇒τ')
+    ⇒s-unicity USHole           USHole            = refl
+    ⇒s-unicity (USOnly e⇒τ)     (USOnly e⇒τ')
       rewrite ⇒-unicity e⇒τ e⇒τ'                        = refl
-    ⇒s-unicity (UChildSLocalConflict ė⇒*) (UChildSLocalConflict ė⇒*') = refl
+    ⇒s-unicity (USLocalConflict ė⇒*) (USLocalConflict ė⇒*') = refl
