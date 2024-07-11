@@ -39,10 +39,10 @@ module Grove.Marking.Properties.Unicity where
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → τ₁ ≡ τ₂
-    ↬⇒s-τ-unicity MKChildSHole             MKChildSHole              = refl
-    ↬⇒s-τ-unicity (MKChildSOnly e↬⇒ě)      (MKChildSOnly e↬⇒ě')
+    ↬⇒s-τ-unicity MKSHole             MKSHole              = refl
+    ↬⇒s-τ-unicity (MKSOnly e↬⇒ě)      (MKSOnly e↬⇒ě')
       rewrite ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'                            = refl
-    ↬⇒s-τ-unicity (MKChildSLocalConflict ė↬⇒ě*) (MKChildSLocalConflict ė↬⇒ě*₁) = refl
+    ↬⇒s-τ-unicity (MKSLocalConflict ė↬⇒ě*) (MKSLocalConflict ė↬⇒ě*₁) = refl
 
   mutual
     ↬⇒-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇒ τ} {ě₂ : Γ ⊢⇒ τ}
@@ -83,16 +83,16 @@ module Grove.Marking.Properties.Unicity where
                   → Γ ⊢s e ↬⇒ ě₁
                   → Γ ⊢s e ↬⇒ ě₂
                   → ě₁ ≡ ě₂
-    ↬⇒s-ě-unicity MKChildSHole             MKChildSHole = refl
-    ↬⇒s-ě-unicity (MKChildSOnly e↬⇒ě)      (MKChildSOnly e↬⇒ě')
+    ↬⇒s-ě-unicity MKSHole             MKSHole = refl
+    ↬⇒s-ě-unicity (MKSOnly e↬⇒ě)      (MKSOnly e↬⇒ě')
       rewrite ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'               = refl
-    ↬⇒s-ě-unicity (MKChildSLocalConflict ė↬⇒ě*) (MKChildSLocalConflict ė↬⇒ě*')
+    ↬⇒s-ě-unicity (MKSLocalConflict ė↬⇒ě*) (MKSLocalConflict ė↬⇒ě*')
       rewrite ↬⇒s-ě-unicity* ė↬⇒ě* ė↬⇒ě*'           = refl
 
     ↬⇒s-ě-unicity* : ∀ {Γ} {ė* : List UChildExp'}
                    → (ė↬⇒ě*  : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
                    → (ė↬⇒ě*' : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                   → MKChildSLocalConflictChildren ė↬⇒ě* ≡ MKChildSLocalConflictChildren ė↬⇒ě*'
+                   → MKSLocalConflictChildren ė↬⇒ě* ≡ MKSLocalConflictChildren ė↬⇒ě*'
     ↬⇒s-ě-unicity* [] [] = refl
     ↬⇒s-ě-unicity* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) ((τ' , ě' , e↬⇒ě') ∷ ė↬⇒ě*')
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
@@ -188,20 +188,21 @@ module Grove.Marking.Properties.Unicity where
                  → Γ ⊢s e ↬⇐ ě₁
                  → Γ ⊢s e ↬⇐ ě₂
                  → ě₁ ≡ ě₂
-    ↬⇐s-ě-unicity (MKChildASubsume e↬⇒ě τ~τ') (MKChildASubsume e↬⇒ě' τ~τ'')
-      with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒s-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~-≡ τ~τ' τ~τ''
-         = refl
-    ↬⇐s-ě-unicity (MKChildASubsume e↬⇒ě τ~τ') (MKChildAInconsistentTypes e↬⇒ě' τ~̸τ')
-      with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
-    ↬⇐s-ě-unicity (MKChildAInconsistentTypes e↬⇒ě τ~̸τ') (MKChildASubsume e↬⇒ě' τ~τ')
-      with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
-    ↬⇐s-ě-unicity (MKChildAInconsistentTypes e↬⇒ě τ~̸τ') (MKChildAInconsistentTypes e↬⇒ě' τ~̸τ'')
-      with refl ← ↬⇒s-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒s-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
-         = refl
+    ↬⇐s-ě-unicity MKAHole             MKAHole = refl
+    ↬⇐s-ě-unicity (MKAOnly e↬⇐ě)      (MKAOnly e↬⇐ě')
+      rewrite ↬⇐-ě-unicity e↬⇐ě e↬⇐ě'               = refl
+    ↬⇐s-ě-unicity (MKALocalConflict ė↬⇐ě*) (MKALocalConflict ė↬⇐ě*')
+      rewrite ↬⇐s-ě-unicity* ė↬⇐ě* ė↬⇐ě*'           = refl
+
+    ↬⇐s-ě-unicity* : ∀ {Γ τ} {ė* : List UChildExp'}
+                   → (ė↬⇐ě*  : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+                   → (ė↬⇐ě*' : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+                   → MKALocalConflictChildren ė↬⇐ě* ≡ MKALocalConflictChildren ė↬⇐ě*'
+    ↬⇐s-ě-unicity* [] [] = refl
+    ↬⇐s-ě-unicity* ((ě , e↬⇐ě) ∷ ė↬⇐ě*) ((ě' , e↬⇐ě') ∷ ė↬⇐ě*')
+      with refl ← ↬⇐-ě-unicity e↬⇐ě e↬⇐ě'
+      rewrite ↬⇐s-ě-unicity* ė↬⇐ě* ė↬⇐ě*'
+           = refl
 
   ↬⇒-unicity-sig : ∀ {Γ : Ctx} {τ₁ τ₂ : Typ} → τ₁ ≡ τ₂ → Γ ⊢⇒ τ₁ → Γ ⊢⇒ τ₂ → Set
   ↬⇒-unicity-sig refl e₁ e₂ = e₁ ≡ e₂

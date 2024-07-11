@@ -64,24 +64,24 @@ module Grove.Marking.Marking where
       MKSCycleLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ↬⇒ ⊢↻^ w ^ v
 
-    MKChildSLocalConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
+    MKSLocalConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
       → List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)
-    MKChildSLocalConflictChildren All.[]                              = []
-    MKChildSLocalConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKChildSLocalConflictChildren ė↬⇒ě*)
+    MKSLocalConflictChildren All.[]                              = []
+    MKSLocalConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKSLocalConflictChildren ė↬⇒ě*)
 
     data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
-      MKChildSHole : ∀ {Γ s}
+      MKSHole : ∀ {Γ s}
         → Γ ⊢s -□ s ↬⇒ ⊢□ s
 
-      MKChildSOnly : ∀ {Γ w e τ}
+      MKSOnly : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇒ τ} 
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
         → Γ ⊢s -∶ (w , e) ↬⇒ ⊢∶ (w , ě)
 
-      MKChildSLocalConflict : ∀ {Γ s ė*}
+      MKSLocalConflict : ∀ {Γ s ė*}
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*)
+        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKSLocalConflictChildren ė↬⇒ě*)
 
     USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
@@ -133,21 +133,21 @@ module Grove.Marking.Marking where
         → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
-    MKChildALocalConflictChildren : ∀ {Γ τ} {ė* : List UChildExp'}
+    MKALocalConflictChildren : ∀ {Γ τ} {ė* : List UChildExp'}
       → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
       → List (EdgeId × Γ ⊢⇐ τ)
-    MKChildALocalConflictChildren All.[]                          = []
-    MKChildALocalConflictChildren (All._∷_ {w , _} (ě , _) ė↬⇐ě*) = (w , ě) ∷ (MKChildALocalConflictChildren ė↬⇐ě*)
+    MKALocalConflictChildren All.[]                          = []
+    MKALocalConflictChildren (All._∷_ {w , _} (ě , _) ė↬⇐ě*) = (w , ě) ∷ (MKALocalConflictChildren ė↬⇐ě*)
 
     data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where
-      MKChildAHole : ∀ {Γ s τ}
+      MKAHole : ∀ {Γ s τ}
         → Γ ⊢s -□ s ↬⇐ ⊢□ {τ = τ} s
 
-      MKChildAOnly : ∀ {Γ w e τ}
+      MKAOnly : ∀ {Γ w e τ}
         → {ě : Γ ⊢⇐ τ} 
         → (e↬⇐ě : Γ  ⊢ e ↬⇐ ě)
         → Γ ⊢s -∶ (w , e) ↬⇐ ⊢∶ (w , ě)
 
-      MKChildALocalConflict : ∀ {Γ s ė* τ}
+      MKALocalConflict : ∀ {Γ s ė* τ}
         → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
-        → Γ ⊢s -⋏ s ė* ↬⇐ ⊢⋏ s (MKChildALocalConflictChildren ė↬⇐ě*)
+        → Γ ⊢s -⋏ s ė* ↬⇐ ⊢⋏ s (MKALocalConflictChildren ė↬⇐ě*)

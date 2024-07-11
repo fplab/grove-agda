@@ -46,13 +46,13 @@ module Grove.Marking.Properties.Totality where
     ↬⇒s-totality : (Γ : Ctx)
                  → (e : UChildExp)
                  → Σ[ τ ∈ Typ ] Σ[ ě ∈ Γ ⊢⇒s τ ] (Γ ⊢s e ↬⇒ ě)
-    ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKChildSHole
+    ↬⇒s-totality Γ (-□ s) = unknown , ⊢□ s , MKSHole
     ↬⇒s-totality Γ (-∶ (w , e))
       with τ' , ě , e↬⇒ě ← ↬⇒-totality Γ e
-         = τ' , ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
+         = τ' , ⊢∶ (w , ě) , MKSOnly e↬⇒ě
     ↬⇒s-totality Γ (-⋏ s ė*)
       with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
-         = unknown , ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*) , MKChildSLocalConflict ė↬⇒ě*
+         = unknown , ⊢⋏ s (MKSLocalConflictChildren ė↬⇒ě*) , MKSLocalConflict ė↬⇒ě*
 
     ↬⇒s-totality* : (Γ : Ctx)
                   → (ė* : List UChildExp')
@@ -69,15 +69,6 @@ module Grove.Marking.Properties.Totality where
     ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
     ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ'~τ s
     ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ∙ USu→MSu s e↬⇒ě ] , MKAInconsistentTypes e↬⇒ě τ'~̸τ s
-
-    ↬⇐s-subsume : ∀ {Γ e τ}
-                → (ě : Γ ⊢⇒s τ)
-                → (τ' : Typ)
-                → (e↬⇒ě : Γ ⊢s e ↬⇒ ě)
-                → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
-    ↬⇐s-subsume {τ = τ} ě τ' e↬⇒ě  with τ' ~? τ
-    ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ] , MKChildASubsume e↬⇒ě τ'~τ
-    ...   | no  τ'~̸τ = ⊢⸨ ě ⸩[ τ'~̸τ ] , MKChildAInconsistentTypes e↬⇒ě τ'~̸τ
 
     ↬⇐-totality : (Γ : Ctx)
                 → (τ' : Typ)
@@ -118,6 +109,15 @@ module Grove.Marking.Properties.Totality where
                  → (τ' : Typ)
                  → (e : UChildExp)
                  → Σ[ ě ∈ Γ ⊢⇐s τ' ] (Γ ⊢s e ↬⇐ ě)
-    ↬⇐s-totality Γ τ' e
-      with _ , ě , e↬⇒ě ← ↬⇒s-totality Γ e
-         = ↬⇐s-subsume ě τ' e↬⇒ě
+    ↬⇐s-totality Γ τ' (-□ s) = (⊢□ s) , MKAHole
+    ↬⇐s-totality Γ τ' (-∶ (w , e))
+      with ě , e↬⇐ě ← ↬⇐-totality Γ τ' e = (⊢∶ (w , ě)) , MKAOnly e↬⇐ě
+    ↬⇐s-totality Γ τ' (-⋏ s ė*)
+      with ė↬⇐ě* ← ↬⇐s-totality* Γ τ' ė*
+         = ⊢⋏ s (MKALocalConflictChildren ė↬⇐ě*) , MKALocalConflict ė↬⇐ě*
+
+    ↬⇐s-totality* : (Γ : Ctx) (τ' : Typ)
+                  → (ė* : List UChildExp')
+                  → All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ' ] Γ ⊢ e ↬⇐ ě) ė*
+    ↬⇐s-totality* Γ τ' []             = All.[]
+    ↬⇐s-totality* Γ τ' ((w , e) ∷ ė*) = All._∷_ (↬⇐-totality Γ τ' e) (↬⇐s-totality* Γ τ' ė*)

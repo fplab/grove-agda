@@ -38,14 +38,14 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
-    ↬⇒□s MKChildSHole = refl
-    ↬⇒□s (MKChildSOnly e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
-    ↬⇒□s (MKChildSLocalConflict ė↬⇒ě*)
+    ↬⇒□s MKSHole = refl
+    ↬⇒□s (MKSOnly e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
+    ↬⇒□s (MKSLocalConflict ė↬⇒ě*)
       with eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv    = refl
 
     ↬⇒□s* : ∀ {Γ ė*}
           → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-          → ((MKChildSLocalConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
+          → ((MKSLocalConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
     ↬⇒□s* All.[] = refl
     ↬⇒□s* (All._∷_ {w , e} {ė*} (τ , ě , e↬⇒ě) ė↬⇒ě*)
       with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
@@ -69,10 +69,17 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇐□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇐s τ}
         → Γ ⊢s e ↬⇐ ě
         → ě ⇐□s ≡ e
-    ↬⇐□s (MKChildASubsume e↬⇒ě τ~τ')
-      rewrite ↬⇒□s e↬⇒ě = refl
-    ↬⇐□s (MKChildAInconsistentTypes e↬⇒ě τ~̸τ')
-      rewrite ↬⇒□s e↬⇒ě = refl
+    ↬⇐□s MKAHole = refl
+    ↬⇐□s (MKAOnly e↬⇐ě) rewrite ↬⇐□ e↬⇐ě = refl
+    ↬⇐□s (MKALocalConflict ė↬⇐ě*)
+      with eqv ← ↬⇐□s* ė↬⇐ě* rewrite eqv    = refl
+
+    ↬⇐□s* : ∀ {Γ τ ė*}
+          → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+          → ((MKALocalConflictChildren ė↬⇐ě*) ⇐□s*) ≡ ė*
+    ↬⇐□s* All.[] = refl
+    ↬⇐□s* (All._∷_ {w , e} {ė*} (ě , e↬⇐ě) ė↬⇐ě*)
+      with refl ← ↬⇐□ e↬⇐ě | eqv ← ↬⇐□s* ė↬⇐ě* rewrite eqv = refl
 
   mutual
     -- well-typed unmarked expressions are marked into marked expressions of the same type
@@ -95,11 +102,11 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
              → Σ[ ě ∈ Γ ⊢⇒s τ ] Γ ⊢s e ↬⇒ ě
-    ⇒sτ→↬⇒sτ {e = -□ s}       USHole = ⊢□ s , MKChildSHole
+    ⇒sτ→↬⇒sτ {e = -□ s}       USHole = ⊢□ s , MKSHole
     ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (USOnly e⇒τ) 
-      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
+      with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKSOnly e↬⇒ě
     ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (USLocalConflict ė⇒*)
-      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*) , MKChildSLocalConflict ė↬⇒ě*
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKSLocalConflictChildren ė↬⇒ě*) , MKSLocalConflict ė↬⇒ě*
 
     ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List UChildExp'}
               → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
@@ -120,8 +127,17 @@ module Grove.Marking.Properties.WellFormed where
     ⇐sτ→↬⇐sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇐ τ
              → Σ[ ě ∈ Γ ⊢⇐s τ ] Γ ⊢s e ↬⇐ ě
-    ⇐sτ→↬⇐sτ (UASubsume e⇒τ' τ~τ')
-      with ě , e↬⇒ě ← ⇒sτ→↬⇒sτ e⇒τ' = ⊢∙ ě [ τ~τ' ] , MKChildASubsume e↬⇒ě τ~τ'
+    ⇐sτ→↬⇐sτ {e = -□ s}       UAHole = ⊢□ s , MKAHole
+    ⇐sτ→↬⇐sτ {e = -∶ (w , e)} (UAOnly e⇐τ) 
+      with ě , e↬⇐ě ← ⇐τ→↬⇐τ e⇐τ        = ⊢∶ (w , ě) , MKAOnly e↬⇐ě
+    ⇐sτ→↬⇐sτ {e = -⋏ s ė*}    (UALocalConflict ė⇐*)
+      with ė↬⇐ě* ← ⇐sτ→↬⇐sτ* ė⇐*        = ⊢⋏ s (MKALocalConflictChildren ė↬⇐ě*) , MKALocalConflict ė↬⇐ě*
+
+    ⇐sτ→↬⇐sτ* : ∀ {Γ : Ctx} {τ : Typ} {ė* : List UChildExp'}
+              → (ė⇐* : All (λ (_ , e) → Γ ⊢ e ⇐ τ) ė*)
+              → All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*
+    ⇐sτ→↬⇐sτ* []             = []
+    ⇐sτ→↬⇐sτ* (e⇐ ∷ ė⇐*) = ⇐τ→↬⇐τ e⇐ ∷ ⇐sτ→↬⇐sτ* ė⇐*
 
   mutual
     -- marking synthesizes the same type as synthesis
@@ -156,10 +172,10 @@ module Grove.Marking.Properties.WellFormed where
             → Γ ⊢s e ⇒ τ
             → Γ ⊢s e ↬⇒ ě
             → τ ≡ τ'
-    ⇒s-↬s-≡ USHole           MKChildSHole             = refl
-    ⇒s-↬s-≡ (USOnly e⇒τ)     (MKChildSOnly e↬⇒ě)
+    ⇒s-↬s-≡ USHole           MKSHole             = refl
+    ⇒s-↬s-≡ (USOnly e⇒τ)     (MKSOnly e↬⇒ě)
       with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě                       = refl
-    ⇒s-↬s-≡ (USLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = refl
+    ⇒s-↬s-≡ (USLocalConflict ė⇒*) (MKSLocalConflict ė↬⇒ě*) = refl
 
   mutual
     -- marking well-typed terms produces no marks
@@ -193,15 +209,15 @@ module Grove.Marking.Properties.WellFormed where
                  → Γ ⊢s e ⇒ τ
                  → Γ ⊢s e ↬⇒ ě
                  → Markless⇒s ě
-    ⇒sτ→markless USHole MKChildSHole = MLSHole
-    ⇒sτ→markless (USOnly e⇒τ) (MKChildSOnly e↬⇒ě)
+    ⇒sτ→markless USHole MKSHole = MLSHole
+    ⇒sτ→markless (USOnly e⇒τ) (MKSOnly e↬⇒ě)
       with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSOnly (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒sτ→markless (USLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = MLSLocalConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
+    ⇒sτ→markless (USLocalConflict ė⇒*) (MKSLocalConflict ė↬⇒ě*) = MLSLocalConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
 
     ⇒sτ→markless* : ∀ {Γ ė*}
                   → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
                   → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSLocalConflictChildren ė↬⇒ě*)
+                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSLocalConflictChildren ė↬⇒ě*)
     ⇒sτ→markless* [] [] = []
     ⇒sτ→markless* ((_ , e⇒) ∷ ė⇒*) ((_ , ě , e↬⇒ě) ∷ ė↬⇒ě*)
       with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
@@ -232,12 +248,16 @@ module Grove.Marking.Properties.WellFormed where
                  → Γ ⊢s e ⇐ τ
                  → Γ ⊢s e ↬⇐ ě
                  → Markless⇐s ě
-    ⇐sτ→markless (UASubsume e⇒τ' τ~τ') (MKChildASubsume e↬⇒ě τ~τ'')
-      with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
-         = MLASubsume (⇒sτ→markless e⇒τ' e↬⇒ě)
-    ⇐sτ→markless (UASubsume e⇒τ' τ~τ') (MKChildAInconsistentTypes e↬⇒ě τ~̸τ')
-      with refl ← ⇒s-↬s-≡ e⇒τ' e↬⇒ě
-         = ⊥-elim (τ~̸τ' τ~τ')
+    ⇐sτ→markless UAHole MKAHole = MLAHole
+    ⇐sτ→markless (UAOnly e⇐τ) (MKAOnly e↬⇐ě) = MLAOnly (⇐τ→markless e⇐τ e↬⇐ě)
+    ⇐sτ→markless (UALocalConflict ė⇐*) (MKALocalConflict ė↬⇐ě*) = MLALocalConflict (⇐sτ→markless* ė⇐* ė↬⇐ě*)
+
+    ⇐sτ→markless* : ∀ {Γ τ ė*}
+                  → (ė⇐* : All (λ (_ , e) → Γ ⊢ e ⇐ τ) ė*)
+                  → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+                  → All (λ { (_ , ě) → Markless⇐ ě }) (MKALocalConflictChildren ė↬⇐ě*)
+    ⇐sτ→markless* [] [] = []
+    ⇐sτ→markless* (e⇐ ∷ ė⇐*) ((ě , e↬⇐ě) ∷ ė↬⇐ě*) = ⇐τ→markless e⇐ e↬⇐ě ∷ ⇐sτ→markless* ė⇐* ė↬⇐ě*
 
   mutual
     -- synthetically marking an expression into a markless expression and a type implies the original synthesizes that type
@@ -265,13 +285,13 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇒ ě
                     → Markless⇒s ě
                     → Γ ⊢s e ⇒ τ
-    ↬⇒sτ-markless→⇒sτ MKChildSHole             MLSHole             = USHole
-    ↬⇒sτ-markless→⇒sτ (MKChildSOnly e↬⇒ě)      (MLSOnly less)      = USOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
-    ↬⇒sτ-markless→⇒sτ (MKChildSLocalConflict ė↬⇒ě*) (MLSLocalConflict less*) = USLocalConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
+    ↬⇒sτ-markless→⇒sτ MKSHole             MLSHole             = USHole
+    ↬⇒sτ-markless→⇒sτ (MKSOnly e↬⇒ě)      (MLSOnly less)      = USOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
+    ↬⇒sτ-markless→⇒sτ (MKSLocalConflict ė↬⇒ě*) (MLSLocalConflict less*) = USLocalConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
 
     ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
                        → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSLocalConflictChildren ė↬⇒ě*))
+                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKSLocalConflictChildren ė↬⇒ě*))
                        → All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
     ↬⇒sτ-markless→⇒sτ* []                       []             = []
     ↬⇒sτ-markless→⇒sτ* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) (less ∷ less*) = (τ , ↬⇒τ-markless→⇒τ e↬⇒ě less) ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*
@@ -294,8 +314,16 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ↬⇐ ě
                     → Markless⇐s ě
                     → Γ ⊢s e ⇐ τ
-    ↬⇐sτ-markless→⇐sτ (MKChildASubsume e↬⇒ě τ~τ') (MLASubsume less)
-      with e⇒τ ← ↬⇒sτ-markless→⇒sτ e↬⇒ě less = UASubsume e⇒τ τ~τ'
+    ↬⇐sτ-markless→⇐sτ MKAHole             MLAHole             = UAHole
+    ↬⇐sτ-markless→⇐sτ (MKAOnly e↬⇐ě)      (MLAOnly less)      = UAOnly (↬⇐τ-markless→⇐τ e↬⇐ě less)
+    ↬⇐sτ-markless→⇐sτ (MKALocalConflict ė↬⇐ě*) (MLALocalConflict less*) = UALocalConflict (↬⇐sτ-markless→⇐sτ* ė↬⇐ě* less*)
+
+    ↬⇐sτ-markless→⇐sτ* : ∀ {Γ τ ė*}
+                       → (ė↬⇐ě* : All (λ (_ , e) → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě) ė*)
+                       → (less* : All (λ { (_ , ě) → Markless⇐ ě }) (MKALocalConflictChildren ė↬⇐ě*))
+                       → All (λ (_ , e) → Γ ⊢ e ⇐ τ) ė*
+    ↬⇐sτ-markless→⇐sτ* []                   []             = []
+    ↬⇐sτ-markless→⇐sτ* ((ě , e↬⇐ě) ∷ ė↬⇐ě*) (less ∷ less*) = ↬⇐τ-markless→⇐τ e↬⇐ě less ∷ ↬⇐sτ-markless→⇐sτ* ė↬⇐ě* less*
 
   mutual
     -- ill-typed expressions are marked into non-markless expressions
