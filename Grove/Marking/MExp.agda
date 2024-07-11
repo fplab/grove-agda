@@ -128,12 +128,6 @@ module Grove.Marking.MExp where
         → {∌y : Γ ∌ y}
         → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
 
-      MSuMultiParent : ∀ {Γ w v}
-        → MSubsumable {Γ} (⊢⋎^ w ^ v)
-
-      MSuCycleLocationConflict : ∀ {Γ w v}
-        → MSubsumable {Γ} (⊢↻^ w ^ v)
-
     -- analysis
     data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MALam1
@@ -164,6 +158,16 @@ module Grove.Marking.MExp where
         → (τ~̸τ₁ : (τ △s) ~̸ τ₁)
         → (u : VertexId)
         → Γ ⊢⇐ τ₃
+
+      ⊢⋎^_^_ : ∀ {Γ τ}
+        → (w : EdgeId)
+        → (v : Vertex)
+        → Γ ⊢⇐ τ
+
+      ⊢↻^_^_ : ∀ {Γ τ}
+        → (w : EdgeId)
+        → (v : Vertex)
+        → Γ ⊢⇐ τ
 
       -- MAInconsistentTypes
       ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ'}
@@ -250,6 +254,12 @@ module Grove.Marking.MExp where
         → (less : Markless⇐s ě)
         → Markless⇐ {Γ} (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)
 
+      MLAMultiLocationConflict : ∀ {Γ w v τ}
+        → Markless⇐ {Γ} (⊢⋎^_^_ {τ = τ} w v)
+
+      MLACycleLocationConflict : ∀ {Γ w v τ}
+        → Markless⇐ {Γ} (⊢↻^_^_ {τ = τ} w v)
+
       MLASubsume : ∀ {Γ τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → {τ~τ' : τ ~ τ'}
@@ -291,6 +301,8 @@ module Grove.Marking.MExp where
     multiparents⇐ (⊢λ _ ∶ _ ∙ ě [ _ ∙ _ ]^ _)   = multiparents⇐s ě
     multiparents⇐ (⊢⸨λ _ ∶ _ ∙ ě ⸩[ _ ]^ _)     = multiparents⇐s ě
     multiparents⇐ (⊢λ _ ∶⸨ _ ⸩∙ ě [ _ ∙ _ ]^ _) = multiparents⇐s ě
+    multiparents⇐ {Γ} {τ} (⊢⋎^ w ^ v)           = [ ⟨ v , w , Γ , Ana τ ⟩ ]
+    multiparents⇐ {Γ} {τ} (⊢↻^ w ^ v)           = [ ⟨ v , w , Γ , Ana τ ⟩ ]
     multiparents⇐ ⊢⸨ ě ⸩[ _ ∙ _ ]               = multiparents⇒ ě
     multiparents⇐ ⊢∙ ě [ _ ∙ _ ]                = multiparents⇒ ě
 

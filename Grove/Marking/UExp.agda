@@ -50,12 +50,6 @@ module Grove.Marking.UExp where
     USuPlus : ∀ {e₁ e₂ u}
       → USubsumable (- e₁ + e₂ ^ u)
 
-    USuMultiParent : ∀ {w v}
-      → USubsumable (-⋎^ w ^ v)
-
-    USuCycleLocationConflict : ∀ {w v}
-      → USubsumable (-↻^ w ^ v)
-
   mutual
     -- synthesis
     data _⊢_⇒_ : (Γ : Ctx) (e : UExp) (τ : Typ) → Set where
@@ -108,6 +102,12 @@ module Grove.Marking.UExp where
         → (τ~τ₁ : (τ △s) ~ τ₁)
         → (e⇐τ₂ : Γ , x ∶ (τ △s) ⊢s e ⇐ τ₂)
         → Γ ⊢ -λ x ∶ τ ∙ e ^ u ⇐ τ₃
+
+      UAMultiLocationConflict : ∀ {Γ w v τ}
+        → Γ ⊢ -⋎^ w ^ v ⇐ τ
+
+      UACycleLocationConflict : ∀ {Γ w v τ}
+        → Γ ⊢ -↻^ w ^ v ⇐ τ
 
       UASubsume : ∀ {Γ e τ τ'}
         → (e⇒τ' : Γ ⊢ e ⇒ τ')

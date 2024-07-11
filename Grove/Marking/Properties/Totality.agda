@@ -111,12 +111,8 @@ module Grove.Marking.Properties.Totality where
     ↬⇐-totality Γ τ' e@(- _ + _ ^ u)
       with _ , ě@(⊢ _ + _ ^ u) , e↬⇒ě ← ↬⇒-totality Γ e
          = ↬⇐-subsume ě τ' e↬⇒ě USuPlus
-    ↬⇐-totality Γ τ' e@(-⋎^ w ^ v)
-      with _ , ě@(⊢⋎^ w ^ v) , e↬⇒ě ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ' e↬⇒ě USuMultiParent
-    ↬⇐-totality Γ τ' e@(-↻^ w ^ v)
-      with _ , ě@(⊢↻^ w ^ v) , e↬⇒ě ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ' e↬⇒ě USuCycleLocationConflict
+    ↬⇐-totality Γ τ' e@(-⋎^ w ^ v) = (⊢⋎^ w ^ v) , MKAMultiLocationConflict
+    ↬⇐-totality Γ τ' e@(-↻^ w ^ v) = (⊢↻^ w ^ v) , MKACycleLocationConflict
 
     ↬⇐s-totality : (Γ : Ctx)
                  → (τ' : Typ)

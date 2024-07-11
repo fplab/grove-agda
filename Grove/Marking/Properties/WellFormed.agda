@@ -59,6 +59,8 @@ module Grove.Marking.Properties.WellFormed where
       rewrite ↬⇐□s e↬⇐ě  = refl
     ↬⇐□ (MKALam3 τ₁▸ τ~̸τ₁ e↬⇐ě)
       rewrite ↬⇐□s e↬⇐ě  = refl
+    ↬⇐□ MKAMultiLocationConflict = refl
+    ↬⇐□ MKACycleLocationConflict = refl
     ↬⇐□ (MKAInconsistentTypes e↬⇒ě τ~̸τ' s)
       rewrite ↬⇒□ e↬⇒ě   = refl
     ↬⇐□ (MKASubsume e↬⇒ě τ~τ' s)
@@ -110,6 +112,8 @@ module Grove.Marking.Properties.WellFormed where
            → Σ[ ě ∈ Γ ⊢⇐ τ ] Γ ⊢ e ↬⇐ ě
     ⇐τ→↬⇐τ {e = -λ x ∶ τ ∙ e ^ u} (UALam τ₃▸ τ~τ₁ e⇐τ₂)
       with ě , e↬⇐ě ← ⇐sτ→↬⇐sτ e⇐τ₂ = ⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u , MKALam1 τ₃▸ τ~τ₁ e↬⇐ě
+    ⇐τ→↬⇐τ {e = -⋎^ w ^ v} UAMultiLocationConflict = ⊢⋎^ w ^ v , MKAMultiLocationConflict
+    ⇐τ→↬⇐τ {e = -↻^ w ^ v} UACycleLocationConflict = ⊢↻^ w ^ v , MKACycleLocationConflict
     ⇐τ→↬⇐τ {e = e}                (UASubsume e⇒τ' τ~τ' su)
       with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ'   = ⊢∙ ě [ τ~τ' ∙ USu→MSu su e↬⇒ě ] , MKASubsume e↬⇒ě τ~τ' su
 
@@ -215,6 +219,8 @@ module Grove.Marking.Properties.WellFormed where
     ⇐τ→markless (UALam τ₃▸ τ~τ₁ e⇐τ) (MKALam3 τ₃▸' τ~̸τ₁ e↬⇐ě)
       with refl ← ▸-→-unicity τ₃▸ τ₃▸'
          = ⊥-elim (τ~̸τ₁ τ~τ₁)
+    ⇐τ→markless UAMultiLocationConflict MKAMultiLocationConflict = MLAMultiLocationConflict
+    ⇐τ→markless UACycleLocationConflict MKACycleLocationConflict = MLACycleLocationConflict
     ⇐τ→markless (UASubsume e⇒τ' τ~τ' su) (MKAInconsistentTypes e↬⇒ě τ~̸τ' su')
       with refl ← ⇒-↬-≡ e⇒τ' e↬⇒ě
          = ⊥-elim (τ~̸τ' τ~τ')
@@ -253,7 +259,7 @@ module Grove.Marking.Properties.WellFormed where
          | e₂⇐τ₂ ← ↬⇐sτ-markless→⇐sτ e₂↬⇐ě₂ less₂
          = USPlus e₁⇐τ₁ e₂⇐τ₂
     ↬⇒τ-markless→⇒τ MKSMultiLocationConflict MLSMultiLocationConflict = USMultiLocationConflict
-    ↬⇒τ-markless→⇒τ MKSCycleLocationConflict    MLSCycleLocationConflict    = USCycleLocationConflict
+    ↬⇒τ-markless→⇒τ MKSCycleLocationConflict MLSCycleLocationConflict = USCycleLocationConflict
 
     ↬⇒sτ-markless→⇒sτ : ∀ {Γ e τ} {ě : Γ ⊢⇒s τ}
                     → Γ ⊢s e ↬⇒ ě
@@ -278,6 +284,8 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇐τ-markless→⇐τ (MKALam1 τ₃▸ τ~τ₁ e↬⇐ě) (MLALam less)
       with e⇐τ₂ ← ↬⇐sτ-markless→⇐sτ e↬⇐ě less
          = UALam τ₃▸ τ~τ₁ e⇐τ₂
+    ↬⇐τ-markless→⇐τ MKAMultiLocationConflict MLAMultiLocationConflict = UAMultiLocationConflict
+    ↬⇐τ-markless→⇐τ MKACycleLocationConflict MLACycleLocationConflict = UACycleLocationConflict
     ↬⇐τ-markless→⇐τ (MKASubsume e↬⇒ě τ~τ' su) (MLASubsume less)
       with e⇒τ ← ↬⇒τ-markless→⇒τ e↬⇒ě less
          = UASubsume e⇒τ τ~τ' su

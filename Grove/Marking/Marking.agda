@@ -90,8 +90,6 @@ module Grove.Marking.Marking where
     USu→MSu {ě = ⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u} USuAp           _ = MSuAp2
     USu→MSu {ě = ⊢ℕ n ^ u}               USuNum          _ = MSuNum
     USu→MSu {ě = ⊢ ě₁ + ě₂ ^ u}          USuPlus         _ = MSuPlus
-    USu→MSu {ě = ⊢⋎^ w ^ p}              USuMultiParent  _ = MSuMultiParent
-    USu→MSu {ě = ⊢↻^ w ^ p}              USuCycleLocationConflict     _ = MSuCycleLocationConflict
 
     -- analysis
     data _⊢_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where
@@ -114,6 +112,12 @@ module Grove.Marking.Marking where
         → (τ~̸τ₁ : (τ △s) ~̸ τ₁)
         → Γ , x ∶ (τ △s) ⊢s e ↬⇐ ě
         → Γ ⊢ (-λ x ∶ τ ∙ e ^ u) ↬⇐ (⊢λ x ∶⸨ τ ⸩∙ ě [ τ₃▸ ∙ τ~̸τ₁ ]^ u)
+
+      MKAMultiLocationConflict : ∀ {Γ w v τ}
+        → Γ ⊢ -⋎^ w ^ v ↬⇐ ⊢⋎^_^_ {τ = τ} w v
+
+      MKACycleLocationConflict : ∀ {Γ w v τ}
+        → Γ ⊢ -↻^ w ^ v ↬⇐ ⊢↻^_^_ {τ = τ} w v
 
       MKASubsume : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒ τ'}

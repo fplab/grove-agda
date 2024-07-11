@@ -111,8 +111,6 @@ module Grove.Marking.Properties.Unicity where
     USu→MSu-unicity USuAp           (MKSAp2 _ _ _)  _ = refl
     USu→MSu-unicity USuNum          MKSNum          _ = refl
     USu→MSu-unicity USuPlus         (MKSPlus _ _)   _ = refl
-    USu→MSu-unicity USuMultiParent  MKSMultiLocationConflict  _ = refl
-    USu→MSu-unicity USuCycleLocationConflict     MKSCycleLocationConflict     _ = refl
 
     ↬⇐-ě-unicity : ∀ {Γ : Ctx} {e : UExp} {τ : Typ} {ě₁ : Γ ⊢⇐ τ} {ě₂ : Γ ⊢⇐ τ}
                  → Γ ⊢ e ↬⇐ ě₁
@@ -139,6 +137,8 @@ module Grove.Marking.Properties.Unicity where
       rewrite ▸-→-≡ τ▸ τ▸'
             | ~̸-≡ τ~̸τ₁ τ~̸τ₁'
             | ↬⇐s-ě-unicity e↬⇐ě e↬⇐ě' = refl
+    ↬⇐-ě-unicity MKAMultiLocationConflict MKAMultiLocationConflict = refl
+    ↬⇐-ě-unicity MKACycleLocationConflict MKACycleLocationConflict = refl
     ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuVar) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuVar)
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
@@ -159,16 +159,6 @@ module Grove.Marking.Properties.Unicity where
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
       rewrite USu→MSu-unicity USuPlus e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuMultiParent) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuMultiParent)
-      with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
-      rewrite USu→MSu-unicity USuMultiParent e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' USuCycleLocationConflict) (MKAInconsistentTypes e↬⇒ě' τ~̸τ'' USuCycleLocationConflict)
-      with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~̸-≡ τ~̸τ' τ~̸τ''
-      rewrite USu→MSu-unicity USuCycleLocationConflict e↬⇒ě e↬⇒ě' = refl
     ↬⇐-ě-unicity (MKAInconsistentTypes e↬⇒ě τ~̸τ' s) (MKASubsume e↬⇒ě' τ~τ' s')
       with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě' = ⊥-elim (τ~̸τ' τ~τ')
     ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' s) (MKAInconsistentTypes e↬⇒ě' τ~̸τ' s')
@@ -193,16 +183,6 @@ module Grove.Marking.Properties.Unicity where
       with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
          | refl ← ~-≡ τ~τ' τ~τ''
       rewrite USu→MSu-unicity USuPlus e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' USuMultiParent) (MKASubsume e↬⇒ě' τ~τ'' USuMultiParent)
-      with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~-≡ τ~τ' τ~τ''
-      rewrite USu→MSu-unicity USuMultiParent e↬⇒ě e↬⇒ě' = refl
-    ↬⇐-ě-unicity (MKASubsume e↬⇒ě τ~τ' USuCycleLocationConflict) (MKASubsume e↬⇒ě' τ~τ'' USuCycleLocationConflict)
-      with refl ← ↬⇒-τ-unicity e↬⇒ě e↬⇒ě'
-      with refl ← ↬⇒-ě-unicity e↬⇒ě e↬⇒ě'
-         | refl ← ~-≡ τ~τ' τ~τ''
-      rewrite USu→MSu-unicity USuCycleLocationConflict e↬⇒ě e↬⇒ě' = refl
 
     ↬⇐s-ě-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě₁ : Γ ⊢⇐s τ} {ě₂ : Γ ⊢⇐s τ}
                  → Γ ⊢s e ↬⇐ ě₁

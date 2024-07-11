@@ -35,6 +35,8 @@ module Grove.Marking.Erasure where
     (⊢λ x ∶ τ ∙ ě [ τ₃▸ ∙ τ~τ₁ ]^ u)   ⇐□ = -λ x ∶ τ ∙ (ě ⇐□s) ^ u
     (⊢⸨λ x ∶ τ ∙ ě ⸩[ τ'!▸ ]^ u)       ⇐□ = -λ x ∶ τ ∙ (ě ⇐□s) ^ u
     (⊢λ x ∶⸨ τ ⸩∙ ě [ τ₃▸ ∙ τ~̸τ₁ ]^ u) ⇐□ = -λ x ∶ τ ∙ (ě ⇐□s) ^ u
+    (⊢⋎^ w ^ v)                        ⇐□ = -⋎^ w ^ v
+    (⊢↻^ w ^ v)                        ⇐□ = -↻^ w ^ v
     ⊢⸨ ě ⸩[ τ~̸τ' ∙ su ]                ⇐□ = ě ⇒□
     ⊢∙ ě [ τ~τ' ∙ su ]                 ⇐□ = ě ⇒□
 
@@ -53,6 +55,8 @@ module Grove.Marking.Erasure where
     ⊢⇐-⊢⇒ (⊢λ x ∶⸨ τ ⸩∙ ě [ τ₃▸ ∙ τ~̸τ₁ ]^ u)
       with τ' , ě' , eq ← ⊢⇐s-⊢⇒s ě rewrite eq
          = (τ △s) -→ τ' , ⊢λ x ∶ τ ∙ ě' ^ u , refl
+    ⊢⇐-⊢⇒ (⊢⋎^ w ^ v)                     = unknown , (⊢⋎^ w ^ v) , refl
+    ⊢⇐-⊢⇒ (⊢↻^ w ^ v)                     = unknown , (⊢↻^ w ^ v) , refl
     ⊢⇐-⊢⇒ (⊢⸨_⸩[_∙_] {τ' = τ'} ě τ~̸τ' su) = τ' , ě , refl
     ⊢⇐-⊢⇒ (⊢∙_[_∙_]  {τ' = τ'} ě τ~τ' su) = τ' , ě , refl
 
@@ -90,8 +94,8 @@ module Grove.Marking.Erasure where
     ⊢⇒-⊢⇐ ě@(⊢ℕ n ^ u)               = ⊢⇒-⊢⇐-subsume ě MSuNum
     ⊢⇒-⊢⇐ ě@(⊢ ě₁ + ě₂ ^ u)          = ⊢⇒-⊢⇐-subsume ě MSuPlus
     ⊢⇒-⊢⇐ ě@(⊢⟦ ∌y ⟧^ u)             = ⊢⇒-⊢⇐-subsume ě MSuFree
-    ⊢⇒-⊢⇐ ě@(⊢⋎^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuMultiParent
-    ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuCycleLocationConflict
+    ⊢⇒-⊢⇐ ě@(⊢⋎^ w ^ v)              = (⊢⋎^ w ^ v) , refl
+    ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = (⊢↻^ w ^ v) , refl
 
     ⊢⇒s-⊢⇐s : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒s τ) → Σ[ ě' ∈ Γ ⊢⇐s τ' ] ě ⇒□s ≡ ě' ⇐□s
     ⊢⇒s-⊢⇐s ě = ⊢⇒s-⊢⇐s-subsume ě
