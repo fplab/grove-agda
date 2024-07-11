@@ -52,13 +52,6 @@ mutual
   ... | Top MP = ⋎ u v
   ... | Top U = ↻ u v
   ... | Inner X w = decomp-v fuel G v
-  
--- -- note: in the actual implementation, this would map over vertices in G directly
-decomp-εs : ℕ → Graph → (List Edge) → Grove 
-decomp-εs fuel G [] = []
-decomp-εs fuel G (E (S v _) _ _ ∷ εs) with classify fuel G v []
-... | Top X = (decomp-v fuel G v) ∷ (decomp-εs fuel G εs)
-... | Inner X w = decomp-εs fuel G εs
 
 vertices-of-G : Graph → List Vertex 
 vertices-of-G G = map (λ (E (S v _) _ _) → v) G 
