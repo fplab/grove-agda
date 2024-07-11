@@ -37,24 +37,24 @@ module Grove.Marking.UExp where
 
     UChildExp' = EdgeId × UExp
 
-  data UChildsumable : UExp → Set where
+  data USubsumable : UExp → Set where
     USuVar : ∀ {x u}
-      → UChildsumable (- x ^ u)
+      → USubsumable (- x ^ u)
 
     USuAp : ∀ {e₁ e₂ u}
-      → UChildsumable (- e₁ ∙ e₂ ^ u)
+      → USubsumable (- e₁ ∙ e₂ ^ u)
 
     USuNum : ∀ {n u}
-      → UChildsumable (-ℕ n ^ u)
+      → USubsumable (-ℕ n ^ u)
 
     USuPlus : ∀ {e₁ e₂ u}
-      → UChildsumable (- e₁ + e₂ ^ u)
+      → USubsumable (- e₁ + e₂ ^ u)
 
     USuMultiParent : ∀ {w v}
-      → UChildsumable (-⋎^ w ^ v)
+      → USubsumable (-⋎^ w ^ v)
 
     USuCycleLocationConflict : ∀ {w v}
-      → UChildsumable (-↻^ w ^ v)
+      → USubsumable (-↻^ w ^ v)
 
   mutual
     -- synthesis
@@ -112,7 +112,7 @@ module Grove.Marking.UExp where
       UASubsume : ∀ {Γ e τ τ'}
         → (e⇒τ' : Γ ⊢ e ⇒ τ')
         → (τ~τ' : τ ~ τ')
-        → (su : UChildsumable e)
+        → (su : USubsumable e)
         → Γ ⊢ e ⇐ τ
 
     data _⊢s_⇐_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where

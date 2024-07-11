@@ -101,7 +101,7 @@ module Grove.Marking.Properties.Unicity where
            = refl
 
     USu→MSu-unicity : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ}
-                      → (s : UChildsumable e)
+                      → (s : USubsumable e)
                       → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
                       → (e↬⇒ě' : Γ ⊢ e ↬⇒ ě)
                       → USu→MSu s e↬⇒ě ≡ USu→MSu s e↬⇒ě'

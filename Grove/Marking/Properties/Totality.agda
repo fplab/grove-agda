@@ -64,7 +64,7 @@ module Grove.Marking.Properties.Totality where
                → (ě : Γ ⊢⇒ τ)
                → (τ' : Typ)
                → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
-               → (s : UChildsumable e)
+               → (s : USubsumable e)
                → Σ[ ě ∈ Γ ⊢⇐ τ' ] (Γ ⊢ e ↬⇐ ě)
     ↬⇐-subsume {τ = τ} ě τ' e↬⇒ě s with τ' ~? τ
     ...   | yes τ'~τ = ⊢∙ ě  [ τ'~τ ∙ USu→MSu s e↬⇒ě ] , MKASubsume e↬⇒ě τ'~τ s

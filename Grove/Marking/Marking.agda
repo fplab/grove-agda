@@ -83,7 +83,7 @@ module Grove.Marking.Marking where
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
         → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*)
 
-    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → UChildsumable e → Γ ⊢ e ↬⇒ ě → MChildsumable ě
+    USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → USubsumable e → Γ ⊢ e ↬⇒ ě → MSubsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
     USu→MSu {ě = ⊢⟦ x ⟧^ u}              USuVar          _ = MSuFree
     USu→MSu {ě = ⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u}    USuAp           _ = MSuAp1
@@ -119,14 +119,14 @@ module Grove.Marking.Marking where
         → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
         → (τ~τ' : τ ~ τ')
-        → (s : UChildsumable e)
+        → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢∙ ě [ τ~τ' ∙ USu→MSu s e↬⇒ě ]
 
       MKAInconsistentTypes : ∀ {Γ e τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → (e↬⇒ě : Γ ⊢ e ↬⇒ ě)
         → (τ~̸τ' : τ ~̸ τ')
-        → (s : UChildsumable e)
+        → (s : USubsumable e)
         → Γ ⊢ e ↬⇐ ⊢⸨ ě ⸩[ τ~̸τ' ∙ USu→MSu s e↬⇒ě ]
 
     data _⊢s_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇐s τ) → Set where

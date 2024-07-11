@@ -98,41 +98,41 @@ module Grove.Marking.MExp where
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
 
-    data MChildsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
+    data MSubsumable : {Γ : Ctx} {τ : Typ} → (ě : Γ ⊢⇒ τ) → Set where
       MSuVar : ∀ {Γ x u τ}
         → {∋x : Γ ∋ x ∶ τ}
-        → MChildsumable {Γ} (⊢ ∋x ^ u)
+        → MSubsumable {Γ} (⊢ ∋x ^ u)
 
       MSuAp1 : ∀ {Γ u τ τ₁ τ₂}
         → {ě₁ : Γ ⊢⇒s τ}
         → {ě₂ : Γ ⊢⇐s τ₁}
         → {τ▸ : τ ▸ τ₁ -→ τ₂}
-        → MChildsumable {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
+        → MSubsumable {Γ} (⊢ ě₁ ∙ ě₂ [ τ▸ ]^ u)
 
       MSuAp2 : ∀ {Γ u τ}
         → {ě₁ : Γ ⊢⇒s τ}
         → {ě₂ : Γ ⊢⇐s unknown}
         → {τ!▸ : τ !▸-→}
-        → MChildsumable {Γ} (⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u)
+        → MSubsumable {Γ} (⊢⸨ ě₁ ⸩∙ ě₂ [ τ!▸ ]^ u)
 
       MSuNum : ∀ {Γ u}
         → {n : ℕ}
-        → MChildsumable {Γ} (⊢ℕ n ^ u)
+        → MSubsumable {Γ} (⊢ℕ n ^ u)
 
       MSuPlus : ∀ {Γ u}
         → {ě₁ : Γ ⊢⇐s num}
         → {ě₂ : Γ ⊢⇐s num}
-        → MChildsumable {Γ} (⊢ ě₁ + ě₂ ^ u)
+        → MSubsumable {Γ} (⊢ ě₁ + ě₂ ^ u)
 
       MSuFree : ∀ {Γ y u}
         → {∌y : Γ ∌ y}
-        → MChildsumable {Γ} (⊢⟦ ∌y ⟧^ u)
+        → MSubsumable {Γ} (⊢⟦ ∌y ⟧^ u)
 
       MSuMultiParent : ∀ {Γ w v}
-        → MChildsumable {Γ} (⊢⋎^ w ^ v)
+        → MSubsumable {Γ} (⊢⋎^ w ^ v)
 
       MSuCycleLocationConflict : ∀ {Γ w v}
-        → MChildsumable {Γ} (⊢↻^ w ^ v)
+        → MSubsumable {Γ} (⊢↻^ w ^ v)
 
     -- analysis
     data _⊢⇐_ : (Γ : Ctx) (τ : Typ) → Set where
@@ -169,14 +169,14 @@ module Grove.Marking.MExp where
       ⊢⸨_⸩[_∙_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒ τ')
         → (τ~̸τ' : τ ~̸ τ')
-        → (su : MChildsumable ě)
+        → (su : MSubsumable ě)
         → Γ ⊢⇐ τ
 
       -- MASubsume
       ⊢∙_[_∙_] : ∀ {Γ τ τ'}
         → (ě : Γ ⊢⇒ τ')
         → (τ~τ' : τ ~ τ')
-        → (su : MChildsumable ě)
+        → (su : MSubsumable ě)
         → Γ ⊢⇐ τ
 
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
@@ -253,7 +253,7 @@ module Grove.Marking.MExp where
       MLASubsume : ∀ {Γ τ τ'}
         → {ě : Γ ⊢⇒ τ'}
         → {τ~τ' : τ ~ τ'}
-        → {su : MChildsumable ě}
+        → {su : MSubsumable ě}
         → (less : Markless⇒ ě)
         → Markless⇐ {Γ} (⊢∙ ě [ τ~τ' ∙ su ])
 
