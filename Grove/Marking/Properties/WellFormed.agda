@@ -32,20 +32,20 @@ module Grove.Marking.Properties.WellFormed where
     ↬⇒□ (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
       rewrite ↬⇐□s e₁↬⇐ě₁
             | ↬⇐□s e₂↬⇐ě₂ = refl
-    ↬⇒□ MKSMultiParent    = refl
-    ↬⇒□ MKSUnicycle       = refl
+    ↬⇒□ MKSMultiLocationConflict    = refl
+    ↬⇒□ MKSCycleLocationConflict       = refl
 
     ↬⇒□s : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ} {ě : Γ ⊢⇒s τ}
         → Γ ⊢s e ↬⇒ ě
         → ě ⇒□s ≡ e
     ↬⇒□s MKChildSHole = refl
     ↬⇒□s (MKChildSOnly e↬⇒ě) rewrite ↬⇒□ e↬⇒ě = refl
-    ↬⇒□s (MKChildSConflict ė↬⇒ě*)
+    ↬⇒□s (MKChildSLocalConflict ė↬⇒ě*)
       with eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv    = refl
 
     ↬⇒□s* : ∀ {Γ ė*}
           → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-          → ((MKChildSConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
+          → ((MKChildSLocalConflictChildren ė↬⇒ě*) ⇒□s*) ≡ ė*
     ↬⇒□s* All.[] = refl
     ↬⇒□s* (All._∷_ {w , e} {ė*} (τ , ě , e↬⇒ě) ė↬⇒ě*)
       with refl ← ↬⇒□ e↬⇒ě | eqv ← ↬⇒□s* ė↬⇒ě* rewrite eqv = refl
@@ -87,8 +87,8 @@ module Grove.Marking.Properties.WellFormed where
     ⇒τ→↬⇒τ {e = - e₁ + e₂ ^ u}      (USPlus e₁⇐num e₂⇐num)
       with ě₁ , e₁↬⇐ě₁ ← ⇐sτ→↬⇐sτ e₁⇐num
          | ě₂ , e₂↬⇐ě₂ ← ⇐sτ→↬⇐sτ e₂⇐num          = ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂
-    ⇒τ→↬⇒τ {e = -⋎^ w ^ v}          USMultiParent = ⊢⋎^ w ^ v , MKSMultiParent
-    ⇒τ→↬⇒τ {e = -↻^ w ^ v}          USUnicycle    = ⊢↻^ w ^ v , MKSUnicycle
+    ⇒τ→↬⇒τ {e = -⋎^ w ^ v}          USMultiLocationConflict = ⊢⋎^ w ^ v , MKSMultiLocationConflict
+    ⇒τ→↬⇒τ {e = -↻^ w ^ v}          USCycleLocationConflict    = ⊢↻^ w ^ v , MKSCycleLocationConflict
 
     ⇒sτ→↬⇒sτ : ∀ {Γ : Ctx} {e : UChildExp} {τ : Typ}
              → Γ ⊢s e ⇒ τ
@@ -96,8 +96,8 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→↬⇒sτ {e = -□ s}       UChildSHole = ⊢□ s , MKChildSHole
     ⇒sτ→↬⇒sτ {e = -∶ (w , e)} (UChildSOnly e⇒τ) 
       with ě , e↬⇒ě ← ⇒τ→↬⇒τ e⇒τ        = ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
-    ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (UChildSConflict ė⇒*)
-      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*) , MKChildSConflict ė↬⇒ě*
+    ⇒sτ→↬⇒sτ {e = -⋏ s ė*}    (UChildSLocalConflict ė⇒*)
+      with ė↬⇒ě* ← ⇒sτ→↬⇒sτ* ė⇒*        = ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*) , MKChildSLocalConflict ė↬⇒ě*
 
     ⇒sτ→↬⇒sτ* : ∀ {Γ : Ctx} {ė* : List UChildExp'}
               → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
@@ -143,9 +143,9 @@ module Grove.Marking.Properties.WellFormed where
          = refl
     ⇒-↬-≡ (USPlus e₁⇐num e₂⇐num) (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
          = refl
-    ⇒-↬-≡ USMultiParent MKSMultiParent
+    ⇒-↬-≡ USMultiLocationConflict MKSMultiLocationConflict
          = refl
-    ⇒-↬-≡ USUnicycle MKSUnicycle
+    ⇒-↬-≡ USCycleLocationConflict MKSCycleLocationConflict
          = refl
 
     ⇒s-↬s-≡ : ∀ {Γ e τ τ'} {ě : Γ ⊢⇒s τ'}
@@ -155,7 +155,7 @@ module Grove.Marking.Properties.WellFormed where
     ⇒s-↬s-≡ UChildSHole           MKChildSHole             = refl
     ⇒s-↬s-≡ (UChildSOnly e⇒τ)     (MKChildSOnly e↬⇒ě)
       with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě                       = refl
-    ⇒s-↬s-≡ (UChildSConflict ė⇒*) (MKChildSConflict ė↬⇒ě*) = refl
+    ⇒s-↬s-≡ (UChildSLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = refl
 
   mutual
     -- marking well-typed terms produces no marks
@@ -180,10 +180,10 @@ module Grove.Marking.Properties.WellFormed where
          = MLSNum
     ⇒τ→markless (USPlus e₁⇐num e₂⇐num) (MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂)
          = MLSPlus (⇐sτ→markless e₁⇐num e₁↬⇐ě₁) (⇐sτ→markless e₂⇐num e₂↬⇐ě₂)
-    ⇒τ→markless USMultiParent MKSMultiParent
-         = MLSMultiParent
-    ⇒τ→markless USUnicycle MKSUnicycle
-         = MLSUnicycle
+    ⇒τ→markless USMultiLocationConflict MKSMultiLocationConflict
+         = MLSMultiLocationConflict
+    ⇒τ→markless USCycleLocationConflict MKSCycleLocationConflict
+         = MLSCycleLocationConflict
 
     ⇒sτ→markless : ∀ {Γ e τ} {ě : Γ ⊢⇒s τ}
                  → Γ ⊢s e ⇒ τ
@@ -192,12 +192,12 @@ module Grove.Marking.Properties.WellFormed where
     ⇒sτ→markless UChildSHole MKChildSHole = MLSubSHole
     ⇒sτ→markless (UChildSOnly e⇒τ) (MKChildSOnly e↬⇒ě)
       with refl ← ⇒-↬-≡ e⇒τ e↬⇒ě      = MLSubSOnly (⇒τ→markless e⇒τ e↬⇒ě)
-    ⇒sτ→markless (UChildSConflict ė⇒*) (MKChildSConflict ė↬⇒ě*) = MLSubSConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
+    ⇒sτ→markless (UChildSLocalConflict ė⇒*) (MKChildSLocalConflict ė↬⇒ě*) = MLSubSLocalConflict (⇒sτ→markless* ė⇒* ė↬⇒ě*)
 
     ⇒sτ→markless* : ∀ {Γ ė*}
                   → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
                   → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSConflictChildren ė↬⇒ě*)
+                  → All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSLocalConflictChildren ė↬⇒ě*)
     ⇒sτ→markless* [] [] = []
     ⇒sτ→markless* ((_ , e⇒) ∷ ė⇒*) ((_ , ě , e↬⇒ě) ∷ ė↬⇒ě*)
       with refl ← ⇒-↬-≡ e⇒ e↬⇒ě
@@ -252,8 +252,8 @@ module Grove.Marking.Properties.WellFormed where
       with e₁⇐τ₁ ← ↬⇐sτ-markless→⇐sτ e₁↬⇐ě₁ less₁
          | e₂⇐τ₂ ← ↬⇐sτ-markless→⇐sτ e₂↬⇐ě₂ less₂
          = USPlus e₁⇐τ₁ e₂⇐τ₂
-    ↬⇒τ-markless→⇒τ MKSMultiParent MLSMultiParent = USMultiParent
-    ↬⇒τ-markless→⇒τ MKSUnicycle    MLSUnicycle    = USUnicycle
+    ↬⇒τ-markless→⇒τ MKSMultiLocationConflict MLSMultiLocationConflict = USMultiLocationConflict
+    ↬⇒τ-markless→⇒τ MKSCycleLocationConflict    MLSCycleLocationConflict    = USCycleLocationConflict
 
     ↬⇒sτ-markless→⇒sτ : ∀ {Γ e τ} {ě : Γ ⊢⇒s τ}
                     → Γ ⊢s e ↬⇒ ě
@@ -261,11 +261,11 @@ module Grove.Marking.Properties.WellFormed where
                     → Γ ⊢s e ⇒ τ
     ↬⇒sτ-markless→⇒sτ MKChildSHole             MLSubSHole             = UChildSHole
     ↬⇒sτ-markless→⇒sτ (MKChildSOnly e↬⇒ě)      (MLSubSOnly less)      = UChildSOnly (↬⇒τ-markless→⇒τ e↬⇒ě less)
-    ↬⇒sτ-markless→⇒sτ (MKChildSConflict ė↬⇒ě*) (MLSubSConflict less*) = UChildSConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
+    ↬⇒sτ-markless→⇒sτ (MKChildSLocalConflict ė↬⇒ě*) (MLSubSLocalConflict less*) = UChildSLocalConflict (↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*)
 
     ↬⇒sτ-markless→⇒sτ* : ∀ {Γ ė*}
                        → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSConflictChildren ė↬⇒ě*))
+                       → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) (MKChildSLocalConflictChildren ė↬⇒ě*))
                        → All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*
     ↬⇒sτ-markless→⇒sτ* []                       []             = []
     ↬⇒sτ-markless→⇒sτ* ((τ , ě , e↬⇒ě) ∷ ė↬⇒ě*) (less ∷ less*) = (τ , ↬⇒τ-markless→⇒τ e↬⇒ě less) ∷ ↬⇒sτ-markless→⇒sτ* ė↬⇒ě* less*

@@ -58,17 +58,17 @@ module Grove.Marking.Marking where
         → (e₂↬⇐ě₂ : Γ ⊢s e₂ ↬⇐ ě₂)
         → Γ ⊢ - e₁ + e₂ ^ u ↬⇒ ⊢ ě₁ + ě₂ ^ u
 
-      MKSMultiParent : ∀ {Γ w v}
+      MKSMultiLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -⋎^ w ^ v ↬⇒ ⊢⋎^ w ^ v
 
-      MKSUnicycle : ∀ {Γ w v}
+      MKSCycleLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ↬⇒ ⊢↻^ w ^ v
 
-    MKChildSConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
+    MKChildSLocalConflictChildren : ∀ {Γ} {ė* : List UChildExp'}
       → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
       → List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)
-    MKChildSConflictChildren All.[]                              = []
-    MKChildSConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKChildSConflictChildren ė↬⇒ě*)
+    MKChildSLocalConflictChildren All.[]                              = []
+    MKChildSLocalConflictChildren (All._∷_ {w , _} (τ , ě , _) ė↬⇒ě*) = (w , τ , ě) ∷ (MKChildSLocalConflictChildren ė↬⇒ě*)
 
     data _⊢s_↬⇒_ : {τ : Typ} (Γ : Ctx) → (e : UChildExp) → (Γ ⊢⇒s τ) → Set where
       MKChildSHole : ∀ {Γ s}
@@ -79,9 +79,9 @@ module Grove.Marking.Marking where
         → (e↬⇒ě : Γ  ⊢ e ↬⇒ ě)
         → Γ ⊢s -∶ (w , e) ↬⇒ ⊢∶ (w , ě)
 
-      MKChildSConflict : ∀ {Γ s ė*}
+      MKChildSLocalConflict : ∀ {Γ s ė*}
         → (ė↬⇒ě* : All (λ (_ , e) → ∃[ τ ] Σ[ ě ∈ Γ ⊢⇒ τ ] Γ ⊢ e ↬⇒ ě) ė*)
-        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*)
+        → Γ ⊢s -⋏ s ė* ↬⇒ ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*)
 
     USu→MSu : ∀ {e : UExp} {Γ : Ctx} {τ : Typ} {ě : Γ ⊢⇒ τ} → UChildsumable e → Γ ⊢ e ↬⇒ ě → MChildsumable ě
     USu→MSu {ě = ⊢_^_ {x = x} ∋x u}      USuVar          _ = MSuVar
@@ -91,7 +91,7 @@ module Grove.Marking.Marking where
     USu→MSu {ě = ⊢ℕ n ^ u}               USuNum          _ = MSuNum
     USu→MSu {ě = ⊢ ě₁ + ě₂ ^ u}          USuPlus         _ = MSuPlus
     USu→MSu {ě = ⊢⋎^ w ^ p}              USuMultiParent  _ = MSuMultiParent
-    USu→MSu {ě = ⊢↻^ w ^ p}              USuUnicycle     _ = MSuUnicycle
+    USu→MSu {ě = ⊢↻^ w ^ p}              USuCycleLocationConflict     _ = MSuCycleLocationConflict
 
     -- analysis
     data _⊢_↬⇐_ : {τ : Typ} (Γ : Ctx) → (e : UExp) → (Γ ⊢⇐ τ) → Set where

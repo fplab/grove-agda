@@ -92,7 +92,7 @@ module Grove.Marking.MExp where
         → (ė : EdgeId × Γ ⊢⇒ τ)
         → Γ ⊢⇒s τ
 
-      -- MChildSConflict: \vdash\curlywedge
+      -- MChildSLocalConflict: \vdash\curlywedge
       ⊢⋏ : ∀ {Γ}
         → (s : Source)
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
@@ -131,7 +131,7 @@ module Grove.Marking.MExp where
       MSuMultiParent : ∀ {Γ w v}
         → MChildsumable {Γ} (⊢⋎^ w ^ v)
 
-      MSuUnicycle : ∀ {Γ w v}
+      MSuCycleLocationConflict : ∀ {Γ w v}
         → MChildsumable {Γ} (⊢↻^ w ^ v)
 
     -- analysis
@@ -221,10 +221,10 @@ module Grove.Marking.MExp where
         → (less₂ : Markless⇐s ě₂)
         → Markless⇒ {Γ} (⊢ ě₁ + ě₂ ^ u)
 
-      MLSMultiParent : ∀ {Γ w v}
+      MLSMultiLocationConflict : ∀ {Γ w v}
         → Markless⇒ {Γ} (⊢⋎^ w ^ v)
 
-      MLSUnicycle : ∀ {Γ w v}
+      MLSCycleLocationConflict : ∀ {Γ w v}
         → Markless⇒ {Γ} (⊢↻^ w ^ v)
 
     data Markless⇒s : ∀ {Γ τ} → (ě : Γ ⊢⇒s τ) → Set where
@@ -237,7 +237,7 @@ module Grove.Marking.MExp where
         → Markless⇒s {Γ} (⊢∶ (w , ě))
 
       -- TODO maybe this is a mark?
-      MLSubSConflict : ∀ {Γ s}
+      MLSubSLocalConflict : ∀ {Γ s}
         → {ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ)}
         → (less* : All (λ { (_ , _ , ě) → Markless⇒ ě }) ė*)
         → Markless⇒s {Γ} (⊢⋏ s ė*)

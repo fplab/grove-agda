@@ -53,7 +53,7 @@ module Grove.Marking.UExp where
     USuMultiParent : ∀ {w v}
       → UChildsumable (-⋎^ w ^ v)
 
-    USuUnicycle : ∀ {w v}
+    USuCycleLocationConflict : ∀ {w v}
       → UChildsumable (-↻^ w ^ v)
 
   mutual
@@ -81,10 +81,10 @@ module Grove.Marking.UExp where
         → (e₂⇐num : Γ ⊢s e₂ ⇐ num)
         → Γ ⊢ - e₁ + e₂ ^ u ⇒ num
 
-      USMultiParent : ∀ {Γ w v}
+      USMultiLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -⋎^ w ^ v ⇒ unknown
 
-      USUnicycle : ∀ {Γ w v}
+      USCycleLocationConflict : ∀ {Γ w v}
         → Γ ⊢ -↻^ w ^ v ⇒ unknown
 
     data _⊢s_⇒_ : (Γ : Ctx) (e : UChildExp) (τ : Typ) → Set where
@@ -97,7 +97,7 @@ module Grove.Marking.UExp where
 
       -- TODO synthesize meet?
       -- TODO rename to UChildSMultiChild?
-      UChildSConflict : ∀ {Γ s ė*}
+      UChildSLocalConflict : ∀ {Γ s ė*}
         → (ė⇒* : All (λ (_ , e) → ∃[ τ ] Γ ⊢ e ⇒ τ) ė*)
         → Γ ⊢s -⋏ s ė* ⇒ unknown
 
@@ -135,8 +135,8 @@ module Grove.Marking.UExp where
       with refl ← ▸-→-unicity τ▸ τ▸'                          = refl
     ⇒-unicity USNum                  USNum                    = refl
     ⇒-unicity (USPlus e₁⇐num e₂⇐num) (USPlus e₁⇐num' e₂⇐num') = refl
-    ⇒-unicity USMultiParent          USMultiParent            = refl
-    ⇒-unicity USUnicycle             USUnicycle               = refl
+    ⇒-unicity USMultiLocationConflict          USMultiLocationConflict            = refl
+    ⇒-unicity USCycleLocationConflict             USCycleLocationConflict               = refl
 
     ⇒s-unicity : ∀ {Γ : Ctx} {e : UChildExp} {τ₁ τ₂ : Typ}
                → Γ ⊢s e ⇒ τ₁
@@ -145,4 +145,4 @@ module Grove.Marking.UExp where
     ⇒s-unicity UChildSHole           UChildSHole            = refl
     ⇒s-unicity (UChildSOnly e⇒τ)     (UChildSOnly e⇒τ')
       rewrite ⇒-unicity e⇒τ e⇒τ'                        = refl
-    ⇒s-unicity (UChildSConflict ė⇒*) (UChildSConflict ė⇒*') = refl
+    ⇒s-unicity (UChildSLocalConflict ė⇒*) (UChildSLocalConflict ė⇒*') = refl

@@ -40,8 +40,8 @@ module Grove.Marking.Properties.Totality where
       with ě₁ , e₁↬⇐ě₁ ← ↬⇐s-totality Γ num e₁
          | ě₂ , e₂↬⇐ě₂ ← ↬⇐s-totality Γ num e₂
          = num , ⊢ ě₁ + ě₂ ^ u , MKSPlus e₁↬⇐ě₁ e₂↬⇐ě₂
-    ↬⇒-totality Γ (-⋎^ w ^ v) = unknown , ⊢⋎^ w ^ v , MKSMultiParent
-    ↬⇒-totality Γ (-↻^ w ^ v) = unknown , ⊢↻^ w ^ v , MKSUnicycle
+    ↬⇒-totality Γ (-⋎^ w ^ v) = unknown , ⊢⋎^ w ^ v , MKSMultiLocationConflict
+    ↬⇒-totality Γ (-↻^ w ^ v) = unknown , ⊢↻^ w ^ v , MKSCycleLocationConflict
 
     ↬⇒s-totality : (Γ : Ctx)
                  → (e : UChildExp)
@@ -52,7 +52,7 @@ module Grove.Marking.Properties.Totality where
          = τ' , ⊢∶ (w , ě) , MKChildSOnly e↬⇒ě
     ↬⇒s-totality Γ (-⋏ s ė*)
       with ė↬⇒ě* ← ↬⇒s-totality* Γ ė*
-         = unknown , ⊢⋏ s (MKChildSConflictChildren ė↬⇒ě*) , MKChildSConflict ė↬⇒ě*
+         = unknown , ⊢⋏ s (MKChildSLocalConflictChildren ė↬⇒ě*) , MKChildSLocalConflict ė↬⇒ě*
 
     ↬⇒s-totality* : (Γ : Ctx)
                   → (ė* : List UChildExp')
@@ -116,7 +116,7 @@ module Grove.Marking.Properties.Totality where
          = ↬⇐-subsume ě τ' e↬⇒ě USuMultiParent
     ↬⇐-totality Γ τ' e@(-↻^ w ^ v)
       with _ , ě@(⊢↻^ w ^ v) , e↬⇒ě ← ↬⇒-totality Γ e
-         = ↬⇐-subsume ě τ' e↬⇒ě USuUnicycle
+         = ↬⇐-subsume ě τ' e↬⇒ě USuCycleLocationConflict
 
     ↬⇐s-totality : (Γ : Ctx)
                  → (τ' : Typ)

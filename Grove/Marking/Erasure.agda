@@ -91,7 +91,7 @@ module Grove.Marking.Erasure where
     ⊢⇒-⊢⇐ ě@(⊢ ě₁ + ě₂ ^ u)          = ⊢⇒-⊢⇐-subsume ě MSuPlus
     ⊢⇒-⊢⇐ ě@(⊢⟦ ∌y ⟧^ u)             = ⊢⇒-⊢⇐-subsume ě MSuFree
     ⊢⇒-⊢⇐ ě@(⊢⋎^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuMultiParent
-    ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuUnicycle
+    ⊢⇒-⊢⇐ ě@(⊢↻^ w ^ v)              = ⊢⇒-⊢⇐-subsume ě MSuCycleLocationConflict
 
     ⊢⇒s-⊢⇐s : ∀ {Γ τ τ'} → (ě : Γ ⊢⇒s τ) → Σ[ ě' ∈ Γ ⊢⇐s τ' ] ě ⇒□s ≡ ě' ⇐□s
     ⊢⇒s-⊢⇐s ě = ⊢⇒s-⊢⇐s-subsume ě
