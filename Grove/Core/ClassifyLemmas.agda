@@ -255,7 +255,7 @@ lem6 G uniq-ids v w top1 top2 oa1 = uniq-ids _ _ (v-is-in-G oa1) (w-is-in-G oa1)
     where 
     eq3 : classify-parents G (lookup ws (cast-up (fromℕ n))) ≡ PC-UP w
     eq3 rewrite (sym eq2) = cp (fromℕ n)
-  ... | p , u , elem rewrite eq1 = VSource _ elem
+  ... | p , u , elem rewrite eq1 = VLocation _ elem
   
   oa2 : is-only-ancestor G w v 
   oa2 = lem2 G v w (oami-implies-oa _ _ _ _ top1) oa1
@@ -330,7 +330,7 @@ parents-correct (_ ∷ G) v | false | _ = list-forall-implies (parents-correct G
 
 children-correct : (G : Graph) → (v : Vertex) → (p : Fin (arity-v v)) → list-forall (λ (_ , w) → parent G v w) (children G (S v p))
 children-correct [] v p = <>
-children-correct ((E s? _ _) ∷ G) v p with Dec.does ((S v p) ≟Source s?) | Dec.proof ((S v p) ≟Source s?)
+children-correct ((E s? _ _) ∷ G) v p with Dec.does ((S v p) ≟Location s?) | Dec.proof ((S v p) ≟Location s?)
 children-correct ((E _ w u) ∷ G) v p | true | ofʸ refl = ParentHave , (list-forall-implies (children-correct G v p) (λ x → ParentSkip x))
 children-correct (_ ∷ G) v p | false | _ = list-forall-implies (children-correct G v p) (λ x → ParentSkip x)
 

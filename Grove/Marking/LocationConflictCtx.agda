@@ -6,7 +6,7 @@ open import Grove.Marking.Typ
 open import Grove.Marking.Ctx
 open import Grove.Marking.MExp
 
-open import Grove.Marking.Grove using (Vertex; Source)
+open import Grove.Marking.Grove using (Vertex; Location)
 
 module Grove.Marking.LocationConflictCtx where
   data Mode : Set where

@@ -53,16 +53,16 @@ parents-in-G (_ ∷ G) v | false = list-forall-implies (parents-in-G G v) (ListE
 
 children-edges-in-G : (G : Graph) → (v : Vertex) → (p : _) → list-forall (λ (u' , v') → list-elem (E (S v p) v' u') G) (children G (S v p))
 children-edges-in-G [] v p = <>
-children-edges-in-G ((E s? _ _) ∷ G) v p with ((S v p) ≟Source s?)
+children-edges-in-G ((E s? _ _) ∷ G) v p with ((S v p) ≟Location s?)
 children-edges-in-G ((E _ w u) ∷ G) v p | yes refl = ListElemHave G , list-forall-implies (children-edges-in-G G v p) (ListElemSkip _)
 children-edges-in-G (_ ∷ G) v p | no neq = list-forall-implies (children-edges-in-G G v p) (ListElemSkip _)
 
 edges-in-G-children : ∀{s w u'} → (G : Graph) → (list-elem (E s w u') G) → list-elem (u' , w) (children G s)
 edges-in-G-children [] ()
-edges-in-G-children {s} (.(E _ _ _) ∷ G) (ListElemHave .G) with s ≟Source s
+edges-in-G-children {s} (.(E _ _ _) ∷ G) (ListElemHave .G) with s ≟Location s
 edges-in-G-children {s} (.(E _ _ _) ∷ G) (ListElemHave .G) | yes refl = ListElemHave (children G s)
 edges-in-G-children {s} (.(E _ _ _) ∷ G) (ListElemHave .G) | no neq = ⊥-elim (neq refl)
-edges-in-G-children {s} (x ∷ G) (ListElemSkip .x elem) with Dec.does (s ≟Source Edge.source x)
+edges-in-G-children {s} (x ∷ G) (ListElemSkip .x elem) with Dec.does (s ≟Location Edge.source x)
 edges-in-G-children {s} (x ∷ G) (ListElemSkip .x elem) | true = ListElemSkip _ (edges-in-G-children G elem)
 edges-in-G-children {s} (x ∷ G) (ListElemSkip .x elem) | false = edges-in-G-children G elem
 
@@ -74,7 +74,7 @@ parents-cons-lemma G v w x elem | false = elem
 parents-of-children : (G : Graph) → ((V k u) : Vertex) → (p : Fin (arity k)) →
   list-forall (λ (_ , w) → list-elem (V k u) (parents G w)) (children G (S (V k u) p))
 parents-of-children [] (V k u) p = <>
-parents-of-children ((E s? w _) ∷ G) (V k u) p with (S (V k u) p) ≟Source s? 
+parents-of-children ((E s? w _) ∷ G) (V k u) p with (S (V k u) p) ≟Location s? 
 parents-of-children ((E .(S (V k u) p) w u') ∷ G) (V k u) p | yes refl with (w ≟Vertex w)
 parents-of-children ((E .(S (V k u) p) w u') ∷ G) (V k u) p | yes refl | yes refl = (ListElemHave (parents G w)) , list-forall-implies (parents-of-children G (V k u) p) (parents-cons-lemma G _ _ (E (S (V k u) p) (V (Vertex.ctor w) (Vertex.ident w)) u'))
 parents-of-children ((E .(S (V k u) p) w u') ∷ G) (V k u) p | yes refl | no neq = ⊥-elim (neq refl)
@@ -173,7 +173,7 @@ lemma7 G v w v' X (ListElemHave .[]) (_ , (n , ws , eq1 , eq2 , cps) , is-top) n
   cps' zero rewrite eq1 rewrite eq = refl
   cps' (suc i) = cps i
 
-lemma9 : (fuel : ℕ) → (G : Graph) → (ε : Edge) → (list-elem ε G) → list-elem ε (recomp-t (decomp-v fuel G (Source.v (Edge.source ε))))
+lemma9 : (fuel : ℕ) → (G : Graph) → (ε : Edge) → (list-elem ε G) → list-elem ε (recomp-t (decomp-v fuel G (Location.v (Edge.source ε))))
 lemma9 zero G ε elem = {!   !} 
 lemma9 (suc fuel) G (E (S (V k u) p) w u') elem rewrite decomp-recomp-form fuel G (V k u) =   
     list-elem-concat {ls = (toList (vec-of-map (λ p → recomp-pos u k p (decomp-pos fuel G k u p))))} 

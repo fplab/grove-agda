@@ -9,7 +9,7 @@ open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 
-open import Grove.Marking.Grove using (Vertex; Source)
+open import Grove.Marking.Grove using (Vertex; Location)
 
 -- instrinsically typed marked expressions
 module Grove.Marking.MExp where
@@ -83,7 +83,7 @@ module Grove.Marking.MExp where
     data _⊢⇒s_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MSHole: \vdash\sq
       ⊢□ : ∀ {Γ}
-        → (s : Source)
+        → (s : Location)
         → Γ ⊢⇒s unknown
 
       -- MSOnly
@@ -93,7 +93,7 @@ module Grove.Marking.MExp where
 
       -- MSLocalConflict: \vdash\curlywedge
       ⊢⋏ : ∀ {Γ}
-        → (s : Source)
+        → (s : Location)
         → (ė* : List (EdgeId × ∃[ τ ] Γ ⊢⇒ τ))
         → Γ ⊢⇒s unknown
 
@@ -185,7 +185,7 @@ module Grove.Marking.MExp where
     data _⊢⇐s_ : (Γ : Ctx) (τ : Typ) → Set where
       -- MAHole: \vdash\sq
       ⊢□ : ∀ {Γ τ}
-        → (s : Source)
+        → (s : Location)
         → Γ ⊢⇐s τ
 
       -- MAOnly
@@ -195,7 +195,7 @@ module Grove.Marking.MExp where
 
       -- MALocalConflict: \vdash\curlywedge
       ⊢⋏ : ∀ {Γ τ}
-        → (s : Source)
+        → (s : Location)
         → (ė* : List (EdgeId × Γ ⊢⇐ τ))
         → Γ ⊢⇐s τ
 

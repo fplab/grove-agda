@@ -10,7 +10,7 @@ open import Grove.Marking.Typ
 open import Grove.Marking.GTyp
 open import Grove.Marking.Ctx
 
-open import Grove.Marking.Grove using (Vertex; Source)
+open import Grove.Marking.Grove using (Vertex; Location)
 
 -- unmarked expressions
 module Grove.Marking.UExp where
@@ -30,9 +30,9 @@ module Grove.Marking.UExp where
       -↻^_^_    : (w : EdgeId) → (v : Vertex) → UExp
 
     data UChildExp : Set where
-      -□ : (s : Source) → UChildExp
+      -□ : (s : Location) → UChildExp
       -∶ : (ė : UChildExp') → UChildExp
-      -⋏ : (s : Source) → (ė* : List UChildExp')  → UChildExp
+      -⋏ : (s : Location) → (ė* : List UChildExp')  → UChildExp
 
     UChildExp' = EdgeId × UExp
 

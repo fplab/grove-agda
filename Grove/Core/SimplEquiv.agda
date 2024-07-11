@@ -61,9 +61,9 @@ module Grove.Core.SimplEquiv where
       ↻ : EdgeId → Vertex → Term
       
     data TermList : Set where 
-      □ : Source → TermList 
+      □ : Location → TermList 
       ∶ : (EdgeId × Term) → TermList
-      ⋏ : Source → (List (EdgeId × Term)) → TermList
+      ⋏ : Location → (List (EdgeId × Term)) → TermList
 
   open module grove = core.grove Ctor _≟ℂ_ arity renaming (Term to GTerm; TermList to GTermList)
 

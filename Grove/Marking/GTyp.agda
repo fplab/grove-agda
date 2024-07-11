@@ -4,7 +4,7 @@ open import Data.Product using (_×_; _,_)
 open import Grove.Ident
 open import Grove.Marking.Typ
 
-open import Grove.Marking.Grove using (Vertex; Source)
+open import Grove.Marking.Grove using (Vertex; Location)
 
 -- graph types
 module Grove.Marking.GTyp where
@@ -16,9 +16,9 @@ module Grove.Marking.GTyp where
       ↻^_^_  : (w : EdgeId) → (v : Vertex) → GTyp
 
     data GChildTyp : Set where
-      □ : (s : Source) → GChildTyp
+      □ : (s : Location) → GChildTyp
       ∶ : (τ : GChildTyp') → GChildTyp
-      ⋏ : (s : Source) → (τ* : List GChildTyp') → GChildTyp
+      ⋏ : (s : Location) → (τ* : List GChildTyp') → GChildTyp
 
     GChildTyp' = EdgeId × GTyp
 

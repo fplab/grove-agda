@@ -37,9 +37,9 @@ parents ((E s v? _) ∷ G) v with Dec.does (v ≟Vertex v?)
 parents ((E (S w _) _ _) ∷ G) v | true = w ∷ (parents G v) 
 parents (_ ∷ G) v | false = parents G v
 
-children : Graph → Source → List(EdgeId × Vertex) 
+children : Graph → Location → List(EdgeId × Vertex) 
 children [] s = [] 
-children ((E s? _ _) ∷ G) s with Dec.does (s ≟Source s?)
+children ((E s? _ _) ∷ G) s with Dec.does (s ≟Location s?)
 children ((E _ v u) ∷ G) s | true = (u , v) ∷ (children G s) 
 children (_ ∷ G) s | false = children G s
 

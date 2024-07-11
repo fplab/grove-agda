@@ -26,9 +26,9 @@ mutual
     ↻ : EdgeId → Vertex → Term
     
   data TermList : Set where 
-    □ : Source → TermList 
+    □ : Location → TermList 
     ∶ : (EdgeId × Term) → TermList
-    ⋏ : Source → (List (EdgeId × Term)) → TermList
+    ⋏ : Location → (List (EdgeId × Term)) → TermList
 
 Grove : Set
 Grove = (List Term)

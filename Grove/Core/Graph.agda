@@ -30,29 +30,29 @@ arity-v : Vertex → ℕ
 arity-v (V k _) = arity k
 
 -- TODO rename this to Location, ℓ
-record Source : Set where
+record Location : Set where
   constructor S
   field 
     v : Vertex
     p : Fin (arity-v v)
 
-_≟Source_ : (s₁ s₂ : Source) → Dec (s₁ ≡ s₂)
-S v₁ p₁ ≟Source S v₂ p₂ with v₁ ≟Vertex v₂
-S v₁ p₁ ≟Source S v₂ p₂ | yes refl with p₁ ≟Fin p₂ 
-S v₁ p₁ ≟Source S v₂ p₂ | yes refl | yes refl = yes refl
-S v₁ p₁ ≟Source S v₂ p₂ | yes refl | no neq = no (λ { refl → neq refl })
-S v₁ p₁ ≟Source S v₂ p₂ | no neq = no (λ { refl → neq refl })
+_≟Location_ : (s₁ s₂ : Location) → Dec (s₁ ≡ s₂)
+S v₁ p₁ ≟Location S v₂ p₂ with v₁ ≟Vertex v₂
+S v₁ p₁ ≟Location S v₂ p₂ | yes refl with p₁ ≟Fin p₂ 
+S v₁ p₁ ≟Location S v₂ p₂ | yes refl | yes refl = yes refl
+S v₁ p₁ ≟Location S v₂ p₂ | yes refl | no neq = no (λ { refl → neq refl })
+S v₁ p₁ ≟Location S v₂ p₂ | no neq = no (λ { refl → neq refl })
 
 record Edge : Set where
   constructor E
   field
-    source : Source
+    source : Location
     child : Vertex
     ident : EdgeId
 
 _≟Edge_ : (e₁ e₂ : Edge) → Dec (e₁ ≡ e₂)
 E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂
-  with source₁ ≟Source source₂
+  with source₁ ≟Location source₂
      | child₁ ≟Vertex child₂
      | ident₁ ≟E𝕀 ident₂
 ... | yes refl | yes refl | yes refl = yes refl
@@ -63,7 +63,7 @@ E source₁ child₁ ident₁ ≟Edge E source₂ child₂ ident₂
 Graph = List(Edge)
 
 data v-in-G : Vertex → Graph → Set where 
-  VSource : ∀{G} → (ε : Edge) → (list-elem ε G) → v-in-G (Source.v (Edge.source ε)) G
+  VLocation : ∀{G} → (ε : Edge) → (list-elem ε G) → v-in-G (Location.v (Edge.source ε)) G
   VChild : ∀{G} → (ε : Edge) → (list-elem ε G) → v-in-G (Edge.child ε) G
 
 has-uniq-ids : Graph → Set 
