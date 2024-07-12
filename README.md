@@ -40,9 +40,9 @@ Here is where to find each definition:
 
 Every theorem is proven in the mechanization. Here is where to find each theorem:
 
-- Theorem TODO, *Action Commutativity*, is in [Grove/Core/Properties/ActionCommutative.agda](./Grove/Core/Properties/ActionCommutative.agda), given by `ActionRel-comm`.
+- Theorem 3.2, *Action Commutativity*, is in [Grove/Core/Properties/ActionCommutative.agda](./Grove/Core/Properties/ActionCommutative.agda), given by `ActionRel-comm`.
 
-- Theorem TODO, *Recomposability*, is in [Grove/Core/Properties/Recomposability.agda](./Grove/Core/Properties/Recomposability.agda), given by `recomposability`.
+- Theorem 3.18, *Recomposability*, is in [Grove/Core/Properties/Recomposability.agda](./Grove/Core/Properties/Recomposability.agda), given by `recomposability`.
 
 - Theorem B.1, *Marking Totality*, is in [Grove/Marking/Properties/Totality.agda](./Grove/Marking/Properties/Totality.agda), given by `↬⇒-totality` and `↬⇐-totality`.
 
@@ -58,21 +58,18 @@ Every theorem is proven in the mechanization. Here is where to find each theorem
 
 - Finite sets are represented using lists, with an inductive membership predicate and equivalence defined as a biimplication of membership. This definition of equivalence is given by `elem-equiv` in [Grove/Prelude.agda](./Grove/Prelude.agda).
 
-- The consistency rules are slightly different from those in the formalism and paper to facilitate
+- In the marking formalism, we are only concerned with well-typed marked expressions, so they are encoded as intrinsically typed terms. Variables, while otherwise extraneous, are preserved in the syntax for the sake of mark erasure. As a result, judgments on marked expressions, such as `subsumable` and `markless`, are formulated bidirectionally.
+
+<!-- - The consistency rules are slightly different from those in the formalism and paper to facilitate
     a simpler unicity proof for marking. Type inconsistency is defined as the negation of
     consistency, that is, `τ₁ ~̸ τ₂ = ¬ (τ₁ ~ τ₂) = (τ₁ ~ τ₂) → ⊥`. This formulation is equivalent to
-    a judgmental definition.
+    a judgmental definition. -->
 
-- Since we are only concerned with well-typed marked expressions, they are encoded as
-    intrinsically typed terms. Variables, while otherwise extraneous, are preserved in the syntax
-    for the sake of mark erasure. As a result, judgments on marked expressions, such as `subsumable`
-    and `markless`, are formulated bidirectionally.
-
-- Conjunctions in the antecedents of theorems have been converted into sequences of implications,
+<!-- - Conjunctions in the antecedents of theorems have been converted into sequences of implications,
     which has no effect other than to simplify the proof text.
 
 - The formalism and paper do not state exactly what the `num` type is; for simplicity, we use
-    unary natural numbers, as defined in [prelude.agda](./Grove/Prelude.agda).
+    unary natural numbers, as defined in [prelude.agda](./Grove/Prelude.agda). -->
 
 ### Termination and Fuel
 
