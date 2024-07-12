@@ -4,11 +4,11 @@ This repository contains the full Agda mechanization of the core Grove data stru
 
 ---
 
-## Marking Mechanization
+## Mechanization
 
 All semantics and metatheorems are mechanizaed in the Agda proof assistant. To check the proofs, an installation of [Agda](https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Download) is required. The proofs are known to load cleanly under Agda `2.6.4`.
 
-Once, installed `grove.agda` in the top-level directory will cause Agda to check all the proofs.
+Once Agda is installed, running `agda Grove.agda` in the top-level directory will cause Agda to check all the proofs.
 
 ---
 
