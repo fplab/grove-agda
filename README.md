@@ -1,6 +1,6 @@
 # Grove Formalism
 
-This repository contains the full Agda mechanization of the core Grove data structures and theorems stated in the paper along with the mechanization of the marking framework for total error localization and recovery.
+This repository contains the full Agda mechanization of the core Grove data structures and theorems stated in the paper along with the mechanization of the marking framework for total error localization and recovery, with the exception that for some functions and proofs we provide written justification of termination at the end of this file, and allow the mechanization to retain some termination-related holes. 
 
 ---
 
@@ -54,6 +54,10 @@ Every theorem is proven in the mechanization. Here is where to find each theorem
 - Theorem B.4, *Marking Unicity*, is in [Grove/Marking/Properties/Unicity.agda](./Grove/Marking/Properties/Unicity.agda), given by `↬⇒-unicity` and `↬⇐-unicity`.
 
 ### Assumptions and Representation Decisions
+
+- Termination is not proven for some functions and proofs related to vertex classification and live subgraph decomposition. See the [section on termination](#termination-and-fuel).
+
+- Finite sets are represented using lists, with an inductive membership predicate and equivalence defined as a biimplication of membership. This definition of equivalence is given by `elem-equiv` in [Grove/Prelude.agda](./Grove/Prelude.agda).
 
 - The consistency rules are slightly different from those in the formalism and paper to facilitate
     a simpler unicity proof for marking. Type inconsistency is defined as the negation of
