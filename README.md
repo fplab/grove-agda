@@ -16,10 +16,11 @@ Once, installed `grove.agda` in the top-level directory will cause Agda to check
 
 Here is where to find each definition:
 
-- [prelude.agda](./Grove/Prelude.agda) contains definitions and utilities not specific to the marked
-    lambda calculus.
+- [Grove/Prelude.agda](./Grove/Prelude.agda) contains general definitions and utilities, mainly definitions related to the list representation of finite sets. 
 
-- [grove/core/](./Grove/core) contains definitions related to the core Grove mechanization:
+- [Grove/Core](./Grove/Core) contains the definitions of graphs and groves, and the proofs of patch commutativity, correct classification of vertices, and recomposability.
+
+<!-- - [Grove/Core](./Grove/Core) contains definitions related to the core Grove mechanization:
   - [typ.agda](./core/typ.agda) contains the syntax definition for types, the base, consistency,
         matched arrow and product types, and meet judgments, alongside useful lemmas about types.
   - [uexp.agda](./core/uexp.agda) contains the syntax definition and bidirectional typing
@@ -28,14 +29,12 @@ Here is where to find each definition:
         judgments for marked expressions.
   - [erasure.agda](./core/erasure.agda) contains the definition of mark erasure.
   - [lemmas.agda](./core/lemmas.agda) contains some lemmas about unmarked and marked
-        expressions.
+        expressions. -->
 
-- [marking/](./Grove/Marking) contains definitions and [theorems](#where-to-find-each-theorem) related
+- [Grove/Marking](./Grove/Marking) contains definitions and theorems related
     to marking:
-  - [marking.agda](./Grove/Marking/Marking.agda) contains the bidirectional marking judgment.
-  - [totality.agda](./Grove/Marking/Properties/Totality.agda), [unicity.agda](./Grove/Marking/Properties/Unicity.agda), and
-        [wellformed.agda](./Grove/Marking/Properties/WellFormed.agda) contain theorems about marking (see the [next
-    section](#where-to-find-each-theorem)).
+  - [Grove/Marking/Marking.agda](./Grove/Marking/Marking.agda) contains the bidirectional marking judgment.
+  - [Grove/Marking/Properties/Totality.agda](./Grove/Marking/Properties/Totality.agda), [Grove/Marking/Properties/Unicity.agda](./Grove/Marking/Properties/Unicity.agda), and [Grove/Marking/Properties/WellFormed.agda](./Grove/Marking/Properties/WellFormed.agda) contain theorems about marking (see the [next section](#where-to-find-each-theorem)).
 
 ### Where to Find Each Theorem
 
