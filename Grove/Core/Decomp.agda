@@ -32,7 +32,6 @@ private
 
 mutual 
 
-  -- {-# TERMINATING #-}
   decomp-sub : ℕ → Graph → (EdgeId × Vertex) → (EdgeId × Term)
   decomp-sub fuel G (u' , v') = (u' , decomp-v' fuel G v' u')
 

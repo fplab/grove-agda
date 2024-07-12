@@ -29,7 +29,6 @@ V c₁ i₁ ≟Vertex V c₂ i₂ with c₁ ≟ℂ c₂ | i₁ ≟V𝕀 i₂
 arity-v : Vertex → ℕ
 arity-v (V k _) = arity k
 
--- TODO rename this to Location, ℓ
 record Location : Set where
   constructor S
   field 

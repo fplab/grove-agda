@@ -30,7 +30,6 @@ data parent : Graph → (v w : Vertex) → Set where
   ParentHave : ∀{G v w a c} → parent ((E (S v a) w c) ∷ G) v w
   ParentSkip : ∀{G v w ε} → parent G v w → parent (ε ∷ G) v w
 
--- might need to emit proofs one day
 parents : Graph → Vertex → List(Vertex) 
 parents [] v = [] 
 parents ((E s v? _) ∷ G) v with Dec.does (v ≟Vertex v?)

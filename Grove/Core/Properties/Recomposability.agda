@@ -17,7 +17,7 @@ open import Function
 open import Grove.Prelude
 open import Grove.Ident
 
-module Grove.Core.Properties.DecompRecomp 
+module Grove.Core.Properties.Recomposability 
   (Ctor : Set) 
   (_≟ℂ_ : (c₁ c₂ : Ctor) → Dec (c₁ ≡ c₂))
   (arity : Ctor → ℕ)
@@ -85,26 +85,6 @@ unique-parent-in-G : (G : Graph) → (x w : Vertex) →
 unique-parent-in-G G x w eq with parents G x | parents-in-G G x | eq
 ... | .w ∷ [] | (elem , _) | refl = elem
 
--- edge-of-parent :  (G : Graph) → (w v : Vertex) →
---     (classify-parents G w ≡ PC-UP v) → 
---     Σ[ p ∈ _ ] Σ[ u ∈ EdgeId ] (list-elem (E (S v p) w u) G)
--- edge-of-parent [] w v ()
--- edge-of-parent ((E s w? _) ∷ G) w v eq with (w ≟Vertex w?) 
--- edge-of-parent ((E (S v? _) .w _) ∷ G) w v eq | yes refl with (v ≟Vertex v?) 
--- edge-of-parent ((E (S v? p) .w u) ∷ G) w v eq | yes refl | yes refl = p , u , ListElemHave G
--- edge-of-parent ((E (S v? _) .w _) ∷ G) w v eq | yes refl | no neq with parents G w | inspect (parents G) w
--- edge-of-parent ((E (S v? _) .w _) ∷ G) w v refl | yes refl | no neq | [] | _ = ⊥-elim (neq refl)
--- edge-of-parent ((E (S v? _) .w _) ∷ G) w v () | yes refl | no neq | _ ∷ [] | _ 
--- edge-of-parent ((E (S v? _) .w _) ∷ G) w v () | yes refl | no neq | _ ∷ _ ∷ _ | _
--- edge-of-parent ((E (S v? p) w? u) ∷ G) w v eq | no neq with parents G w | inspect (parents G) w
--- edge-of-parent ((E (S v? p) w? u) ∷ G) w v () | no neq | [] | _
--- edge-of-parent ((E (S v? p) w? u) ∷ G) w v refl | no neq | .v ∷ [] | [ eq ] rewrite eq with edge-of-parent G w v (helper eq) 
---   where 
---   helper : parents G w ≡ v ∷ [] → classify-parents G w ≡ PC-UP v
---   helper eq rewrite eq = refl
--- edge-of-parent ((E (S v? _) w? _) ∷ G) w v refl | no neq | .v ∷ [] | _ | p , u , elem = p , u , ListElemSkip _ elem
--- edge-of-parent ((E (S v? p) w? u) ∷ G) w v () | no neq | _ ∷ _ ∷ _ | _
-
 inner-in-G : (fuel : ℕ) → (G : Graph) → (v w : Vertex) → (X : X) →
     inner X G v w → 
     list-elem w (vertices-of-G G)
@@ -128,15 +108,6 @@ vertex-of-decomp' (suc fuel) G (V k u) with classify (suc fuel) G (V k u) []
 ... | Top MP = refl
 ... | Top U = refl
 ... | Inner X w = refl
-
--- decomp-recomp-pos-form : ∀{k k' u u' p p'} → (fuel : ℕ) → (G : Graph) →
---   recomp-pos u' k' p' (decomp-pos (suc fuel) G k u p)
---   ≡ concat (map (recomp-sub u' k' p') (map (decomp-sub (suc fuel) G) (children G (S (V k u) p)))) 
--- decomp-recomp-pos-form {k} {k'} {u} {u'} {p} {p'} fuel G 
---   with map (decomp-sub (suc fuel) G) (children G (S (V k u) p))
--- ... | [] = refl
--- ... | t ∷ [] rewrite ++-identityʳ (recomp-t (proj₂ t)) = refl
--- ... | t1 ∷ t2 ∷ ts = refl
 
 decomp-recomp-pos-form : ∀{k u p} → (fuel : ℕ) → (G : Graph) →
   recomp-pos u k p (decomp-pos fuel G k u p)
@@ -401,6 +372,6 @@ decomp-recomp-complete fuel G uniq-ids = list-forall-elem elem-forall
                 (list-elem-map {a = w} {l = filter (some-top-decidable fuel G uniq-ids) (vertices-of-G G)} {f = decomp-v fuel G} 
                 (list-elem-filter {l = vertices-of-G G} {dec = some-top-decidable fuel G uniq-ids} (X , is-top) (edge-classify-in-G fuel G w X ε elem is-edge))))  
 
-decomp-recomp : (fuel : ℕ) → (G : Graph) → (uniq-ids : has-uniq-ids G) → elem-equiv (recomp-grove (decomp-G fuel G uniq-ids)) G     
-decomp-recomp fuel G uniq-ids ε = (λ elem → list-elem-forall (decomp-recomp-sound fuel G uniq-ids) ε elem) ,    
+recomposability : (fuel : ℕ) → (G : Graph) → (uniq-ids : has-uniq-ids G) → elem-equiv (recomp-grove (decomp-G fuel G uniq-ids)) G     
+recomposability fuel G uniq-ids ε = (λ elem → list-elem-forall (decomp-recomp-sound fuel G uniq-ids) ε elem) ,    
                          (λ elem → list-elem-forall (decomp-recomp-complete fuel G uniq-ids) ε elem)      

@@ -44,9 +44,6 @@ id-min-comm u1 u2 | no nleq1 | no nleq2 with ≤V𝕀-total u1 u2
 ... | Inl x = ⊥-elim (nleq1 x)
 ... | Inr x = ⊥-elim (nleq2 x)
 
--- id-min-assoc : (u1 u2 u3 : Ident) → (id-min u1 (id-min u2 u3)) ≡ (id-min (id-min u1 u2) u3)
--- id-min-assoc u1 u2 u3 = {!   !}
-
 lookup-snoc : {A : Set} → {n : ℕ} → (a : A) → (l : Vec A n) → lookup (l ∷ʳ a) (fromℕ n) ≡ a
 lookup-snoc a [] = refl
 lookup-snoc a (x ∷ l) = lookup-snoc a l
@@ -120,7 +117,7 @@ edge-of-parent ((E (S v? p) w? u) ∷ G) w v refl | no neq | .v ∷ [] | [ eq ] 
 edge-of-parent ((E (S v? _) w? _) ∷ G) w v refl | no neq | .v ∷ [] | _ | p , u , elem = p , u , ListElemSkip _ elem
 edge-of-parent ((E (S v? p) w? u) ∷ G) w v () | no neq | _ ∷ _ ∷ _ | _
 
--- BEGIN: this arithmetic is to jelp manifest termination for lem2
+-- BEGIN: this arithmetic is to help display termination for lem2
 
 natminus : ℕ → ℕ → ℕ 
 natminus a zero = a
