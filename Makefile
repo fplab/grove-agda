@@ -1,10 +1,8 @@
-AGDA    ?= agda
+AGDA ?= agda
 
 .PHONY: all
-all : all.agdai
-
-%.agdai : %.agda
-	$(AGDA) $*.agda
+all:
+	$(AGDA) Grove.agda
 
 .PHONY : clean
 clean :
