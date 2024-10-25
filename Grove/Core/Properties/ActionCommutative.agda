@@ -2,10 +2,10 @@ open import Axiom.Extensionality.Propositional
 open import Data.Bool hiding (_<_; _≟_)
 open import Data.Nat hiding (_+_; _⊔_)
 open import Function.Equivalence hiding (_∘_)
-open import Function hiding (_⇔_)
+open import Function hiding (_⇔_; _⟨$⟩_)
 open import Function.Equality using (_⟨$⟩_)
 open import Level using (Level)
-open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
 module Grove.Core.Properties.ActionCommutative

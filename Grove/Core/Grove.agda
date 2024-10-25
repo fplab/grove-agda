@@ -4,7 +4,7 @@ open import Data.Vec
 open import Data.Nat
 open import Data.Product
 open import Relation.Nullary
-open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Binary.PropositionalEquality
 
 open import Grove.Prelude
 open import Grove.Ident
